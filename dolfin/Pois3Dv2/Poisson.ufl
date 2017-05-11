@@ -1,0 +1,18 @@
+cell = tetrahedron
+V = FiniteElement("RT", cell, 1)
+P  = FiniteElement("DG", cell, 0)
+W = V * P
+
+# Trial and test functions
+(v,p) = TrialFunctions(W)
+(w,q) = TestFunctions(W)
+
+# Define coefficients
+n = FacetNormal(cell)
+alpha = Constant(cell)
+rhob = Coefficient(V)
+p_Production = Constant(cell)
+p_Injection = Constant(cell)
+
+a = dot(alpha*v,w)*dx - p*div(w)*dx - div(v)*q*dx
+L = dot(rhob,w)*dx - dot(w,n)*p_Production*ds(9) - dot(w,n)*p_Injection*ds(7) - dot(w,n)*p_Injection*ds(8)

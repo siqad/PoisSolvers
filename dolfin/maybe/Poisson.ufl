@@ -1,0 +1,14 @@
+V = FiniteElement("Lagrange", tetrahedron, 1)
+R = FiniteElement("R", tetrahedron, 0)
+element = V * R
+#element = FiniteElement("Lagrange", tetrahedra, 1)
+#V = element
+#R = element
+
+(u, c) = TrialFunctions(element)
+(v, d) = TestFunctions(element)
+f = Coefficient(V)
+g = Coefficient(V)
+
+a = (inner(grad(u), grad(v)) + c*v + u*d)*dx
+L = f*v*dx + g*v*ds

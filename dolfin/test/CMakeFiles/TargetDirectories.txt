@@ -1,0 +1,3 @@
+/home/nathan/dolfin/test/CMakeFiles/rebuild_cache.dir
+/home/nathan/dolfin/test/CMakeFiles/edit_cache.dir
+/home/nathan/dolfin/test/CMakeFiles/demo_poisson.dir
