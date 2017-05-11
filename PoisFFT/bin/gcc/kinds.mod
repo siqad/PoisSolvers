@@ -1,0 +1,441 @@
+GFORTRAN module version '10' created from testpoisson.f90
+MD5:d45a3ecbec4d94c5c1104d0a7b680aac -- If you edit this, you'll get what you deserve.
+
+(() () () () () () () () () () () () () () () () () () () () () () ()
+() () () ())
+
+()
+
+(('c_funptr' '__iso_c_binding' 2) ('c_ptr' '__iso_c_binding' 3) (
+'lock_type' 'iso_fortran_env' 4))
+
+()
+
+()
+
+()
+
+(2 'C_funptr' '__iso_c_binding' '' 1 ((DERIVED UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_BIND_C IS_C_INTEROP IS_ISO_C) (
+DERIVED 2 0 1 1 UNKNOWN ()) 0 0 () () 0 ((5 '__c_funptr_c_address' (
+INTEGER 8 0 1 0 INTEGER ()) () (UNKNOWN-FL UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN UNKNOWN 0 0) UNKNOWN-ACCESS ())) UNKNOWN-ACCESS () () 2 44 0)
+3 'C_ptr' '__iso_c_binding' '' 1 ((DERIVED UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN UNKNOWN 0 0 IS_BIND_C IS_C_INTEROP IS_ISO_C) (DERIVED 3 0 1 1
+UNKNOWN ()) 0 0 () () 0 ((6 '__c_ptr_c_address' (INTEGER 8 0 1 0 INTEGER
+()) () (UNKNOWN-FL UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0)
+UNKNOWN-ACCESS ())) UNKNOWN-ACCESS () () 2 42 0)
+4 'Lock_type' 'iso_fortran_env' '' 1 ((DERIVED UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 PRIVATE_COMP ZERO_COMP) (UNKNOWN 0 0 0
+0 UNKNOWN ()) 0 0 () () 0 () () () 1 28 0)
+7 '__iso_c_binding' '__iso_c_binding' '' 1 ((MODULE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 INTRINSIC) (UNKNOWN 0 0 0 0 UNKNOWN ())
+0 0 () () 0 () () () 2 0)
+8 'atomic_int_kind' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '4') () 0 () () () 1 0)
+9 'atomic_logical_kind' 'iso_fortran_env' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '4') () 0 ()
+() () 1 1)
+10 'c_alert' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U00000007') () 0 () () ()
+2 35)
+11 'c_associated' '__iso_c_binding' '__iso_c_binding_c_associated' 1 ((
+PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL UNKNOWN 0 0 FUNCTION
+ALWAYS_EXPLICIT IS_ISO_C) (LOGICAL 4 0 0 0 LOGICAL ()) 12 0 (13 14) ()
+11 () () () 2 47)
+15 'c_backspace' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U00000008') () 0 () () ()
+2 36)
+16 'c_bool' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+LOGICAL ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '1') () 0 ()
+() () 2 32)
+17 'c_carriage_return' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U0000000d') () 0 () () ()
+2 39)
+18 'c_char' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+CHARACTER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '1') () 0
+() () () 2 33)
+19 'c_double' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+REAL ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 () ()
+() 2 25)
+20 'c_double_complex' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+COMPLEX ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 29)
+21 'c_f_pointer' '__iso_c_binding' '__iso_c_binding_c_f_pointer' 1 ((
+PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL UNKNOWN 0 0 SUBROUTINE
+ALWAYS_EXPLICIT IS_ISO_C) (UNKNOWN 0 0 0 0 UNKNOWN ()) 22 0 (23 24 25) ()
+0 () () () 2 46)
+26 'c_f_procpointer' '__iso_c_binding' '__iso_c_binding_c_f_procpointer'
+1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL UNKNOWN 0 0 SUBROUTINE
+IS_ISO_C) (UNKNOWN 0 0 0 0 UNKNOWN ()) 27 0 (28 29) () 0 () () () 2 50)
+30 'c_float' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+REAL ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '4') () 0 () ()
+() 2 24)
+31 'c_float128' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+REAL ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '16') () 0 () ()
+() 2 27)
+32 'c_float128_complex' '__iso_c_binding' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (
+INTEGER 4 0 1 1 COMPLEX ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ())
+0 '16') () 0 () () () 2 31)
+33 'c_float_complex' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+COMPLEX ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '4') () 0 ()
+() () 2 28)
+34 'c_form_feed' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U0000000c') () 0 () () ()
+2 37)
+35 'c_funloc' '__iso_c_binding' '__iso_c_binding_c_funloc' 1 ((
+PROCEDURE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 EXTERNAL
+FUNCTION PURE IS_ISO_C) (DERIVED 2 0 0 0 DERIVED ()) 0 0 () () 35 () ()
+() 2 49)
+36 'c_funptr' '__iso_c_binding' '' 1 ((PROCEDURE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 FUNCTION GENERIC) (REAL 4 0 0 0 REAL ())
+0 0 () () 0 () () () 2 44)
+37 'c_horizontal_tab' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U00000009') () 0 () () ()
+2 40)
+38 'c_int' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '4') () 0 ()
+() () 2 0)
+39 'c_int128_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '16') () 0 ()
+() () 2 13)
+40 'c_int16_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '2') () 0 ()
+() () 2 10)
+41 'c_int32_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '4') () 0 ()
+() () 2 11)
+42 'c_int64_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 12)
+43 'c_int8_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '1') () 0 ()
+() () 2 9)
+44 'c_int_fast128_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '16') () 0 ()
+() () 2 23)
+45 'c_int_fast16_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 20)
+46 'c_int_fast32_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 21)
+47 'c_int_fast64_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 22)
+48 'c_int_fast8_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '1') () 0 ()
+() () 2 19)
+49 'c_int_least128_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '16') () 0 ()
+() () 2 18)
+50 'c_int_least16_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '2') () 0 ()
+() () 2 15)
+51 'c_int_least32_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '4') () 0 ()
+() () 2 16)
+52 'c_int_least64_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 17)
+53 'c_int_least8_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '1') () 0 ()
+() () 2 14)
+54 'c_intmax_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 4)
+55 'c_intptr_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 5)
+56 'c_loc' '__iso_c_binding' '__iso_c_binding_c_loc' 1 ((PROCEDURE
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 EXTERNAL FUNCTION PURE
+IS_ISO_C) (DERIVED 3 0 0 0 DERIVED ()) 0 0 () () 56 () () () 2 48)
+57 'c_long' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 2)
+58 'c_long_double' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+REAL ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '10') () 0 () ()
+() 2 26)
+59 'c_long_double_complex' '__iso_c_binding' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (
+INTEGER 4 0 1 1 COMPLEX ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ())
+0 '10') () 0 () () () 2 30)
+60 'c_long_long' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 3)
+61 'c_new_line' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U0000000a') () 0 () () ()
+2 38)
+62 'c_null_char' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U00000000') () 0 () () ()
+2 34)
+63 'c_null_funptr' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_BIND_C IS_C_INTEROP IS_ISO_C) (
+DERIVED 2 0 1 1 UNKNOWN ()) 0 0 () (STRUCTURE (DERIVED 2 0 0 0 DERIVED ())
+0 (((NULL (UNKNOWN 0 0 0 1 UNKNOWN ()) 0) ())) ()) () 0 () () () 2 45)
+64 'c_null_ptr' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_BIND_C IS_C_INTEROP IS_ISO_C) (
+DERIVED 3 0 1 1 UNKNOWN ()) 0 0 () (STRUCTURE (DERIVED 3 0 0 0 DERIVED ())
+0 (((NULL (UNKNOWN 0 0 0 1 UNKNOWN ()) 0) ())) ()) () 0 () () () 2 43)
+65 'c_ptr' '__iso_c_binding' '' 1 ((PROCEDURE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 FUNCTION GENERIC) (REAL 4 0 0 0 REAL ())
+0 0 () () 0 () () () 2 42)
+66 'c_ptrdiff_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 6)
+67 'c_short' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '2') () 0 ()
+() () 2 1)
+68 'c_signed_char' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '1') () 0 ()
+() () 2 8)
+69 'c_size_t' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 UNKNOWN ()) 0 '8') () 0 ()
+() () 2 7)
+70 'c_sizeof' '__iso_c_binding' '' 1 ((PROCEDURE UNKNOWN-INTENT
+UNKNOWN-PROC DECL UNKNOWN 0 0 INTRINSIC FUNCTION) (INTEGER 8 0 0 0
+INTEGER ()) 71 0 (72) () 0 () () () 2 48)
+73 'c_vertical_tab' '__iso_c_binding' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 IS_C_INTEROP IS_ISO_C) (CHARACTER 1 0 1
+1 CHARACTER ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1'))) 0 0 () (
+CONSTANT (CHARACTER 1 0 1 1 UNKNOWN (())) 0 1 '\U0000000b') () 0 () () ()
+2 41)
+74 'character_kinds' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DIMENSION) (INTEGER 4 0 0 0 INTEGER ())
+0 0 () (ARRAY (INTEGER 4 0 0 0 INTEGER ()) 1 (((CONSTANT (INTEGER 4 0 0
+0 INTEGER ()) 0 '1') ()) ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '4')
+())) ('2')) (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1')
+(CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '2')) 0 () () () 1 22)
+75 'character_storage_size' 'iso_fortran_env' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '8') () 0 ()
+() () 1 2)
+76 'compiler_options' 'iso_fortran_env' '' 1 ((PROCEDURE UNKNOWN-INTENT
+UNKNOWN-PROC DECL UNKNOWN 0 0 INTRINSIC FUNCTION) (CHARACTER 1 0 0 0
+CHARACTER ()) 0 0 () () 0 () () () 1 37)
+77 'compiler_version' 'iso_fortran_env' '' 1 ((PROCEDURE UNKNOWN-INTENT
+UNKNOWN-PROC DECL UNKNOWN 0 0 INTRINSIC FUNCTION) (CHARACTER 1 0 0 0
+CHARACTER ()) 0 0 () () 0 () () () 1 38)
+78 'dcp' 'poisfft_precisions' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN IMPLICIT-SAVE 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4
+0 1 1 COMPLEX ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 COMPLEX ()) 0 '8') ()
+0 () () () 0 0)
+79 'drp' 'poisfft_precisions' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN IMPLICIT-SAVE 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4
+0 1 1 REAL ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 REAL ()) 0 '8') () 0 ()
+() () 0 0)
+80 'error_unit' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '0') () 0 () () () 1 3)
+81 'file_storage_size' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '8') () 0 () () () 1 4)
+82 'input_unit' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '5') () 0 () () () 1 5)
+83 'int16' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '2') () 0 () () () 1 7)
+84 'int32' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '4') () 0 () () () 1 8)
+85 'int64' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '8') () 0 () () () 1 9)
+86 'int8' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '1') () 0 () () () 1 6)
+87 'integer_kinds' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DIMENSION) (INTEGER 4 0 0 0 INTEGER ())
+0 0 () (ARRAY (INTEGER 4 0 0 0 INTEGER ()) 1 (((CONSTANT (INTEGER 4 0 0
+0 INTEGER ()) 0 '1') ()) ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '2')
+()) ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '4') ()) ((CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '8') ()) ((CONSTANT (INTEGER 4 0 0 0
+INTEGER ()) 0 '16') ())) ('5')) (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0
+INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '5')) 0 () ()
+() 1 23)
+88 'iostat_end' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '-1') () 0 () () () 1 10)
+89 'iostat_eor' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '-2') () 0 () () () 1 11)
+90 'iostat_inquire_internal_unit' 'iso_fortran_env' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '5018') () 0
+() () () 1 12)
+91 'iso_fortran_env' 'iso_fortran_env' '' 1 ((MODULE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 INTRINSIC) (UNKNOWN 0 0 0 0 UNKNOWN ())
+0 0 () () 0 () () () 1 0)
+92 'kinds' 'kinds' '' 1 ((MODULE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
+UNKNOWN 0 0) (UNKNOWN 0 0 0 0 UNKNOWN ()) 0 0 () () 0 () () () 0 0)
+93 'lock_type' 'iso_fortran_env' '' 1 ((PROCEDURE UNKNOWN-INTENT
+UNKNOWN-PROC DECL UNKNOWN 0 0 FUNCTION GENERIC) (INTEGER 4 0 0 0 INTEGER
+()) 0 0 () () 0 () () () 1 28)
+94 'logical_kinds' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DIMENSION) (INTEGER 4 0 0 0 INTEGER ())
+0 0 () (ARRAY (INTEGER 4 0 0 0 INTEGER ()) 1 (((CONSTANT (INTEGER 4 0 0
+0 INTEGER ()) 0 '1') ()) ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '2')
+()) ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '4') ()) ((CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '8') ()) ((CONSTANT (INTEGER 4 0 0 0
+INTEGER ()) 0 '16') ())) ('5')) (1 0 EXPLICIT (CONSTANT (INTEGER 4 0 0 0
+INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '5')) 0 () ()
+() 1 24)
+95 'numeric_storage_size' 'iso_fortran_env' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '32') () 0 ()
+() () 1 13)
+96 'output_unit' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '6') () 0 () () () 1 14)
+97 'poisfft_precisions' 'poisfft_precisions' '' 1 ((MODULE
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (UNKNOWN 0 0 0 0
+UNKNOWN ()) 0 0 () () 0 () () () 0 0)
+98 'real128' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '10') () 0 () () () 1 17)
+99 'real32' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '4') () 0 () () () 1 15)
+100 'real64' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '8') () 0 () () () 1 16)
+101 'real_kinds' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DIMENSION) (INTEGER 4 0 0 0 INTEGER ())
+0 0 () (ARRAY (INTEGER 4 0 0 0 INTEGER ()) 1 (((CONSTANT (INTEGER 4 0 0
+0 INTEGER ()) 0 '4') ()) ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '8')
+()) ((CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '10') ()) ((CONSTANT (
+INTEGER 4 0 0 0 INTEGER ()) 0 '16') ())) ('4')) (1 0 EXPLICIT (CONSTANT
+(INTEGER 4 0 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 0 INTEGER ())
+0 '4')) 0 () () () 1 25)
+102 'rp' 'kinds' '' 1 ((PARAMETER UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
+IMPLICIT-SAVE 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1 REAL ()) 0 0 ()
+(CONSTANT (INTEGER 4 0 1 1 REAL ()) 0 '8') () 0 () () () 0 0)
+103 'scp' 'poisfft_precisions' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN IMPLICIT-SAVE 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4
+0 1 1 COMPLEX ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 COMPLEX ()) 0 '4') ()
+0 () () () 0 0)
+104 'size_kind' 'kinds' '' 1 ((PARAMETER UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN IMPLICIT-SAVE 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4 0 1 1
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 INTEGER ()) 0 '8') () 0 ()
+() () 0 0)
+105 'srp' 'poisfft_precisions' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN IMPLICIT-SAVE 0 0 IS_C_INTEROP IS_ISO_C) (INTEGER 4
+0 1 1 REAL ()) 0 0 () (CONSTANT (INTEGER 4 0 1 1 REAL ()) 0 '4') () 0 ()
+() () 0 0)
+106 'stat_locked' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () 0 () () () 1 18)
+107 'stat_locked_other_image' 'iso_fortran_env' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '2') () 0 ()
+() () 1 19)
+108 'stat_stopped_image' 'iso_fortran_env' '' 1 ((PARAMETER
+UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0
+INTEGER ()) 0 0 () (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '6000') () 0
+() () () 1 20)
+109 'stat_unlocked' 'iso_fortran_env' '' 1 ((PARAMETER UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '0') () 0 () () () 1 21)
+13 'C_ptr_1' '__iso_c_binding' '' 12 ((DERIVED IN UNKNOWN-PROC UNKNOWN
+UNKNOWN 0 0 VALUE DUMMY) (DERIVED 3 0 0 0 DERIVED ()) 0 0 () () 0 () ()
+() 0 0 0)
+14 'C_ptr_2' '__iso_c_binding' '' 12 ((DERIVED IN UNKNOWN-PROC UNKNOWN
+UNKNOWN 0 0 OPTIONAL VALUE DUMMY) (DERIVED 3 0 0 0 DERIVED ()) 0 0 () ()
+0 () () () 0 0 0)
+23 'Cptr' '__iso_c_binding' '' 22 ((DERIVED IN UNKNOWN-PROC UNKNOWN
+UNKNOWN 0 0 VALUE DUMMY) (DERIVED 3 0 0 0 DERIVED ()) 0 0 () () 0 () ()
+() 0 0 0)
+24 'fptr' '__iso_c_binding' '' 22 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN UNKNOWN 0 0 POINTER DUMMY) (VOID 0 0 0 0 VOID ()) 0 0 () () 0 ()
+() () 0 0)
+25 'shape' '__iso_c_binding' '' 22 ((VARIABLE IN UNKNOWN-PROC UNKNOWN
+UNKNOWN 0 0 DIMENSION OPTIONAL DUMMY) (VOID 4 0 0 0 VOID ()) 0 0 () (1 0
+ASSUMED_SHAPE (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () ()
+() 0 0)
+28 'Cptr' '__iso_c_binding' '' 27 ((DERIVED IN UNKNOWN-PROC UNKNOWN
+UNKNOWN 0 0 VALUE DUMMY) (DERIVED 2 0 0 0 DERIVED ()) 0 0 () () 0 () ()
+() 0 0 0)
+29 'fptr' '__iso_c_binding' '' 27 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN UNKNOWN 0 0 DUMMY PROC_POINTER) (VOID 0 0 0 0 VOID ()) 0 0 () ()
+0 () () () 0 0)
+72 'x' '' '' 71 ((VARIABLE IN UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+UNKNOWN 0 0 0 0 UNKNOWN ()) 0 0 () () 0 () () () 0 0)
+)
+
+('C_funptr' 0 2 'C_ptr' 0 3 'Lock_type' 0 4 '__iso_c_binding' 0 7
+'atomic_int_kind' 0 8 'atomic_logical_kind' 0 9 'c_alert' 0 10
+'c_associated' 0 11 'c_backspace' 0 15 'c_bool' 0 16 'c_carriage_return'
+0 17 'c_char' 0 18 'c_double' 0 19 'c_double_complex' 0 20 'c_f_pointer'
+0 21 'c_f_procpointer' 0 26 'c_float' 0 30 'c_float128' 0 31
+'c_float128_complex' 0 32 'c_float_complex' 0 33 'c_form_feed' 0 34
+'c_funloc' 0 35 'c_funptr' 0 36 'c_horizontal_tab' 0 37 'c_int' 0 38
+'c_int128_t' 0 39 'c_int16_t' 0 40 'c_int32_t' 0 41 'c_int64_t' 0 42
+'c_int8_t' 0 43 'c_int_fast128_t' 0 44 'c_int_fast16_t' 0 45
+'c_int_fast32_t' 0 46 'c_int_fast64_t' 0 47 'c_int_fast8_t' 0 48
+'c_int_least128_t' 0 49 'c_int_least16_t' 0 50 'c_int_least32_t' 0 51
+'c_int_least64_t' 0 52 'c_int_least8_t' 0 53 'c_intmax_t' 0 54
+'c_intptr_t' 0 55 'c_loc' 0 56 'c_long' 0 57 'c_long_double' 0 58
+'c_long_double_complex' 0 59 'c_long_long' 0 60 'c_new_line' 0 61
+'c_null_char' 0 62 'c_null_funptr' 0 63 'c_null_ptr' 0 64 'c_ptr' 0 65
+'c_ptrdiff_t' 0 66 'c_short' 0 67 'c_signed_char' 0 68 'c_size_t' 0 69
+'c_sizeof' 0 70 'c_vertical_tab' 0 73 'character_kinds' 0 74
+'character_storage_size' 0 75 'compiler_options' 0 76 'compiler_version'
+0 77 'dcp' 0 78 'drp' 0 79 'error_unit' 0 80 'file_storage_size' 0 81
+'input_unit' 0 82 'int16' 0 83 'int32' 0 84 'int64' 0 85 'int8' 0 86
+'integer_kinds' 0 87 'iostat_end' 0 88 'iostat_eor' 0 89
+'iostat_inquire_internal_unit' 0 90 'iso_fortran_env' 0 91 'kinds' 0 92
+'lock_type' 0 93 'logical_kinds' 0 94 'numeric_storage_size' 0 95
+'output_unit' 0 96 'poisfft_precisions' 0 97 'real128' 0 98 'real32' 0
+99 'real64' 0 100 'real_kinds' 0 101 'rp' 0 102 'scp' 0 103 'size_kind'
+0 104 'srp' 0 105 'stat_locked' 0 106 'stat_locked_other_image' 0 107
+'stat_stopped_image' 0 108 'stat_unlocked' 0 109)

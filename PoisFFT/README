@@ -1,0 +1,72 @@
+The PoisFFT library solves the Poisson equation on a uniform Cartesian grid 
+using the Fast Fourier Transform. It calls the library FFTW3 and (if MPI is used) 
+also PFFT.
+
+The description is available in article
+
+  Vladimir Fuka: PoisFFT - a free parallel fast Poisson solver, Applied Mathematics and Computation, 2015
+
+  available online: http://dx.doi.org/10.1016/j.amc.2015.03.011 
+  preprint: http://arxiv.org/abs/1409.8116
+
+Please cite this article when using the library for your research.
+
+
+The Poisson equation used is
+
+    \Delta \phi = b
+ 
+ where `\phi` and `b` are functions of 1, 2 or 3 spatial dimensions.
+
+
+ 
+ 
+ 
+ 
+For instruction how to use the API after installation see `usage_Fortran.txt`,
+`usage_C.txt` and `usage_C++`.
+
+
+
+For examples see `testpoisson.f90`, `testpoisson.c` and `testpoisson.cc`.
+
+
+
+
+
+
+The installation is done using SConstruct, a Python based build environment, if you do not have it, you must install it first. 
+
+For compiling the library use
+
+    scons
+
+or 
+
+    scons mpi=yes
+
+in the `src` directory.
+
+For compiling of the test programs add `test` after the above command.
+
+If you use other compilers than GCC (gfortran, gcc, g++), add argument comp, i.e.,
+
+    scons comp=intel
+
+or
+
+    scons comp=sun
+
+For other compilers you will have to add the options in the `SConstruct` file.
+
+If you want to disable OpenMP, use
+
+    scons openmp=no
+
+With MPI it is disabled automatically, but can be explicitly enabled by
+
+    scons mpi=yes openmp=yes
+
+for hybrid MPI/OpenMP parallelization.
+
+
