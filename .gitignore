@@ -1,0 +1,7 @@
+
+#PoisFFT at https://github.com/LadaF/PoisFFT
+PoisFFT/bin
+PoisFFT/lib
+#in-house poisson solver https://github.com/NathanChiu/poissonsolver
+poissonsolver/.idea
+poissonsolver/cmake-build-debug
