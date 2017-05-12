@@ -2,7 +2,7 @@
 // Created by nathan on 03/05/17.
 //
 //Compute solution to Poisson's equation assuming Dirichlet boundary condition.
-//
+//  
 
 #include <iostream>
 #include <vector>
