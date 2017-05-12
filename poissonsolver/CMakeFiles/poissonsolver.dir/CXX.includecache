@@ -7,6 +7,8 @@
 #IncludeRegexTransform: 
 
 /home/nathan/git/PoisSolvers/poissonsolver/./src/solver.h
+vector
+-
 
 /home/nathan/git/PoisSolvers/poissonsolver/main.cpp
 iostream
@@ -29,4 +31,6 @@ solver.h
 /home/nathan/git/PoisSolvers/poissonsolver/src/solver.h
 
 /home/nathan/git/PoisSolvers/poissonsolver/src/solver.h
+vector
+-
 

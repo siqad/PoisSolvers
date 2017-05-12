@@ -2,7 +2,7 @@
 // Created by nathan on 03/05/17.
 //
 //Compute solution to Poisson's equation assuming Dirichlet boundary condition.
-//  
+//
 
 #include <iostream>
 #include <vector>
@@ -11,9 +11,33 @@
 #include <functional>
 #include "solver.h"
 
+#define EPS0 8.85418782e-12
+
+//Solver class functions
+void Solver::set_L( double lx, double ly, double lz ){
+  L.resize(3);
+  L[0] = lx;
+  L[1] = ly;
+  L[2] = lz;
+}
+
+void Solver::set_N( int nx, int ny, int nz ){
+  N.resize(3);
+  N[0] = nx;
+  N[1] = ny;
+  N[2] = nz;
+}
+
+void Solver::set_method( int method ){
+  solvemethod = method;
+}
+
+void Solver::init_V( void ){
+  V.resize(N[0]*N[1]*N[2]);
+}
+
+//Reference poisson functions
 void poisson1DJacobi(void) {
-    //Constants
-    double EPS0 = 8.85418782e-12; //Permittivity of free space
     //Parameters
     unsigned int N = 1000;           //Number of lattice points
     double sampleLength = 1;   //Physical length of sample in meters
@@ -66,8 +90,6 @@ void poisson1DJacobi(void) {
 }
 
 void poisson1DGaussSeidel(void) {
-    //Constants
-    double EPS0 = 8.85418782e-12;  //Permittivity of free space
     //Parameters
     unsigned int N = 1000;           //Number of lattice points
     double sampleLength = 1;       //Physical length of sample in meters
@@ -117,8 +139,6 @@ void poisson1DGaussSeidel(void) {
 }
 
 void poisson1DSOR(void) {
-    //Constants
-    double EPS0 = 8.85418782e-12;  //Permittivity of free space
     //Parameters
     unsigned int N = 1000;           //Number of lattice points
     double sampleLength = 1;       //Physical length of sample in meters
