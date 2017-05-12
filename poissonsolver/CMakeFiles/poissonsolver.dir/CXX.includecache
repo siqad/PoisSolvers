@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/nathan/git/PoisSolvers/poissonsolver/./src/solver.h
+
+/home/nathan/git/PoisSolvers/poissonsolver/main.cpp
+iostream
+-
+./src/solver.h
+/home/nathan/git/PoisSolvers/poissonsolver/./src/solver.h
+
+/home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp
+iostream
+-
+vector
+-
+algorithm
+-
+iomanip
+-
+functional
+-
+solver.h
+/home/nathan/git/PoisSolvers/poissonsolver/src/solver.h
+
+/home/nathan/git/PoisSolvers/poissonsolver/src/solver.h
+
