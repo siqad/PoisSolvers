@@ -5,6 +5,7 @@ PoisFFT/lib
 #in-house poisson solver at https://github.com/NathanChiu/poissonsolver
 poissonsolver/.idea
 poissonsolver/cmake-build-debug
+poissonsolver/CMakeFiles
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
 ubuff/cmake-build-debug
 
