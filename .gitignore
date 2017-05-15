@@ -10,3 +10,6 @@ ubuff/cmake-build-debug
 
 #ignore all CMakeCache files
 *CMakeCache.txt
+
+#ignore all object files
+*.o
