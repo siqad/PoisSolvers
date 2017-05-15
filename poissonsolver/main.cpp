@@ -1,5 +1,6 @@
 #include <iostream>
 #include "./src/solver.h"
+
 int main() {
 /*
     poisson1DJacobi();
@@ -8,22 +9,22 @@ int main() {
 */
 
     //Parameters
-    int Nx = 1;
-    int Ny = 2;
-    int Nz = 3;
-    double Lx = 4;
-    double Ly = 5;
-    double Lz = 6;
-
+    int Nx = 100;
+    int Ny = 100;
+    int Nz = 100;
+    double Lx = 1;
+    double Ly = 2;
+    double Lz = 3;
 
     //initialize
     Solver s;
     s.set_val(s.N, Nx, Ny, Nz);
     s.set_val(s.L, Lx, Ly, Lz);
-    s.set_val(s.h2, Lx*Lx/Nx/Nx, Ly*Ly/Ny/Ny, Lz*Lz/Nz/Nz);
+    s.set_val(s.h2, Nx*Nx/Lx/Lx, Ny*Ny/Ly/Ly, Nz*Nz/Lz/Lz);
     s.set_val( s.solvemethod, SOR);
     s.init_val( s.V, 0);
-    s.init_val( s.rho, 1.69e-19);
+    s.init_val( s.rho, 1.69e-19/EPS0);
+    s.set_BCs(0, 0, 0, 0, 0, 0);
 
     //Sanity Check
     std::cout << s.N[0] << " " << s.N[1] << " " << s.N[2] << std::endl;
@@ -34,7 +35,6 @@ int main() {
 
     //call solver
     s.solve();
-
 
     return 0;
 }
