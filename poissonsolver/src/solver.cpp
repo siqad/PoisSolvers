@@ -4,6 +4,7 @@
 //Compute solution to Poisson's equation assuming Dirichlet boundary condition.
 //
 
+//#pragma intrinsic(fabs)
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -12,7 +13,6 @@
 #include "solver.h"
 #include <ctime>
 #include <fstream>
-
 //Solver class functions
 void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
   vec.resize(3);
@@ -103,7 +103,7 @@ void Solver::write( void ){
     for (int j = 0; j < N[1]; j++){
       for (int k = 0; k < N[2]; k++) {
         //save data as x y z V
-        outfile << std::setprecision(5) << std::fixed << i * incSpacing[0] << " " << j * incSpacing[1] <<
+        outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
                 " " << k * incSpacing[2] << " " << V[i*N[1]*N[2] + j*N[2] + k] << std::endl;
       }
     }
@@ -117,7 +117,7 @@ void Solver::poisson3DSOR( void ){
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
   const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
-  const double h2 = LATTICECONSTANT*LATTICECONSTANT;
+//  const double h2 = LATTICECONSTANT*LATTICECONSTANT;
   double tempError;
   std::cout << "DOING SOR" << std::endl;
   //obtain additional spacing value
@@ -127,16 +127,90 @@ void Solver::poisson3DSOR( void ){
   const std::vector<int> tempN = {N[1]*N[2], N[2]};
   do{
       currError = 0;  //reset error for every run
-      for ( int i = 1; i < N[0]-1; i=i+1){ //for all x points except endpoints
-        for ( int j = 1; j < N[1]-1; j=j+1){
-          for (int k = 1; k < N[2]-1; k=k+1){
+      for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
+        for ( int j = 1; j < N[1]-1; j++){
+          for (int k = 1; k < N[2]-1; k++){
             ind = i*tempN[0] + j*tempN[1] + k;
             Vold = V[ind]; //Save for error comparison
             V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
             V[ind-1*tempN[0]] + V[ind+1*tempN[0]] +
             V[ind-1*tempN[1]] + V[ind+1*tempN[1]] +
-            V[ind-1] + V[ind+1] +
-            rho[ind]*h2); //calculate new potential
+            V[ind-1] + V[ind+1] + rho[ind]*h2); //calculate new potential
+            if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
+                currError = fabs((V[ind] - Vold)/V[ind]);
+            }
+          }
+        }
+      }
+      cycleCount++;
+      if (cycleCount%50 == 0){
+        std::cout << "On iteration " << cycleCount << " with " << currError << "% error." << std::endl;
+      }
+  }while( currError > MAXERROR );
+  std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
+  std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
+}
+
+void Solver::poisson3DJacobi( void ){
+  std::vector<double> Vold; //needed to calculate error between new and old values
+  double currError; //largest error on current loop
+  unsigned int cycleCount = 0; //iteration count, for reporting
+  double tempError;
+  Vold.resize(V.size());
+  std::cout << "DOING JACOBI" << std::endl;
+  //obtain additional spacing value
+  std::cout << "Iterating..." << std::endl;
+  const std::clock_t begin_time = std::clock();
+  int ind;
+  const std::vector<int> tempN = {N[1]*N[2], N[2]};
+  do{
+      currError = 0;  //reset error for every run
+      Vold = V; //Save for error comparison
+      for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
+        for ( int j = 1; j < N[1]-1; j++){
+          for (int k = 1; k < N[2]-1; k++){
+            ind = i*tempN[0] + j*tempN[1] + k;
+            V[ind] = Vold[ind-1*tempN[0]] + Vold[ind+1*tempN[0]] +
+                     Vold[ind-1*tempN[1]] + Vold[ind+1*tempN[1]] +
+                     Vold[ind-1] + Vold[ind+1] + rho[ind]*h2; //calculate new potential
+            if ( fabs((V[ind] - Vold[ind])/ V[ind]) > currError){ //capture worst case error
+                currError = fabs((V[ind] - Vold[ind])/V[ind]);
+            }
+          }
+        }
+      }
+      cycleCount++;
+      if (cycleCount%50 == 0){
+        std::cout << "On iteration " << cycleCount << " with " << currError << "% error." << std::endl;
+      }
+  }while( currError > MAXERROR );
+  std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
+  std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
+}
+
+void Solver::poisson3DGaussSeidel ( void ){
+  double Vold; //needed to calculate error between new and old values
+  double currError; //largest error on current loop
+  unsigned int cycleCount = 0; //iteration count, for reporting
+//  const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
+//  const double h2 = LATTICECONSTANT*LATTICECONSTANT;
+  double tempError;
+  std::cout << "DOING GAUSS SEIDEL" << std::endl;
+  //obtain additional spacing value
+  std::cout << "Iterating..." << std::endl;
+  const std::clock_t begin_time = std::clock();
+  int ind;
+  const std::vector<int> tempN = {N[1]*N[2], N[2]};
+  do{
+      currError = 0;  //reset error for every run
+      for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
+        for ( int j = 1; j < N[1]-1; j++){
+          for (int k = 1; k < N[2]-1; k++){
+            ind = i*tempN[0] + j*tempN[1] + k;
+            Vold = V[ind]; //Save for error comparison
+            V[ind] = V[ind-1*tempN[0]] + V[ind+1*tempN[0]] +
+                     V[ind-1*tempN[1]] + V[ind+1*tempN[1]] +
+                     V[ind-1] + V[ind+1] + rho[ind]*h2; //calculate new potential
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }

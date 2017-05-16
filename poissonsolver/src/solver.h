@@ -22,6 +22,7 @@ class Solver {
   public:
     //variables
     int solvemethod; //1 for Jacobi, 2 for Gauss-Seidel, 3 for SOR
+    double h2;
     std::vector<int>  N; //Lattice points in each dimension. N[0] for x, N[1] for y, N[2] for z
     std::vector<double>  L; //Physical lengths for each dimension
     std::vector<double>  V; //Potential vector.
@@ -38,6 +39,8 @@ class Solver {
     void init_val( std::vector<double>&, double );
     void solve( void );
     void poisson3DSOR( void );
+    void poisson3DJacobi( void );
+    void poisson3DGaussSeidel( void );
     void set_BCs( double, double, double, double, double, double);
     void write( void );
 };
