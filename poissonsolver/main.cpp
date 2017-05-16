@@ -20,7 +20,7 @@ int main() {
     Solver s;
     s.set_val(s.N, Nx, Ny, Nz);
     s.set_val(s.L, Lx, Ly, Lz);
-    s.set_val(s.h2, Nx*Nx/Lx/Lx, Ny*Ny/Ly/Ly, Nz*Nz/Lz/Lz);
+//    s.set_val(s.h2, LATTICECONSTANT);
     s.set_val( s.solvemethod, SOR);
     s.init_val( s.V, 0);
     s.init_val( s.rho, 1.69e-19/EPS0);
@@ -29,7 +29,7 @@ int main() {
     //Sanity Check
     std::cout << s.N[0] << " " << s.N[1] << " " << s.N[2] << std::endl;
     std::cout << s.L[0] << " " << s.L[1] << " " << s.L[2] << std::endl;
-    std::cout << s.h2[0] << " " << s.h2[1] << " " << s.h2[2] << std::endl;
+//    std::cout << s.h2[0] << " " << s.h2[1] << " " << s.h2[2] << std::endl;
     std::cout << s.solvemethod << std::endl;
     std::cout << s.V.size() << std::endl;
 

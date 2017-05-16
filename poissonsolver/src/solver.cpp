@@ -11,8 +11,7 @@
 #include <functional>
 #include "solver.h"
 #include <ctime>
-
-#define MAXERROR 1e-5
+#include <fstream>
 
 //Solver class functions
 void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
@@ -33,6 +32,10 @@ void Solver::set_val( int &val, int a ){
   val = a;
 }
 
+void Solver::set_val( double &val, double a ){
+  val = a;
+}
+
 void Solver::init_val( std::vector<double> &vec, double val ){
   vec.resize(N[0]*N[1]*N[2]);
   std::fill(vec.begin(), vec.end(), val);
@@ -48,47 +51,41 @@ void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0
   int i = 0;
   int j = 0;
   int k = 0;
-  //x = 0
-  for (j = 0; j<N[1]; j++){
+  for (j = 0; j<N[1]; j++){  //x = 0
     for (k = 0; k<N[2]; k++){
       rho[i*N[1]*N[2] + j*N[2] + k] = Vx0;
       V[i*N[1]*N[2] + j*N[2] + k] = Vx0;
     }
   }
-  //x = Lx
-  i = N[0] - 1;
+  i = N[0] - 1;  //x = Lx
   for (j = 0; j<N[1]; j++){
     for (k = 0; k<N[2]; k++){
       rho[i*N[1]*N[2] + j*N[2] + k] = VxL;
       V[i*N[1]*N[2] + j*N[2] + k] = VxL;
     }
   }
-  //y = 0
-  j = 0;
+  j = 0;  //y = 0
   for (i = 0; i<N[0]; i++){
     for (k = 0; k<N[2]; k++){
       rho[i*N[1]*N[2] + j*N[2] + k] = Vy0;
       V[i*N[1]*N[2] + j*N[2] + k] = Vy0;
     }
   }
-  //y = Ly
-  j = N[1]-1;
+  j = N[1]-1;  //y = Ly
   for (i = 0; i<N[0]; i++){
     for (k = 0; k<N[2]; k++){
       rho[i*N[1]*N[2] + j*N[2] + k] = VyL;
       V[i*N[1]*N[2] + j*N[2] + k] = VyL;
     }
   }
-  //z = 0
-  k = 0;
+  k = 0;  //z = 0
   for (i = 0; i<N[0]; i++){
     for (j = 0; j<N[1]; j++){
       rho[i*N[1]*N[2] + j*N[2] + k] = Vz0;
       V[i*N[1]*N[2] + j*N[2] + k] = Vz0;
     }
   }
-  //z = Lz
-  k = 0;
+  k = 0;  //z = Lz
   for (i = 0; i<N[0]; i++){
     for (j = 0; j<N[1]; j++){
       rho[i*N[1]*N[2] + j*N[2] + k] = VzL;
@@ -96,43 +93,52 @@ void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0
     }
   }
 }
-void Solver::poisson3DSOR( void ){
-  /*
-    //Parameters
-      std::cout << "Setup for SOR" << std::endl;
-  */
 
-  //N - lattice points in x, y, z
-  //L - sample lengths in x, y, z
-  //V - vector for potential, sized correctly if init_val was called
-  //rho - charge density, sized correctly if init_val was called
-  //
-  //MAXERROR defined at top
-  //EPS0 defined at top
-  //
+void Solver::write( void ){
+  std::ofstream outfile;
+  outfile.open(FILENAME, std::ios_base::out | std::ios_base::trunc );
+  std::cout << "Dumping data to " << FILENAME << std::endl;
+  const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
+  for (int i = 0; i < N[0]; i++){
+    for (int j = 0; j < N[1]; j++){
+      for (int k = 0; k < N[2]; k++) {
+        //save data as x y z V
+        outfile << std::setprecision(5) << std::fixed << i * incSpacing[0] << " " << j * incSpacing[1] <<
+                " " << k * incSpacing[2] << " " << V[i*N[1]*N[2] + j*N[2] + k] << std::endl;
+      }
+    }
+    outfile << std::endl;
+  }
+  std::cout << "Ending." << std::endl;
+}
+
+void Solver::poisson3DSOR( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  double overrelax = 1.85; //overrelaxation parameter for SOR
+  const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
+  const double h2 = LATTICECONSTANT*LATTICECONSTANT;
+  double tempError;
   std::cout << "DOING SOR" << std::endl;
-
   //obtain additional spacing value
-  h2.push_back(1/(h2[0]+h2[1]+h2[2])/2);
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
+  int ind;
+  const std::vector<int> tempN = {N[1]*N[2], N[2]};
   do{
       currError = 0;  //reset error for every run
       for ( int i = 1; i < N[0]-1; i=i+1){ //for all x points except endpoints
         for ( int j = 1; j < N[1]-1; j=j+1){
           for (int k = 1; k < N[2]-1; k=k+1){
-            Vold = V[i*N[1]*N[2] + j*N[2] + k]; //Save for error comparison
-            V[i*N[1]*N[2] + j*N[2] + k] = (1-overrelax)*V[i*N[1]*N[2] + j*N[2] + k] + overrelax*(
-              (V[(i-1)*N[1]*N[2] + j*N[2] + k] + V[(i+1)*N[1]*N[2] + j*N[2] + k])*h2[0] +
-              (V[i*N[1]*N[2] + (j-1)*N[2] + k] + V[i*N[1]*N[2] + (j+1)*N[2] + k])*h2[1] +
-              (V[i*N[1]*N[2] + j*N[2] + (k+1)] + V[i*N[1]*N[2] + j*N[2] + (k-1)])*h2[2] +
-              rho[i*N[1]*N[2] + j*N[2] + k])*h2[3]; //calculate new potential
-            if ( fabs((V[i*N[1]*N[2] + j*N[2] + k] - Vold)/V[i*N[1]*N[2] + j*N[2] + k]) > currError ){ //capture worst case error
-                currError = fabs((V[i*N[1]*N[2] + j*N[2] + k] - Vold)/V[i*N[1]*N[2] + j*N[2] + k]);
+            ind = i*tempN[0] + j*tempN[1] + k;
+            Vold = V[ind]; //Save for error comparison
+            V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+            V[ind-1*tempN[0]] + V[ind+1*tempN[0]] +
+            V[ind-1*tempN[1]] + V[ind+1*tempN[1]] +
+            V[ind-1] + V[ind+1] +
+            rho[ind]*h2); //calculate new potential
+            if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
+                currError = fabs((V[ind] - Vold)/V[ind]);
             }
           }
         }
@@ -142,8 +148,7 @@ void Solver::poisson3DSOR( void ){
         std::cout << "On iteration " << cycleCount << " with " << currError << "% error." << std::endl;
       }
   }while( currError > MAXERROR );
-
-  std::cout << "Finished" << std::endl;
+  std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
   std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
 }
 
@@ -183,21 +188,9 @@ void poisson1DJacobi(void) {
             }
         }
         cycleCount++;
-/*
-        if( cycleCount%1000  == 0 ){
-          std::cout << "On iteration number " << cycleCount << std::endl;
-        }
-*/
     }while( currError > maxError );
-
     std::cout << "Finished in " << cycleCount << " iterations within " <<
               maxError*100 << "% error." << std::endl;
-    int i = 0;
-    while ( i < N ){
-//        std::cout << "V[" << i << "] = " << std::setprecision(20) << V[i] << "V" <<std::endl;
-//        std::cout << i << "," << V[i] <<std::endl; //csv-friendly
-        i++;
-    }
 }
 
 void poisson1DGaussSeidel(void) {
@@ -232,21 +225,9 @@ void poisson1DGaussSeidel(void) {
             }
         }
         cycleCount++;
-/*
-        if( cycleCount%1000  == 0 ){
-          std::cout << "On iteration number " << cycleCount << std::endl;
-        }
-*/
     }while( currError > maxError );
-
     std::cout << "Finished in " << cycleCount << " iterations within " <<
               maxError*100 << "% error." << std::endl;
-    int i = 0;
-    while ( i < N ){
-//        std::cout << "V[" << i << "] = " << std::setprecision(20) << V[i] << "V" <<std::endl;
-//        std::cout << i << "," << V[i] <<std::endl; //csv-friendly
-        i++;
-    }
 }
 
 void poisson1DSOR(void) {
@@ -282,19 +263,7 @@ void poisson1DSOR(void) {
             }
         }
         cycleCount++;
-/*
-        if( cycleCount%1000  == 0 ){
-          std::cout << "On iteration number " << cycleCount << std::endl;
-        }
-*/
     }while( currError > maxError );
-
     std::cout << "Finished in " << cycleCount << " iterations within " <<
               maxError*100 << "% error." << std::endl;
-    int i = 0;
-    while ( i < N ){
-//        std::cout << "V[" << i << "] = " << std::setprecision(20) << V[i] << "V" <<std::endl;
-//        std::cout << i << "," << V[i] <<std::endl; //csv-friendly
-        i++;
-    }
 }
