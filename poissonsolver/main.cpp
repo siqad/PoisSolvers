@@ -19,8 +19,12 @@ int main() {
     s.set_val(s.N, Nx, Ny, Nz);
     s.set_val(s.L, Lx, Ly, Lz);
     s.set_val(s.h2, LATTICECONSTANT*LATTICECONSTANT);
-    s.init_val( s.rho, 1.69e-19/EPS0);
+//    s.init_val( s.rho, Q_E/EPS0);
+    s.init_rho( );
+//    s.write(s.rho, FILENAMERHO);
+    s.init_eps( ); //will replace with reading from file eventually
     s.init_val( s.V, 0); //Need to initiate V before setting Boundary conds.
+    s.init_val( s.eps, 1); //Need to initiate V before setting Boundary conds.
     s.set_BCs(0, 0, 0, 0, 0, 0);
 /*
     //call for Jacobi
@@ -35,8 +39,10 @@ int main() {
 */
     //reset and call for SOR
     s.init_val( s.V, 0);
-    s.set_val( s.solvemethod, SOR);
+//    s.set_val( s.solvemethod, SOR);
+    s.set_val( s.solvemethod, SOR_GEN);
     s.solve();
-    s.write(FILENAMESOR);
+//    s.write(s.V, FILENAMESOR);
+    s.write(s.V, FILENAMESOR_GEN);
     return 0;
 }
