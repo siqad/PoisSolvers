@@ -11,7 +11,9 @@
 #define SOR 3
 #define EPS0 8.85418782e-12
 #define LATTICECONSTANT 1e-3
-#define FILENAME "outfile.txt"
+#define FILENAMESOR "outfileSOR.txt"
+#define FILENAMEJAC "outfileJAC.txt"
+#define FILENAMEGAU "outfileGAU.txt"
 #define MAXERROR 1e-5
 
 void poisson1DJacobi(void);
@@ -42,7 +44,7 @@ class Solver {
     void poisson3DJacobi( void );
     void poisson3DGaussSeidel( void );
     void set_BCs( double, double, double, double, double, double);
-    void write( void );
+    void write( std::string );
 };
 
 #endif //POISSONSOLVER_SOLVER_H
