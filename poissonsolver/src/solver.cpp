@@ -172,25 +172,11 @@ std::vector<double> Solver::get_a( std::vector<double> &eps, int ind){
   a[5] = eps[ind - N[2]] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1];
   //k - 1
   a[6] = eps[ind - 1] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - 1] + eps[ind - N[1]*N[2] - N[2] - 1];
-  /*
-  a[0] = (eps[IND(i, j, k)] + eps[IND(i, j, k-1)] + eps[IND(i, j-1, k)] + eps[IND(i, j-1, k-1)] +
-         eps[IND(i-1, j, k)] + eps[IND(i-1, j, k-1)] + eps[IND(i-1, j-1, k)] + eps[IND(i-1, j-1, k-1)])*(8);
-  //i
-  a[1] = eps[IND(i, j, k)] + eps[IND(i, j, k-1)] + eps[IND(i, j-1, k)] + eps[IND(i, j-1, k-1)];
-  //j
-  a[2] = eps[IND(i, j, k)] + eps[IND(i, j, k-1)] + eps[IND(i-1, j, k)] + eps[IND(i-1, j, k-1)];
-  //k
-  a[3] = eps[IND(i, j, k)] + eps[IND(i, j-1, k)] + eps[IND(i-1, j, k)] + eps[IND(i-1, j-1, k)];
-  //i - 1
-  a[4] = eps[IND(i-1, j, k)] + eps[IND(i-1, j, k-1)] + eps[IND(i-1, j-1, k)] + eps[IND(i-1, j-1, k-1)];
-  //j - 1
-  a[5] = eps[IND(i, j-1, k)] + eps[IND(i, j-1, k-1)] + eps[IND(i-1, j-1, k)] + eps[IND(i-1, j-1, k-1)];
-  //k - 1
-  a[6] = eps[IND(i, j, k-1)] + eps[IND(i, j-1, k-1)] + eps[IND(i-1, j, k-1)] + eps[IND(i-1, j-1, k-1)];
-*/
   return a;
 }
 
+
+//based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
