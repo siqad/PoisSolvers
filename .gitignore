@@ -7,6 +7,9 @@ poissonsolver/.idea
 poissonsolver/cmake-build-debug
 poissonsolver/CMakeFiles
 poissonsolver/outfile.txt
+poissonsolver/outfileGAU.txt
+poissonsolver/outfileJAC.txt
+poissonsolver/outfileSOR.txt
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
 ubuff/cmake-build-debug
 
