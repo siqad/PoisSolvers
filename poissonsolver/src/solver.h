@@ -21,6 +21,7 @@
 #define FILENAMEEPS "outfileEPS.txt"
 #define MAXERROR 1e-5
 #define IND(i,j,k) (i)*(N[1]*N[2])+(j)*(N[2])+k
+#define PI 3.14159265358979323846
 
 void poisson1DJacobi(void);
 void poisson1DGaussSeidel(void);
@@ -55,6 +56,7 @@ class Solver {
     void poisson3DGaussSeidel( void );
     void set_BCs( double, double, double, double, double, double);
     void write( std::vector<double>&, std::string );
+    void write_2D( std::vector<double>&, std::string);
     std::vector<double> get_a( std::vector<double>&, int);
 };
 

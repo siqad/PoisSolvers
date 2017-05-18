@@ -52,7 +52,7 @@ void Solver::init_rho( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        rho[i*N[1]*N[2] + j*N[2] + k] = sin(x); //set rho with plane wave in x direction
+        rho[i*N[1]*N[2] + j*N[2] + k] = sin(x*2*PI/L[0]); //set rho with plane wave in x direction (one full wave)
 /*
         if( (i+j+k)%2 == 0 ){
           //set periodic lattice (each occupied particle has unoccupied adjacent sites)
@@ -161,6 +161,28 @@ void Solver::write( std::vector<double> &vals, std::string filename ){
   std::cout << "Ending." << std::endl;
 }
 
+void Solver::write_2D( std::vector<double> &vals, std::string filename ){
+  std::ofstream outfile;
+  outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
+  std::cout << "Dumping data to " << filename << std::endl;
+  const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
+//  const int k = N[2]/2;
+  const int k = N[2]/2;
+  for (int i = 0; i < N[0]; i++){
+    for (int j = 0; j < N[1]; j++){
+//      for (int k = 0; k < N[2]; k++){
+        //save data as x y z V
+        outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
+                " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
+//        outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
+//                " " << k * incSpacing[2] << " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
+//      }
+    }
+    outfile << std::endl;
+  }
+  std::cout << "Ending." << std::endl;
+}
+
 std::vector<double> Solver::get_a( std::vector<double> &eps, int ind){
   std::vector<double> a(7);
   a[0] = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1] +
@@ -207,7 +229,7 @@ void Solver::poisson3DSOR_gen( void ){
             V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
             a[4]*V[ind-1*N[1]*N[2]] + a[1]*V[ind+1*N[1]*N[2]] +
             a[5]*V[ind-1*N[2]] + a[2]*V[ind+1*N[2]] +
-            a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2)/a[0]; //calculate new potential
+            a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }
@@ -244,7 +266,7 @@ void Solver::poisson3DSOR( void ){
             V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
             V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
             V[ind-1*N[2]] + V[ind+1*N[2]] +
-            V[ind-1] + V[ind+1] + rho[ind]*h2); //calculate new potential
+            V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0); //calculate new potential
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }
@@ -280,7 +302,7 @@ void Solver::poisson3DJacobi( void ){
             ind = i*N[1]*N[2] + j*N[2] + k;
             V[ind] = (Vold[ind-1*N[1]*N[2]] + Vold[ind+1*N[1]*N[2]] +
                      Vold[ind-1*N[2]] + Vold[ind+1*N[2]] +
-                     Vold[ind-1] + Vold[ind+1] + rho[ind]*h2)/6; //calculate new potential
+                     Vold[ind-1] + Vold[ind+1] + rho[ind]*h2/EPS0)/6; //calculate new potential
             if ( fabs((V[ind] - Vold[ind])/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold[ind])/V[ind]);
             }
@@ -315,7 +337,7 @@ void Solver::poisson3DGaussSeidel ( void ){
             Vold = V[ind]; //Save for error comparison
             V[ind] = (V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
                      V[ind-1*N[2]] + V[ind+1*N[2]] +
-                     V[ind-1] + V[ind+1] + rho[ind]*h2)/6; //calculate new potential
+                     V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0)/6; //calculate new potential
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }
