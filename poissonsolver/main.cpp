@@ -40,9 +40,9 @@ int main() {
     //reset and call for SOR
     s.init_val( s.V, 0);
 //    s.set_val( s.solvemethod, SOR);
-    s.set_val( s.solvemethod, SOR_GEN);
+    s.set_val( s.solvemethod, SOR);
     s.solve();
 //    s.write(s.V, FILENAMESOR);
-    s.write(s.V, FILENAMESOR_GEN);
+    s.write(s.V, FILENAMESOR);
     return 0;
 }

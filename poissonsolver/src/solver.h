@@ -55,7 +55,6 @@ class Solver {
     void poisson3DGaussSeidel( void );
     void set_BCs( double, double, double, double, double, double);
     void write( std::vector<double>&, std::string );
-//    std::vector<double> get_a( std::vector<double>&, int);
     std::vector<double> get_a( std::vector<double>&, int);
 };
 

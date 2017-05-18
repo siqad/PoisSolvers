@@ -13,6 +13,7 @@
 #include "solver.h"
 #include <ctime>
 #include <fstream>
+#include <cmath>
 //Solver class functions
 void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
   vec.resize(3);
@@ -44,16 +45,22 @@ void Solver::init_val( std::vector<double> &vec, double val ){
 void Solver::init_rho( void ){
   rho.resize(N[0]*N[1]*N[2]);
   unsigned int ind;
-  unsigned int mask = 0;
+  double x, y, z;
   for( int i = 0; i < N[0]; i++){
+    x = i*L[0]/N[0];
     for( int j = 0; j < N[1]; j++){
+      y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
+        z = k*L[2]/N[2];
+        rho[i*N[1]*N[2] + j*N[2] + k] = sin(x); //set rho with plane wave in x direction
+/*
         if( (i+j+k)%2 == 0 ){
           //set periodic lattice (each occupied particle has unoccupied adjacent sites)
           rho[i*N[1]*N[2] + j*N[2] + k] = Q_E;
         }else{
           rho[i*N[1]*N[2] + j*N[2] + k] = 0;
         }
+*/
       }
     }
   }
