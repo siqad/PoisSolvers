@@ -50,7 +50,7 @@ void Solver::init_rho( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        rho[i*N[1]*N[2] + j*N[2] + k] = sin(x*2*PI/L[0]); //set rho with plane wave in x direction (one full wave)
+        rho[i*N[1]*N[2] + j*N[2] + k] = Q_E*sin(x*2*PI/L[0]); //set rho with plane wave in x direction (one full wave)
 /*
         if( (i+j+k)%2 == 0 ){
           //set periodic lattice (each occupied particle has unoccupied adjacent sites)
@@ -74,10 +74,9 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        if ( x <= L[0]/3 ){
+//        eps[i*N[1]*N[2] + j*N[2] + k] = 1;
+        if ( x <= L[0]/2 ){
           eps[i*N[1]*N[2] + j*N[2] + k] = 1;
-        } else if ( x > L[0]/3 && x <= 2*L[0]/3 ){
-          eps[i*N[1]*N[2] + j*N[2] + k] = 10;
         } else {
           eps[i*N[1]*N[2] + j*N[2] + k] = 100;
         }
@@ -201,6 +200,27 @@ std::vector<double> Solver::get_a( std::vector<double> &eps, const int &ind){
   return a;
 }
 
+void Solver::check_eps ( std::vector<double> &eps, std::vector<bool> &isChangingeps){
+  int ind = N[1]*N[2] + N[2] + 1;
+  for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
+    for ( int j = 1; j < N[1]-1; j++){
+      for (int k = 1; k < N[2]-1; k++){
+        if( (eps[ind] != eps[ind+1]) || (eps[ind] != eps[ind-1]) || (eps[ind] != eps[ind+N[2]]) ||
+          (eps[ind] != eps[ind-N[2]]) || (eps[ind] != eps[ind+N[1]*N[2]]) || (eps[ind] != eps[ind-N[1]*N[2]]) ){
+          //eps changing on a boundary
+          isChangingeps[ind] = true;
+        } else {
+          //eps locally static
+          isChangingeps[ind] = false;
+        }
+        ++ind;
+      }
+    ind += 2;
+    }
+  ind += 2*N[2];
+  }
+}
+
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
@@ -208,6 +228,8 @@ void Solver::poisson3DSOR_gen( void ){
   unsigned int cycleCount = 0; //iteration count, for reporting
   const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
   std::vector<double> a(7);
+  std::vector<bool> isChangingeps(N[0]*N[1]*N[2]);
+  check_eps( eps, isChangingeps);
   std::cout << "DOING SOR_GEN" << std::endl;
   //obtain additional spacing value
   std::cout << "Iterating..." << std::endl;
@@ -219,12 +241,20 @@ void Solver::poisson3DSOR_gen( void ){
       for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
         for ( int j = 1; j < N[1]-1; j++){
           for (int k = 1; k < N[2]-1; k++){
-            a = get_a(eps, ind);
             Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
-            V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-            a[4]*V[ind-1*N[1]*N[2]] + a[1]*V[ind+1*N[1]*N[2]] +
-            a[5]*V[ind-1*N[2]] + a[2]*V[ind+1*N[2]] +
-            a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
+            if( isChangingeps[ind] == true ){
+              //there is a difference in permittivity, get a values
+              a = get_a(eps, ind);
+              V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+              a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
+              a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
+              a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
+            } else { //no difference in permittivity, do not calculate new a values
+              V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+              V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
+              V[ind-1*N[2]] + V[ind+1*N[2]] +
+              V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+            }
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }

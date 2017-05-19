@@ -57,6 +57,7 @@ class Solver {
     void write( std::vector<double>&, std::string );
     void write_2D( std::vector<double>&, std::string);
     std::vector<double> get_a( std::vector<double>&, const int&);
+    void check_eps( std::vector<double>&, std::vector<bool>& );
 };
 
 #endif //POISSONSOLVER_SOLVER_H
