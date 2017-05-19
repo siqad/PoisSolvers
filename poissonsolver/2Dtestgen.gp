@@ -10,9 +10,6 @@ set hidden3d
 
 #Save as .pngs
 set terminal png
-set output "eps.png"
-set title "EPS - 10, 100, 1000"
-splot "outfileEPS.txt" u 1:2:3 with lines
 set output "rho.png"
 set title "RHO - sin(2*pi*x/Lx)"
 splot "outfileRHO.txt" u 1:2:3 with lines
@@ -26,11 +23,7 @@ set title "RHO - sin(2*pi*x/Lx)"
 splot "outfileRHO.txt" u 1:2:3 with lines
 #the last one to be plotted is interactive
 set term x11 1
-set title "RHO - sin(2*pi*x/Lx)"
-splot "outfileRHO.txt" u 1:2:3 with lines
-#the last one to be plotted is interactive
-set term x11 2
 set title "V (slice at z = Lz/2), obtained by SOR"
-splot "outfileSOR.txt" u 1:2:3 with lines
+splot "outfileSOR_GEN.txt" u 1:2:3 with lines
 
 pause -1

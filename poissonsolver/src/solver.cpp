@@ -4,7 +4,6 @@
 //Compute solution to Poisson's equation assuming Dirichlet boundary condition.
 //
 
-//#pragma intrinsic(fabs)
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -44,7 +43,6 @@ void Solver::init_val( std::vector<double> &vec, double val ){
 
 void Solver::init_rho( void ){
   rho.resize(N[0]*N[1]*N[2]);
-  unsigned int ind;
   double x, y, z;
   for( int i = 0; i < N[0]; i++){
     x = i*L[0]/N[0];
@@ -68,16 +66,20 @@ void Solver::init_rho( void ){
 
 void Solver::init_eps( void ){
   eps.resize(N[0]*N[1]*N[2]);
-  unsigned int ind;
+  double x, y, z;
   unsigned int mask = 0;
   for( int i = 0; i < N[0]; i++){
+    x = i*L[0]/N[0];
     for( int j = 0; j < N[1]; j++){
+      y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
-        if( (i+j+k)%2 == 0 ){
-          //set periodic lattice (each occupied particle has unoccupied adjacent sites)
+        z = k*L[2]/N[2];
+        if ( x <= L[0]/3 ){
           eps[i*N[1]*N[2] + j*N[2] + k] = 1;
-        }else{
-          eps[i*N[1]*N[2] + j*N[2] + k] = 1;
+        } else if ( x > L[0]/3 && x <= 2*L[0]/3 ){
+          eps[i*N[1]*N[2] + j*N[2] + k] = 10;
+        } else {
+          eps[i*N[1]*N[2] + j*N[2] + k] = 100;
         }
       }
     }
@@ -170,13 +172,8 @@ void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   const int k = N[2]/2;
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
-//      for (int k = 0; k < N[2]; k++){
-        //save data as x y z V
         outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
                 " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
-//        outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
-//                " " << k * incSpacing[2] << " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
-//      }
     }
     outfile << std::endl;
   }
@@ -189,21 +186,20 @@ std::vector<double> Solver::get_a( std::vector<double> &eps, int ind){
          eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
          eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/8;
   //i
-  a[1] = eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1];
+  a[1] = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1])/4;
   //j
-  a[2] = eps[ind] + eps[ind - 1] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1];
+  a[2] = (eps[ind] + eps[ind - 1] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1])/4;
     //k
-  a[3] = eps[ind] + eps[ind - N[2]] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - N[2]];
+  a[3] = (eps[ind] + eps[ind - N[2]] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - N[2]])/4;
     //i - 1
-  a[4] = eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
-         eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1];
+  a[4] = (eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
+         eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
     //j - 1
-  a[5] = eps[ind - N[2]] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1];
+  a[5] = (eps[ind - N[2]] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
   //k - 1
-  a[6] = eps[ind - 1] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - 1] + eps[ind - N[1]*N[2] - N[2] - 1];
+  a[6] = (eps[ind - 1] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - 1] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
   return a;
 }
-
 
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){

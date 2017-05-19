@@ -20,7 +20,6 @@
 #define FILENAMERHO "outfileRHO.txt"
 #define FILENAMEEPS "outfileEPS.txt"
 #define MAXERROR 1e-5
-#define IND(i,j,k) (i)*(N[1]*N[2])+(j)*(N[2])+k
 #define PI 3.14159265358979323846
 
 void poisson1DJacobi(void);
