@@ -180,7 +180,7 @@ void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   std::cout << "Ending." << std::endl;
 }
 
-std::vector<double> Solver::get_a( std::vector<double> &eps, int ind){
+std::vector<double> Solver::get_a( std::vector<double> &eps, const int &ind){
   std::vector<double> a(7);
   a[0] = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1] +
          eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
@@ -207,7 +207,6 @@ void Solver::poisson3DSOR_gen( void ){
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
   const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
-  double tempError;
   std::vector<double> a(7);
   std::cout << "DOING SOR_GEN" << std::endl;
   //obtain additional spacing value
@@ -215,13 +214,13 @@ void Solver::poisson3DSOR_gen( void ){
   const std::clock_t begin_time = std::clock();
   unsigned int ind;
   do{
+      ind = N[1]*N[2] + N[2] + 1;
       currError = 0;  //reset error for every run
       for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
         for ( int j = 1; j < N[1]-1; j++){
           for (int k = 1; k < N[2]-1; k++){
-            ind = i*N[1]*N[2] + j*N[2] + k;
             a = get_a(eps, ind);
-            Vold = V[ind]; //Save for error comparison
+            Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
             V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
             a[4]*V[ind-1*N[1]*N[2]] + a[1]*V[ind+1*N[1]*N[2]] +
             a[5]*V[ind-1*N[2]] + a[2]*V[ind+1*N[2]] +
@@ -229,8 +228,11 @@ void Solver::poisson3DSOR_gen( void ){
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }
+            ++ind;
           }
+        ind += 2;
         }
+      ind += 2*N[2];
       }
       cycleCount++;
       if (cycleCount%50 == 0){
@@ -242,23 +244,23 @@ void Solver::poisson3DSOR_gen( void ){
 }
 
 void Solver::poisson3DSOR( void ){
-  double Vold; //needed to calculate error between new and old values
+  double Vold;
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
   const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
-  double tempError;
   std::cout << "DOING SOR" << std::endl;
   //obtain additional spacing value
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
   unsigned int ind;
   do{
+      ind = N[1]*N[2] + N[2] + 1;
+      //Vold = V; //Save for error comparison, save all before entering loop, so loop can focus on computation
       currError = 0;  //reset error for every run
       for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
         for ( int j = 1; j < N[1]-1; j++){
           for (int k = 1; k < N[2]-1; k++){
-            ind = i*N[1]*N[2] + j*N[2] + k;
-            Vold = V[ind]; //Save for error comparison
+            Vold = V[ind];
             V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
             V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
             V[ind-1*N[2]] + V[ind+1*N[2]] +
@@ -266,8 +268,11 @@ void Solver::poisson3DSOR( void ){
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }
+          ++ind;
           }
+        ind+= 2;
         }
+      ind += 2*N[2];
       }
       cycleCount++;
       if (cycleCount%50 == 0){
@@ -282,7 +287,6 @@ void Solver::poisson3DJacobi( void ){
   std::vector<double> Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  double tempError;
   Vold.resize(V.size());
   std::cout << "DOING JACOBI" << std::endl;
   //obtain additional spacing value
@@ -318,7 +322,6 @@ void Solver::poisson3DGaussSeidel ( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  double tempError;
   std::cout << "DOING GAUSS SEIDEL" << std::endl;
   //obtain additional spacing value
   std::cout << "Iterating..." << std::endl;
