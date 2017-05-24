@@ -1,3 +1,0 @@
-/home/nathan/git/poissonsolver/src/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/nathan/git/poissonsolver/src/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/nathan/git/poissonsolver/src/cmake-build-debug/CMakeFiles/src.dir

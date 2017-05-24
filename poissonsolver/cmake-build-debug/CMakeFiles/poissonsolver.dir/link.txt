@@ -1,1 +1,0 @@
-/usr/bin/c++   -g   CMakeFiles/poissonsolver.dir/src/solver.cpp.o CMakeFiles/poissonsolver.dir/main.cpp.o  -o poissonsolver 

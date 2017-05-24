@@ -1,15 +1,19 @@
-
 #PoisFFT at https://github.com/LadaF/PoisFFT
 PoisFFT/bin
 PoisFFT/lib
+
 #in-house poisson solver at https://github.com/NathanChiu/poissonsolver
-poissonsolver/.idea
-poissonsolver/cmake-build-debug
 poissonsolver/CMakeFiles
 poissonsolver/outfile.txt
 poissonsolver/outfileGAU.txt
 poissonsolver/outfileJAC.txt
 poissonsolver/outfileSOR.txt
+poissonsolver/outfileSOR_GEN.txt
+poissonsolver/outfileRHO.txt
+poissonsolver/outfileEPS.txt
+poissonsolver/outfileSORreference.txt
+poissonsolver/
+
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
 ubuff/cmake-build-debug
 
@@ -18,3 +22,6 @@ ubuff/cmake-build-debug
 
 #ignore all object files
 *.o
+*.idea*
+*cmake-build-debug*
+*.png

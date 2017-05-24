@@ -1,1 +1,0 @@
-/usr/bin/c++   -g   CMakeFiles/src.dir/solver.cpp.o  -o src 
