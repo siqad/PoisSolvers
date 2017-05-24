@@ -37,6 +37,7 @@ class Solver {
 //    std::vector<double>  h2; //Lattice spacing (lattice point per length) squared
     std::vector<double>  rho; //Volume charge density
     std::vector<double>  eps; //Relative permittivity
+    std::vector<std::pair<bool, double>> electrode; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
     std::vector<int> temp; //temp variable for developing
     //functions
     void set_N( int, int, int );
@@ -58,6 +59,7 @@ class Solver {
     void write_2D( std::vector<double>&, std::string);
     std::vector<double> get_a( std::vector<double>&, const int&);
     void check_eps( std::vector<double>&, std::vector<bool>& );
+    void set_electrodes( void );
 };
 
 #endif //POISSONSOLVER_SOLVER_H

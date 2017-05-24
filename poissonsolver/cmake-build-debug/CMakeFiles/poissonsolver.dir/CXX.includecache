@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/nathan/git/poissonsolver/./src/solver.h
+
+/home/nathan/git/poissonsolver/main.cpp
+iostream
+-
+./src/solver.h
+/home/nathan/git/poissonsolver/./src/solver.h
+
+/home/nathan/git/poissonsolver/src/solver.cpp
+iostream
+-
+vector
+-
+algorithm
+-
+iomanip
+-
+functional
+-
+

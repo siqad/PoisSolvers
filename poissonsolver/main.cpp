@@ -25,6 +25,7 @@ int main() {
     s.init_eps( ); //will replace with reading from file eventually
     s.init_val( s.V, 0); //Need to initiate V before setting Boundary conds.
     s.set_BCs(0, 0, 0, 0, 0, 0);
+    s.set_electrodes();//initialize and set electrodes
 /*
     //call for Jacobi
     s.set_val( s.solvemethod, JACOBI);

@@ -13,6 +13,19 @@
 #include <ctime>
 #include <fstream>
 #include <cmath>
+
+void Solver::set_electrodes(){
+  //need to take a map of 1's and 0's and change to a map of boundary conditions  std::ofstream outfile;
+  electrode.resize(N[0]*N[1]*N[2]);
+  unsigned int ind;
+  const int k = N[2]/2;
+  const int j = N[1]/2;
+  for (int i = 0; i < N[0]; i++){
+    ind = i*N[1]*N[2] + j*N[2] + k*1;
+    electrode[ind].first = true;
+    electrode[ind].second = 5e-12;
+  }
+}
 //Solver class functions
 void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
   vec.resize(3);
@@ -20,18 +33,15 @@ void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
   vec[1] = b;
   vec[2] = c;
 }
-
 void Solver::set_val( std::vector<double> &vec, double a, double b, double c ){
   vec.resize(3);
   vec[0] = a;
   vec[1] = b;
   vec[2] = c;
 }
-
 void Solver::set_val( int &val, int a ){
   val = a;
 }
-
 void Solver::set_val( double &val, double a ){
   val = a;
 }
@@ -51,14 +61,6 @@ void Solver::init_rho( void ){
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
         rho[i*N[1]*N[2] + j*N[2] + k] = Q_E*sin(x*2*PI/L[0]); //set rho with plane wave in x direction (one full wave)
-/*
-        if( (i+j+k)%2 == 0 ){
-          //set periodic lattice (each occupied particle has unoccupied adjacent sites)
-          rho[i*N[1]*N[2] + j*N[2] + k] = Q_E;
-        }else{
-          rho[i*N[1]*N[2] + j*N[2] + k] = 0;
-        }
-*/
       }
     }
   }
@@ -74,10 +76,11 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-//        eps[i*N[1]*N[2] + j*N[2] + k] = 1;
+        //set to vacuum before x = Lx/2
         if ( x <= L[0]/2 ){
           eps[i*N[1]*N[2] + j*N[2] + k] = 1;
         } else {
+        //set to high-K material after x = Lx/2
           eps[i*N[1]*N[2] + j*N[2] + k] = 100;
         }
       }
@@ -236,33 +239,34 @@ void Solver::poisson3DSOR_gen( void ){
   const std::clock_t begin_time = std::clock();
   unsigned int ind;
   do{
-      ind = N[1]*N[2] + N[2] + 1;
       currError = 0;  //reset error for every run
       for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
         for ( int j = 1; j < N[1]-1; j++){
           for (int k = 1; k < N[2]-1; k++){
-            Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
-            if( isChangingeps[ind] == true ){
-              //there is a difference in permittivity, get a values
-              a = get_a(eps, ind);
-              V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-              a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
-              a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
-              a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
-            } else { //no difference in permittivity, do not calculate new a values
-              V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-              V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
-              V[ind-1*N[2]] + V[ind+1*N[2]] +
-              V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+            ind = i*N[1]*N[2] + j*N[2] + k;
+            if( electrode[ind].first == false ){ //current cell is not electrode, perform calculation
+              Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
+              if( isChangingeps[ind] == true ){
+                //there is a difference in permittivity, get a values
+                a = get_a(eps, ind);
+                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
+                a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
+                a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
+              } else { //no difference in permittivity, do not calculate new a values
+                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
+                V[ind-1*N[2]] + V[ind+1*N[2]] +
+                V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+              }
+              if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
+                  currError = fabs((V[ind] - Vold)/V[ind]);
+              }
+            } else { //current cell is electrode, set V[ind] = electrode voltage
+              V[ind] = electrode[ind].second;
             }
-            if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
-                currError = fabs((V[ind] - Vold)/V[ind]);
-            }
-            ++ind;
           }
-        ind += 2;
         }
-      ind += 2*N[2];
       }
       cycleCount++;
       if (cycleCount%50 == 0){
@@ -284,12 +288,12 @@ void Solver::poisson3DSOR( void ){
   const std::clock_t begin_time = std::clock();
   unsigned int ind;
   do{
-      ind = N[1]*N[2] + N[2] + 1;
       //Vold = V; //Save for error comparison, save all before entering loop, so loop can focus on computation
       currError = 0;  //reset error for every run
       for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
         for ( int j = 1; j < N[1]-1; j++){
           for (int k = 1; k < N[2]-1; k++){
+            ind = i*N[1]*N[2] + j*N[2] + k;
             Vold = V[ind];
             V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
             V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
@@ -298,11 +302,8 @@ void Solver::poisson3DSOR( void ){
             if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                 currError = fabs((V[ind] - Vold)/V[ind]);
             }
-          ++ind;
           }
-        ind+= 2;
         }
-      ind += 2*N[2];
       }
       cycleCount++;
       if (cycleCount%50 == 0){
