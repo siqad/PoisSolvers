@@ -12,7 +12,6 @@ poissonsolver/outfileSOR_GEN.txt
 poissonsolver/outfileRHO.txt
 poissonsolver/outfileEPS.txt
 poissonsolver/outfileSORreference.txt
-poissonsolver/
 
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
 ubuff/cmake-build-debug
