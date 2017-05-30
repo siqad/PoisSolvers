@@ -261,25 +261,40 @@ void Solver::poisson3DSOR_gen( void ){
         for ( int j = 1; j < N[1]-1; j++){
           for (int k = 1; k < N[2]-1; k++){
             ind = i*N[1]*N[2] + j*N[2] + k;
-            if( electrodemap[ind].first == false ){ //current cell is not electrode, perform calculation
+            if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
               Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
-              if( isChangingeps[ind] == true ){
-                //there is a difference in permittivity, get a values
-                a = get_a(eps, ind);
-                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
-                a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
-                a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
-              } else { //no difference in permittivity, do not calculate new a values
-                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
-                V[ind-1*N[2]] + V[ind+1*N[2]] +
-                V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+              if( electrodemap[ind+1].first!=0 || electrodemap[ind-1].first!=0 ||
+                  electrodemap[ind+N[2]].first!=0 || electrodemap[ind-N[2]].first!=0 ||
+                  electrodemap[ind+N[1]*N[2]].first!=0 || electrodemap[ind-N[1]*N[2]].first!=0 ){
+                //current cell is NEXT TO an electrode, ignore other effects and use workfunction calc
+                //rectangular electrodes, only one side of bulk can interface with electrode.
+                V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
+                         electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
+                         electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
+                         ((electrodemap[ind+1].first + electrodemap[ind-1].first +
+                         electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
+                         electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
+
+
+              } else {
+                if( isChangingeps[ind] == true ){ //check if beside an electrode
+                  //there is a difference in permittivity, get a values
+                  a = get_a(eps, ind);
+                  V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                  a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
+                  a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
+                  a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
+                } else { //no difference in permittivity, do not calculate new a values
+                  V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                  V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
+                  V[ind-1*N[2]] + V[ind+1*N[2]] +
+                  V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+                }
               }
               if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                   currError = fabs((V[ind] - Vold)/V[ind]);
               }
-            } else { //current cell is electrode, set V[ind] = electrode voltage
+            } else { //current cell IS electrode, set V[ind] = electrode voltage
               V[ind] = electrodemap[ind].second;
             }
           }

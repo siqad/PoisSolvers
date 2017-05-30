@@ -9,9 +9,9 @@ int main() {
     poisson1DSOR();
 */
     //Parameters
-    int Nx = 10;
-    int Ny = 10;
-    int Nz = 10;
+    int Nx = 100;
+    int Ny = 100;
+    int Nz = 100;
     double Lx = 1;
     double Ly = 2;
     double Lz = 3;
@@ -30,8 +30,8 @@ int main() {
     s->init_val( s->V, 0); //Need to initiate V before setting Boundary conds.
     s->set_BCs(0, 0, 0, 0, 0, 0);
     pelec->init_elec(s);
-    pelec->centre = {5, 5, 5};
-    pelec->dims = {2, 3, 4};
+    pelec->centre = {Nx/2, Ny/2, Nz/2};
+    pelec->dims = {Nx/4, Ny/4, Nz/4};
 //    s.set_electrodes();//initialize and set electrodes
     pelec->draw(s);
 /*

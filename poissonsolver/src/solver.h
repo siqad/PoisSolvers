@@ -24,13 +24,17 @@
 #define FILENAMEELEC "outfileELEC.txt"
 #define MAXERROR 1e-5
 #define PI 3.14159265358979323846
+//from http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/photoelec.html
+#define WF_GOLD 5.1 //eV
+//from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
+#define CHI_SI 4.05//ev
 
 void poisson1DJacobi(void);
 void poisson1DGaussSeidel(void);
 void poisson1DSOR(void);
 
 class Solver {
-  public:
+public:
     //variables
     int solvemethod; //1 for Jacobi, 2 for Gauss-Seidel, 3 for SOR
     double h2;
@@ -40,7 +44,7 @@ class Solver {
 //    std::vector<double>  h2; //Lattice spacing (lattice point per length) squared
     std::vector<double>  rho; //Volume charge density
     std::vector<double>  eps; //Relative permittivity
-    std::vector<std::pair<bool, double>> electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
+    std::vector<std::pair<double, double>> electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
     std::vector<int> temp; //temp variable for developing
     //functions
     void set_N( int, int, int );
