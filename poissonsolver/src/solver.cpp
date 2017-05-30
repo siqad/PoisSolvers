@@ -33,7 +33,7 @@ void Solver::set_val( double &val, double a ){
   val = a;
 }
 
-void Solver::init_val( std::vector<double> &vec, double val ){
+void Solver::init_val( std::vector<double> &vec, double val ){ //fills the entire vector with val
   vec.resize(N[0]*N[1]*N[2]);
   std::fill(vec.begin(), vec.end(), val);
 }
@@ -47,38 +47,7 @@ void Solver::init_rho( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        rho[i*N[1]*N[2] + j*N[2] + k] = Q_E*sin(x*2*PI/L[0]); //set rho with plane wave in x direction (one full wave)
-      }
-    }
-  }
-}
-
-void Solver::set_electrodes(){
-  //need to take a map of 1's and 0's and change to a map of boundary conditions
-  electrodemap.resize(N[0]*N[1]*N[2]); //initialized to zero.
-  unsigned int ind;
-  //draws an equipotential rectangular prism at the centre of the grid.
-/*
-    for (int i = N[0]/3; i < 2*N[0]/3; i++){
-      for (int j = N[1]/3; j < 2*N[1]/3; j++){
-        for (int k = N[2]/3; k < 2*N[2]/3; k++){
-          ind = i*N[1]*N[2] + j*N[2] + k*1;
-          electrode[ind].first = true;
-          electrode[ind].second = 10e-12;
-        }
-      }
-    }
-*/
-  for (int i = 1; i < N[0]-1; i++){
-    for (int j = 1; j < N[1]-1; j++){
-      for (int k = 1; k < N[2]-1; k++){
-        if ( ((i > N[0]/5 && i < 2*N[0]/5) || (i > 3*N[0]/5 && i < 4*N[0]/5)) &&
-             ((j > N[1]/5 && j < 2*N[1]/5) || (j > 3*N[1]/5 && j < 4*N[1]/5)) &&
-             (k > N[2]/5 && k < 4*N[2]/5) ) {
-           ind = i*N[1]*N[2] + j*N[2] + k*1;
-           electrodemap[ind].first = true;
-           electrodemap[ind].second = 100000e-12;
-        }
+        rho[i*N[1]*N[2] + j*N[2] + k] = 50*Q_E*sin(x*2*PI/L[0]); //set rho with plane wave in x direction (one full wave)
       }
     }
   }
@@ -87,7 +56,6 @@ void Solver::set_electrodes(){
 void Solver::init_eps( void ){
   eps.resize(N[0]*N[1]*N[2]);
   double x, y, z;
-  unsigned int mask = 0;
   for( int i = 0; i < N[0]; i++){
     x = i*L[0]/N[0];
     for( int j = 0; j < N[1]; j++){
@@ -199,39 +167,35 @@ void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   std::cout << "Ending." << std::endl;
 }
 
-std::vector<double> Solver::get_a( std::vector<double> &eps, const int &ind){
-  std::vector<double> a(7);
-  a[0] = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1] +
+void Solver::get_a( std::vector<double> *ptra, std::vector<double> &eps, const int &ind){
+  ptra->at(0) = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1] +
          eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
          eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/8;
   //i
-  a[1] = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1])/4;
+  ptra->at(1) = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1])/4;
   //j
-  a[2] = (eps[ind] + eps[ind - 1] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1])/4;
+  ptra->at(2) = (eps[ind] + eps[ind - 1] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1])/4;
     //k
-  a[3] = (eps[ind] + eps[ind - N[2]] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - N[2]])/4;
+  ptra->at(3) = (eps[ind] + eps[ind - N[2]] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - N[2]])/4;
     //i - 1
-  a[4] = (eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
+  ptra->at(4) = (eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
          eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
     //j - 1
-  a[5] = (eps[ind - N[2]] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
+  ptra->at(5) = (eps[ind - N[2]] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
   //k - 1
-  a[6] = (eps[ind - 1] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - 1] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
-  return a;
+  ptra->at(6) = (eps[ind - 1] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - 1] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
 }
 
-void Solver::check_eps ( std::vector<double> &eps, std::vector<bool> &isChangingeps){
+void Solver::check_eps ( std::vector<double> &eps, std::vector<bool> * pisChangingeps){
   int ind = N[1]*N[2] + N[2] + 1;
   for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
     for ( int j = 1; j < N[1]-1; j++){
       for (int k = 1; k < N[2]-1; k++){
         if( (eps[ind] != eps[ind+1]) || (eps[ind] != eps[ind-1]) || (eps[ind] != eps[ind+N[2]]) ||
           (eps[ind] != eps[ind-N[2]]) || (eps[ind] != eps[ind+N[1]*N[2]]) || (eps[ind] != eps[ind-N[1]*N[2]]) ){
-          //eps changing on a boundary
-          isChangingeps[ind] = true;
+          pisChangingeps->at(ind) = true; //eps changing on a boundary
         } else {
-          //eps locally static
-          isChangingeps[ind] = false;
+          pisChangingeps->at(ind) = false; //eps changing on a boundary
         }
         ++ind;
       }
@@ -246,10 +210,12 @@ void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
+  const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR ()
   std::vector<double> a(7);
+  std::vector<double> * ptra = &a;
   std::vector<bool> isChangingeps(N[0]*N[1]*N[2]);
-  check_eps( eps, isChangingeps);
+  std::vector<bool> * pisChangingeps = &isChangingeps;
+  check_eps( eps, pisChangingeps);
   std::cout << "DOING SOR_GEN" << std::endl;
   //obtain additional spacing value
   std::cout << "Iterating..." << std::endl;
@@ -274,12 +240,10 @@ void Solver::poisson3DSOR_gen( void ){
                          ((electrodemap[ind+1].first + electrodemap[ind-1].first +
                          electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
                          electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
-
-
-              } else {
-                if( isChangingeps[ind] == true ){ //check if beside an electrode
-                  //there is a difference in permittivity, get a values
-                  a = get_a(eps, ind);
+              } else { //not directly beside an electrode, perform normal calculation.
+                if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
+                  //there is a difference in permittivity, get new a values
+                  get_a(ptra, eps, ind);
                   V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
                   a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
                   a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
