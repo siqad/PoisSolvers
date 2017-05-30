@@ -10,27 +10,32 @@ int main() {
     double Lx = 1;
     double Ly = 2;
     double Lz = 3;
+    int numelectrodes = 2;
     Solver sol;
-    Electrodes elec0;
-    Electrodes elec1;
-
-    //initialize
     Solver * s = &sol;
-    Electrodes * pelec = &elec0;
+    std::vector<Electrodes> elec(numelectrodes);
+
     s->set_val(s->N, Nx, Ny, Nz);
     s->set_val(s->L, Lx, Ly, Lz);
     s->set_val(s->h2, LATTICECONSTANT*LATTICECONSTANT);
+    //initialize
+    for( int index = 0; index < numelectrodes; index++){
+      elec[index].init_elec(); //init all electrodes
+    }
+    elec[0].centre = {Nx/4, Ny/4, Nz/2};
+    elec[0].dims = {Nx/8, Ny/8, Nz/8};
+    elec[1].centre = {3*Nx/4, 3*Ny/4, Nz/2};
+    elec[1].dims = {Nx/8, Ny/8, Nz/8};
+    s->electrodemap.resize(Nx*Ny*Nz); //size electrodemap
+    for( int index = 0; index < numelectrodes; index++){
+      elec[index].draw(s);
+    }
+
     s->init_rho( );
     s->init_eps( ); //will replace with reading from file eventually
     s->init_val( s->V, 0); //Need to initiate V before setting Boundary conds.
     s->set_BCs(0, 0, 0, 0, 0, 0); //Dirichlet boundary conditions
-    pelec->init_elec(s);
-    pelec->centre = {Nx/4, Ny/4, Nz/2};
-    pelec->dims = {Nx/8, Ny/8, Nz/8};
-    pelec->draw(s);
-    pelec->centre = {3*Nx/4, 3*Ny/4, Nz/2};
-    pelec->dims = {Nx/8, Ny/8, Nz/8};
-    pelec->draw(s);
+
 
     //reset solution vector and call for SOR_GEN
     s->init_val( s->V, 0);

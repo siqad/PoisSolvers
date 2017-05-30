@@ -10,8 +10,8 @@
 #include <cmath>
 
 //initialize sizes
-void Electrodes::init_elec( Solver * s ){
-  s->electrodemap.resize(s->N[0]*s->N[1]*s->N[2]); //initialized to zero.
+void Electrodes::init_elec( void ){
+ //initialized to zero.
   dims.resize(3);
   centre.resize(3);
 }
