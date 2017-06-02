@@ -20,6 +20,7 @@ void Electrodes::init_elec( void ){
 void Electrodes::draw( Solver * s ){
   //dimensions must be odd, in order to have equal lengths on left and right sides
   //for now, will round up to next even number
+
   for( int i = centre[0] - dims[0]/2; i < centre[0] + dims[0]/2; i++){
     for( int j = centre[1] - dims[1]/2; j < centre[1] + dims[1]/2; j++){
       for( int k = centre[2] - dims[2]/2; k < centre[2] + dims[2]/2; k++){

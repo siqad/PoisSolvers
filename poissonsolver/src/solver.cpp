@@ -20,6 +20,13 @@ void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
   vec[1] = b;
   vec[2] = c;
 }
+int* Solver::set_val( int a, int b, int c ){
+  int * arr = new int[3];
+  arr[0] = a;
+  arr[1] = b;
+  arr[2] = c;
+  return arr;
+}
 void Solver::set_val( std::vector<double> &vec, double a, double b, double c ){
   vec.resize(3);
   vec[0] = a;
@@ -33,13 +40,23 @@ void Solver::set_val( double &val, double a ){
   val = a;
 }
 
-void Solver::init_val( std::vector<double> &vec, double val ){ //fills the entire vector with val
-  vec.resize(N[0]*N[1]*N[2]);
-  std::fill(vec.begin(), vec.end(), val);
+double * Solver::init_val( double val, double* prev ){ //fills the entire vector with val
+  double * arr = new double[N[0]*N[1]*N[2]];
+  for(int i=0;i < N[0]*N[1]*N[2]; i++){
+    arr[i] = val;
+  }
+  return arr;
+}
+std::pair<double, double> * Solver::init_val( double val, std::pair<double, double>* prev ){ //fills the entire vector with val
+  std::pair<double, double> * arr = new std::pair<double, double>[N[0]*N[1]*N[2]];
+  for(int i=0;i < N[0]*N[1]*N[2]; i++){
+    arr[i].first = val;
+    arr[i].second = val;
+  }
+  return arr;
 }
 
 void Solver::init_rho( void ){
-  rho.resize(N[0]*N[1]*N[2]);
   double x, y, z;
   for( int i = 0; i < N[0]; i++){
     x = i*L[0]/N[0];
@@ -88,7 +105,6 @@ void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0
   for (j = 0; j<N[1]; j++){  //x = 0
     for (k = 0; k<N[2]; k++){
       rho[i*N[1]*N[2] + j*N[2] + k] = Vx0;
-      V[i*N[1]*N[2] + j*N[2] + k] = Vx0;
     }
   }
   i = N[0] - 1;  //x = Lx
@@ -160,6 +176,21 @@ void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   }
   std::cout << "Ending." << std::endl;
 }
+void Solver::write_2D( double* vals, std::string filename ){
+  std::ofstream outfile;
+  outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
+  std::cout << "Dumping data to " << filename << std::endl;
+  const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
+  const int k = N[2]/2;
+  for (int i = 0; i < N[0]; i++){
+    for (int j = 0; j < N[1]; j++){
+        outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
+                " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
+    }
+    outfile << std::endl;
+  }
+  std::cout << "Ending." << std::endl;
+}
 
 void Solver::get_a( std::vector<double> *ptra, std::vector<double> &eps, const int &ind){
   ptra->at(0) = (eps[ind]+eps[ind-1]+eps[ind-N[2]]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1]+
@@ -207,6 +238,11 @@ void Solver::calc_Neumann( int i, int j, int k, int boundarytype ){
       V[i*N[1]*N[2] + j*N[2] + (N[2]-1)] = V[i*N[1]*N[2] + j*N[2] + ((N[2]-1)-1)] - rho[i*N[1]*N[2] + j*N[2] + (N[2]-1)]*h;
     }
 }
+
+void Solver::del_V( void ){
+  delete[] V;
+}
+
 
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){
@@ -319,10 +355,9 @@ void Solver::poisson3DSOR( void ){
 }
 
 void Solver::poisson3DJacobi( void ){
-  std::vector<double> Vold; //needed to calculate error between new and old values
+  double* Vold = new double[sizeof(V)]; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  Vold.resize(V.size());
   std::cout << "DOING JACOBI" << std::endl;
   //obtain additional spacing value
   std::cout << "Iterating..." << std::endl;
@@ -351,6 +386,7 @@ void Solver::poisson3DJacobi( void ){
   }while( currError > MAXERROR );
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
   std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
+  delete[] Vold;
 }
 
 void Solver::poisson3DGaussSeidel ( void ){
