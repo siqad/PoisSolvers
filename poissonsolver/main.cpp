@@ -1,12 +1,12 @@
-#include <iostream>
+ #include <iostream>
 #include "./src/solver.h"
 #include "./src/electrodes.h"
 
 int main() {
     //Parameters
-    int Nx = 100;
-    int Ny = 100;
-    int Nz = 100;
+    int Nx = 50;
+    int Ny = 50;
+    int Nz = 50;
     double Lx = 1;
     double Ly = 2;
     double Lz = 3;
@@ -18,6 +18,9 @@ int main() {
     s->set_val(s->N, Nx, Ny, Nz);
     s->set_val(s->L, Lx, Ly, Lz);
     s->set_val(s->h2, LATTICECONSTANT*LATTICECONSTANT);
+    s->set_val(s->h, LATTICECONSTANT);
+//    s->set_val(s->boundarytype, NEUMANN);
+    s->set_val(s->boundarytype, DIRICHLET);
     //initialize
     for( int index = 0; index < numelectrodes; index++){
       elec[index].init_elec(); //init all electrodes
@@ -28,9 +31,8 @@ int main() {
     elec[1].dims = {Nx/8, Ny/8, Nz/8};
     s->electrodemap.resize(Nx*Ny*Nz); //size electrodemap
     for( int index = 0; index < numelectrodes; index++){
-      elec[index].draw(s);
+      elec[index].draw(s); //draw all electrodes into electrodemap
     }
-
     s->init_rho( );
     s->init_eps( ); //will replace with reading from file eventually
     s->init_val( s->V, 0); //Need to initiate V before setting Boundary conds.

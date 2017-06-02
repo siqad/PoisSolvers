@@ -24,10 +24,12 @@
 #define FILENAMEELEC "outfileELEC.txt"
 #define MAXERROR 1e-5
 #define PI 3.14159265358979323846
+#define DIRICHLET 0
+#define NEUMANN 1
 //from http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/photoelec.html
-#define WF_GOLD 5.1 //eV
+#define WF_GOLD 5.1 //workfunction for gold in eV
 //from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
-#define CHI_SI 4.05//ev
+#define CHI_SI 4.05//electron affinity for silicon in eV
 
 void poisson1DJacobi(void);
 void poisson1DGaussSeidel(void);
@@ -38,6 +40,8 @@ public:
     //variables
     int solvemethod; //1 for Jacobi, 2 for Gauss-Seidel, 3 for SOR
     double h2;
+    double h;
+    int boundarytype; //0 for Dirichlet and 1 for Neumann.
     std::vector<int>  N; //Lattice points in each dimension. N[0] for x, N[1] for y, N[2] for z
     std::vector<double>  L; //Physical lengths for each dimension
     std::vector<double>  V; //Potential vector.
@@ -47,25 +51,26 @@ public:
     std::vector<std::pair<double, double>> electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
     std::vector<int> temp; //temp variable for developing
     //functions
-    void set_N( int, int, int );
-    void set_L( double, double, double );
-    void set_val( int&, int);
-    void set_val( double&, double);
-    void set_val( std::vector<double>&, double, double, double);
-    void set_val( std::vector<int>&, int, int, int);
-    void init_val( std::vector<double>&, double );
-    void init_rho( void );
-    void init_eps( void );
-    void solve( void );
-    void poisson3DSOR_gen( void );
-    void poisson3DSOR( void );
-    void poisson3DJacobi( void );
-    void poisson3DGaussSeidel( void );
-    void set_BCs( double, double, double, double, double, double);
-    void write( std::vector<double>&, std::string );
-    void write_2D( std::vector<double>&, std::string);
-    void get_a( std::vector<double> *, std::vector<double>&, const int&);
-    void check_eps( std::vector<double>&, std::vector<bool> * );
+    void calc_Neumann(int, int, int, int);
+    void set_N(int, int, int);
+    void set_L(double, double, double);
+    void set_val(int&, int);
+    void set_val(double&, double);
+    void set_val(std::vector<double>&, double, double, double);
+    void set_val(std::vector<int>&, int, int, int);
+    void init_val(std::vector<double>&, double);
+    void init_rho(void);
+    void init_eps(void);
+    void solve(void);
+    void poisson3DSOR_gen(void);
+    void poisson3DSOR(void);
+    void poisson3DJacobi(void);
+    void poisson3DGaussSeidel(void);
+    void set_BCs(double, double, double, double, double, double);
+    void write(std::vector<double>&, std::string );
+    void write_2D(std::vector<double>&, std::string);
+    void get_a(std::vector<double> *, std::vector<double>&, const int&);
+    void check_eps(std::vector<double>&, std::vector<bool> *);
 };
 
 #endif //POISSONSOLVER_SOLVER_H

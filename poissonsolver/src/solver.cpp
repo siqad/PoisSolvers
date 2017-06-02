@@ -1,8 +1,9 @@
 //
 // Created by nathan on 03/05/17.
-//
+// A BUNCH OF SOLVER CLASS METHODS
 //Compute solution to Poisson's equation assuming Dirichlet boundary condition.
 //
+
 #include "solver.h"
 #include <iostream>
 #include <vector>
@@ -13,7 +14,6 @@
 #include <fstream>
 #include <cmath>
 
-//Solver class functions
 void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
   vec.resize(3);
   vec[0] = a;
@@ -46,8 +46,8 @@ void Solver::init_rho( void ){
     for( int j = 0; j < N[1]; j++){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
-        z = k*L[2]/N[2];
-        rho[i*N[1]*N[2] + j*N[2] + k] = 50*Q_E*sin(x*2*PI/L[0]); //set rho with plane wave in x direction (one full wave)
+        z = k*L[2]/N[2]; //set rho with plane wave in x direction (one full wave)
+        rho[i*N[1]*N[2] + j*N[2] + k] = 50*Q_E*sin(x*2*PI/L[0]);
       }
     }
   }
@@ -62,11 +62,9 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        //set to vacuum before x = Lx/2
-        if ( x <= L[0]/2 ){
+        if ( x <= L[0]/2 ){ //set to vacuum before x = Lx/2
           eps[i*N[1]*N[2] + j*N[2] + k] = 1;
-        } else {
-        //set to high-K material after x = Lx/2
+        } else { //set to high-K material after x = Lx/2
           eps[i*N[1]*N[2] + j*N[2] + k] = 100;
         }
       }
@@ -75,21 +73,18 @@ void Solver::init_eps( void ){
 }
 
 void Solver::solve( void ){
-  if( solvemethod == SOR ){
-    poisson3DSOR();
-  } else if( solvemethod == JACOBI ){
-    poisson3DJacobi();
-  } else if( solvemethod == GAUSS_SEIDEL ){
-    poisson3DGaussSeidel();
-  } else if( solvemethod == SOR_GEN ){
-    poisson3DSOR_gen();
+  switch (solvemethod) {
+    case SOR:           poisson3DSOR();
+    case JACOBI:        poisson3DJacobi();
+    case GAUSS_SEIDEL:  poisson3DGaussSeidel();
+    case SOR_GEN:       poisson3DSOR_gen();
   }
 }
 
 void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0, double VzL){
   int i = 0;
-  int j = 0;
-  int k = 0;
+  int j = 0;//RHO contains the boundary condition. setting V is for Dirichlet.
+  int k = 0;//if Neumann BC, V will be overwritten in calc_Neumann()
   for (j = 0; j<N[1]; j++){  //x = 0
     for (k = 0; k<N[2]; k++){
       rho[i*N[1]*N[2] + j*N[2] + k] = Vx0;
@@ -140,8 +135,7 @@ void Solver::write( std::vector<double> &vals, std::string filename ){
   const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
-      for (int k = 0; k < N[2]; k++){
-        //save data as x y z V
+      for (int k = 0; k < N[2]; k++){ //save data as x y z V
         outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
                 " " << k * incSpacing[2] << " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
       }
@@ -168,28 +162,20 @@ void Solver::write_2D( std::vector<double> &vals, std::string filename ){
 }
 
 void Solver::get_a( std::vector<double> *ptra, std::vector<double> &eps, const int &ind){
-  ptra->at(0) = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1] +
-         eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
-         eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/8;
-  //i
-  ptra->at(1) = (eps[ind] + eps[ind - 1] + eps[ind - N[2]] + eps[ind - N[2] - 1])/4;
-  //j
-  ptra->at(2) = (eps[ind] + eps[ind - 1] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1])/4;
-    //k
-  ptra->at(3) = (eps[ind] + eps[ind - N[2]] + eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - N[2]])/4;
-    //i - 1
-  ptra->at(4) = (eps[ind - N[1]*N[2]] + eps[ind - N[1]*N[2] - 1] +
-         eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
-    //j - 1
-  ptra->at(5) = (eps[ind - N[2]] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - N[2]] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
-  //k - 1
-  ptra->at(6) = (eps[ind - 1] + eps[ind - N[2] - 1] + eps[ind - N[1]*N[2] - 1] + eps[ind - N[1]*N[2] - N[2] - 1])/4;
+  ptra->at(0) = (eps[ind]+eps[ind-1]+eps[ind-N[2]]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1]+
+         eps[ind-N[1]*N[2]-N[2]]+eps[ind-N[1]*N[2]-N[2]-1])/8;
+  ptra->at(1) = (eps[ind]+eps[ind-1]+eps[ind-N[2]]+eps[ind-N[2]-1])/4;//i
+  ptra->at(2) = (eps[ind]+eps[ind-1]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1])/4;//j
+  ptra->at(3) = (eps[ind]+eps[ind-N[2]]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-N[2]])/4;//k
+  ptra->at(4) = (eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1]+eps[ind-N[1]*N[2]-N[2]]+eps[ind-N[1]*N[2]-N[2]-1])/4;//i - 1
+  ptra->at(5) = (eps[ind-N[2]]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]-N[2]]+eps[ind-N[1]*N[2]-N[2]-1])/4;//j - 1
+  ptra->at(6) = (eps[ind-1]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]-1]+eps[ind-N[1]*N[2]-N[2]-1])/4;//k - 1
 }
 
-void Solver::check_eps ( std::vector<double> &eps, std::vector<bool> * pisChangingeps){
+void Solver::check_eps (std::vector<double> &eps, std::vector<bool> * pisChangingeps){
   int ind = N[1]*N[2] + N[2] + 1;
-  for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
-    for ( int j = 1; j < N[1]-1; j++){
+  for (int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
+    for (int j = 1; j < N[1]-1; j++){
       for (int k = 1; k < N[2]-1; k++){
         if( (eps[ind] != eps[ind+1]) || (eps[ind] != eps[ind-1]) || (eps[ind] != eps[ind+N[2]]) ||
           (eps[ind] != eps[ind-N[2]]) || (eps[ind] != eps[ind+N[1]*N[2]]) || (eps[ind] != eps[ind-N[1]*N[2]]) ){
@@ -205,6 +191,23 @@ void Solver::check_eps ( std::vector<double> &eps, std::vector<bool> * pisChangi
   }
 }
 
+void Solver::calc_Neumann( int i, int j, int k, int boundarytype ){
+  //For Neumann Boundary Conditions
+    if( i == 0 ){ //x == 0;
+      V[j*N[2] + k] = V[N[1]*N[2] + j*N[2] + k] - rho[j*N[2] + k]*h;
+    } else if ( i == N[0]-1 ){ //x == Lx;
+      V[(N[0]-1)*N[1]*N[2] + j*N[2] + k] = V[((N[0]-1)-1)*N[1]*N[2] + j*N[2] + k] - rho[(N[0]-1)*N[1]*N[2] + j*N[2] + k]*h;
+    } else if ( j == 0 ) { //y == 0;
+      V[i*N[1]*N[2] + k] = V[i*N[1]*N[2] + N[2] + k] - rho[i*N[1]*N[2] + k]*h;
+    } else if ( j == N[1]-1 ){ //y == Ly;
+      V[i*N[1]*N[2] + (N[1]-1)*N[2] + k] = V[i*N[1]*N[2] + ((N[1]-1)-1)*N[2] + k] - rho[i*N[1]*N[2] + (N[1]-1)*N[2] + k]*h;
+    } else if ( k == 0) { //z == 0;
+      V[i*N[1]*N[2] + j*N[2]] = V[i*N[1]*N[2] + j*N[2] + 1] - rho[i*N[1]*N[2] + j*N[2]]*h;
+    } else { //z == Lz;
+      V[i*N[1]*N[2] + j*N[2] + (N[2]-1)] = V[i*N[1]*N[2] + j*N[2] + ((N[2]-1)-1)] - rho[i*N[1]*N[2] + j*N[2] + (N[2]-1)]*h;
+    }
+}
+
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
@@ -217,49 +220,55 @@ void Solver::poisson3DSOR_gen( void ){
   std::vector<bool> * pisChangingeps = &isChangingeps;
   check_eps( eps, pisChangingeps);
   std::cout << "DOING SOR_GEN" << std::endl;
-  //obtain additional spacing value
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
   unsigned int ind;
   do{
       currError = 0;  //reset error for every run
-      for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
-        for ( int j = 1; j < N[1]-1; j++){
-          for (int k = 1; k < N[2]-1; k++){
+      for ( int i = 0; i < N[0]; i++){ //for all x points except endpoints
+        for ( int j = 0; j < N[1]; j++){
+          for (int k = 0; k < N[2]; k++){
             ind = i*N[1]*N[2] + j*N[2] + k;
-            if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
-              Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
-              if( electrodemap[ind+1].first!=0 || electrodemap[ind-1].first!=0 ||
-                  electrodemap[ind+N[2]].first!=0 || electrodemap[ind-N[2]].first!=0 ||
-                  electrodemap[ind+N[1]*N[2]].first!=0 || electrodemap[ind-N[1]*N[2]].first!=0 ){
-                //current cell is NEXT TO an electrode, ignore other effects and use workfunction calc
-                //rectangular electrodes, only one side of bulk can interface with electrode.
-                V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
-                         electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
-                         electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
-                         ((electrodemap[ind+1].first + electrodemap[ind-1].first +
-                         electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
-                         electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
-              } else { //not directly beside an electrode, perform normal calculation.
-                if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
-                  //there is a difference in permittivity, get new a values
-                  get_a(ptra, eps, ind);
-                  V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                  a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
-                  a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
-                  a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
-                } else { //no difference in permittivity, do not calculate new a values
-                  V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                  V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
-                  V[ind-1*N[2]] + V[ind+1*N[2]] +
-                  V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+            //directly on face, do boundary first.
+            if ( (i == 0 || j == 0 || k == 0 || i == N[0]-1 || j == N[1]-1 || k == N[2]-1) && (boundarytype == NEUMANN)){
+                calc_Neumann(i, j, k, boundarytype); //Dirichlet boundary handled by set_BCs() in main
+            } else if (i != 0 && j != 0 && k != 0 && i != N[0]-1 && j != N[1]-1 && k != N[2]-1){ //interior point, do as normal.
+              if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
+                Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
+                if( electrodemap[ind+1].first!=0 || electrodemap[ind-1].first!=0 ||
+                    electrodemap[ind+N[2]].first!=0 || electrodemap[ind-N[2]].first!=0 ||
+                    electrodemap[ind+N[1]*N[2]].first!=0 || electrodemap[ind-N[1]*N[2]].first!=0 ){
+                //Current cell is NEXT TO an electrode, ignore other effects and use workfunction ohmic contact calculation
+                //Rectangular electrodes, only one side of bulk can interface with electrode.
+                //Work function and electrode voltage = 0 for non-electrode sites. Add all sides, since only one of them
+                //is non-zero
+                  V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
+                           electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
+                           electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
+                           ((electrodemap[ind+1].first + electrodemap[ind-1].first +
+                           electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
+                           electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
+                } else { //not directly beside an electrode, perform normal calculation.
+                  if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
+                    //there is a difference in permittivity, get new a values
+                    get_a(ptra, eps, ind);
+                    V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                             a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
+                             a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
+                             a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
+                  } else { //no difference in permittivity, do not calculate new a values
+                    V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                             V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
+                             V[ind-1*N[2]] + V[ind+1*N[2]] +
+                             V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+                  }
                 }
+                if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
+                    currError = fabs((V[ind] - Vold)/V[ind]);
+                }
+              } else { //current cell IS electrode, set V[ind] = electrode voltage
+                V[ind] = electrodemap[ind].second;
               }
-              if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
-                  currError = fabs((V[ind] - Vold)/V[ind]);
-              }
-            } else { //current cell IS electrode, set V[ind] = electrode voltage
-              V[ind] = electrodemap[ind].second;
             }
           }
         }
