@@ -230,9 +230,9 @@ void Solver::poisson3DSOR_gen( void ){
           for (int k = 0; k < N[2]; k++){
             ind = i*N[1]*N[2] + j*N[2] + k;
             //directly on face, do boundary first.
-            if ( (i == 0 || j == 0 || k == 0 || i == N[0]-1 || j == N[1]-1 || k == N[2]-1) && (boundarytype == NEUMANN)){
+            if ((boundarytype == NEUMANN)&&(i == 0 || j == 0 || k == 0 || i == N[0]-1 || j == N[1]-1 || k == N[2]-1)){
                 calc_Neumann(i, j, k, boundarytype); //Dirichlet boundary handled by set_BCs() in main
-            } else if (i != 0 && j != 0 && k != 0 && i != N[0]-1 && j != N[1]-1 && k != N[2]-1){ //interior point, do as normal.
+            } else if (i != 0 && j != 0 && k != 0 && i != N[0]-1 && j != N[1]-1 && k != N[2]-1){ //interior point, do normal.
               if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
                 Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
                 if( electrodemap[ind+1].first!=0 || electrodemap[ind-1].first!=0 ||

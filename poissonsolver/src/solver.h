@@ -22,7 +22,7 @@
 #define FILENAMERHO "outfileRHO.txt"
 #define FILENAMEEPS "outfileEPS.txt"
 #define FILENAMEELEC "outfileELEC.txt"
-#define MAXERROR 1e-5
+#define MAXERROR 1e-2
 #define PI 3.14159265358979323846
 #define DIRICHLET 0
 #define NEUMANN 1

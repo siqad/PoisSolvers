@@ -4,9 +4,9 @@
 
 int main() {
     //Parameters
-    int Nx = 50;
-    int Ny = 50;
-    int Nz = 50;
+    int Nx = 100;
+    int Ny = 100;
+    int Nz = 100;
     double Lx = 1;
     double Ly = 2;
     double Lz = 3;
@@ -19,8 +19,7 @@ int main() {
     s->set_val(s->L, Lx, Ly, Lz);
     s->set_val(s->h2, LATTICECONSTANT*LATTICECONSTANT);
     s->set_val(s->h, LATTICECONSTANT);
-//    s->set_val(s->boundarytype, NEUMANN);
-    s->set_val(s->boundarytype, DIRICHLET);
+    s->set_val(s->boundarytype, NEUMANN);
     //initialize
     for( int index = 0; index < numelectrodes; index++){
       elec[index].init_elec(); //init all electrodes
@@ -37,7 +36,6 @@ int main() {
     s->init_eps( ); //will replace with reading from file eventually
     s->init_val( s->V, 0); //Need to initiate V before setting Boundary conds.
     s->set_BCs(0, 0, 0, 0, 0, 0); //Dirichlet boundary conditions
-
 
     //reset solution vector and call for SOR_GEN
     s->init_val( s->V, 0);
