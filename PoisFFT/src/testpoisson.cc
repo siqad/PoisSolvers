@@ -36,12 +36,13 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a
         double z = ds[2]*(k+0.5);
         //piece wise RHS
         //a[IND(i,j,k)] = sin(3*pi*x/Ls[0]) * sin(5*pi*y/Ls[1]) *sin(7*pi*z/Ls[2]);
-        if (k < ns[2]/2){
-        a[IND(i,j,k)] = x/Ls[0] * y/Ls[1] * z/Ls[2];;
-        }
-        else{
-          a[IND(i,j,k)] = 0;
-        }
+        a[IND(i,j,k)] = -1.6e-19*sin(x*2*pi/Ls[0])/8.85418782e-12;
+        // if (k < ns[2]/2){
+        // a[IND(i,j,k)] = x/Ls[0] * y/Ls[1] * z/Ls[2];;
+        // }
+        // else{
+        //   a[IND(i,j,k)] = 0;
+        // }
       }
     }
   }
@@ -85,10 +86,10 @@ int main(){
   std::ofstream outfile;
   outfile.open("outfile.txt", std::ios_base::out | std::ios_base::trunc );
   // domain dimensions
-  const double Ls[3] = {1.0, 2.0, 3.0}; //x, y, z
+  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z
 
   // gridpoint numbers
-  const int ns[3] = {20, 20, 20}; //x, y, z
+  const int ns[3] = {100, 100, 100}; //x, y, z
 
   // distances between gridpoints
   double ds[3];
@@ -127,14 +128,18 @@ int main(){
 
   //Dump to file. Maybe consider adding as a class method?
   std::cout << "Dumping to " << FILENAME << std::endl;
+  std::cout << "ds[0]:" << ds[0] << std::endl;
+  const int k = ns[2]/2;
   for (int i = 0; i < ns[0]; i++){
     for (int j = 0; j < ns[1]; j++){
-      for (int k = 0; k < ns[2]; k++) {
+//      for (int k = 0; k < ns[2]; k++) {
         //std::cout << arr[ j*ns[1]*ns[2] + k*ns[2] + l ] << "," << std::endl;
         //save data as x y z V
-        outfile << std::setprecision(5) << std::fixed << i * ds[0] << " " << j * ds[1] <<
-                " " << k * ds[2] << " " << arr[i * ns[1] * ns[2] + j * ns[2] + k] << std::endl;
-      }
+//        outfile << std::setprecision(5) << std::fixed << i * ds[0] << " " << j * ds[1] <<
+//                " " << k * ds[2] << " " << arr[i * ns[1] * ns[2] + j * ns[2] + k] << std::endl;
+        outfile << std::setprecision(5) << std::scientific << i * ds[0] << " " << j * ds[1] <<
+                " " << arr[i * ns[1] * ns[2] + j * ns[2] + k] << std::endl;
+//      }
     }
     outfile << std::endl;
   }

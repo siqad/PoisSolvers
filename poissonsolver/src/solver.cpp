@@ -56,6 +56,16 @@ std::pair<double, double> * Solver::init_val( double val, std::pair<double, doub
   return arr;
 }
 
+void Solver::del( double* arr ){
+  delete[] arr;
+}
+void Solver::del( int* arr ){
+  delete[] arr;
+}
+void Solver::del( std::pair<double, double>* arr ){
+  delete[] arr;
+}
+
 void Solver::init_rho( void ){
   double x, y, z;
   for( int i = 0; i < N[0]; i++){
@@ -64,7 +74,7 @@ void Solver::init_rho( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2]; //set rho with plane wave in x direction (one full wave)
-        rho[i*N[1]*N[2] + j*N[2] + k] = 50*Q_E*sin(x*2*PI/L[0]);
+        rho[i*N[1]*N[2] + j*N[2] + k] = Q_E*sin(x*2*PI/L[0]);
       }
     }
   }
@@ -79,11 +89,11 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        if ( x <= L[0]/2 ){ //set to vacuum before x = Lx/2
-          eps[i*N[1]*N[2] + j*N[2] + k] = 1;
-        } else { //set to high-K material after x = Lx/2
-          eps[i*N[1]*N[2] + j*N[2] + k] = 100;
-        }
+         if ( x <= L[0]/2 ){ //set to vacuum before x = Lx/2
+           eps[i*N[1]*N[2] + j*N[2] + k] = 1;
+         } else { //set to high-K material after x = Lx/2
+           eps[i*N[1]*N[2] + j*N[2] + k] = 100;
+         }
       }
     }
   }
@@ -92,8 +102,11 @@ void Solver::init_eps( void ){
 void Solver::solve( void ){
   switch (solvemethod) {
     case SOR:           poisson3DSOR();
+                        break;
     case JACOBI:        poisson3DJacobi();
+                        break;
     case GAUSS_SEIDEL:  poisson3DGaussSeidel();
+                        break;
     case SOR_GEN:       poisson3DSOR_gen();
   }
 }
@@ -238,11 +251,6 @@ void Solver::calc_Neumann( int i, int j, int k, int boundarytype ){
       V[i*N[1]*N[2] + j*N[2] + (N[2]-1)] = V[i*N[1]*N[2] + j*N[2] + ((N[2]-1)-1)] - rho[i*N[1]*N[2] + j*N[2] + (N[2]-1)]*h;
     }
 }
-
-void Solver::del_V( void ){
-  delete[] V;
-}
-
 
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){

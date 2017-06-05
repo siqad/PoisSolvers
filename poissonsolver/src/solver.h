@@ -73,7 +73,9 @@ public:
     void write_2D( double* vals, std::string filename );
     void get_a(std::vector<double> *, std::vector<double>&, const int&);
     void check_eps(std::vector<double>&, std::vector<bool> *);
-    void del_V( void );
+    void del( int* );
+    void del( double* );
+    void del( std::pair<double, double>* );
 };
 
 #endif //POISSONSOLVER_SOLVER_H

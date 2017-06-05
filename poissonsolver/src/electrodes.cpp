@@ -25,7 +25,7 @@ void Electrodes::draw( Solver * s ){
     for( int j = centre[1] - dims[1]/2; j < centre[1] + dims[1]/2; j++){
       for( int k = centre[2] - dims[2]/2; k < centre[2] + dims[2]/2; k++){
         s->electrodemap[i*s->N[1]*s->N[2] + j*s->N[2] + k].first = WF_GOLD; //set electrode work function
-        s->electrodemap[i*s->N[1]*s->N[2] + j*s->N[2] + k].second = 1e-5; //set electrode potential
+        s->electrodemap[i*s->N[1]*s->N[2] + j*s->N[2] + k].second = 1e-12; //set electrode potential
       }
     }
   }

@@ -7,17 +7,19 @@ int main() {
     int Nx = 100;
     int Ny = 100;
     int Nz = 100;
-    double Lx = 1;
-    double Ly = 2;
-    double Lz = 3;
+    double Lx = 1.0;
+    double Ly = 1.0;
+    double Lz = 1.0;
     int numelectrodes = 2;
     Solver sol;
     Solver * s = &sol;
     std::vector<Electrodes> elec(numelectrodes);
     s->N = s->set_val(Nx, Ny, Nz);
     s->set_val(s->L, Lx, Ly, Lz);
-    s->set_val(s->h2, LATTICECONSTANT*LATTICECONSTANT);
-    s->set_val(s->h, LATTICECONSTANT);
+//    s->set_val(s->h2, LATTICECONSTANT*LATTICECONSTANT);
+//    s->set_val(s->h, LATTICECONSTANT);
+    s->set_val(s->h2, Lx*Lx/Nx/Nx);
+    s->set_val(s->h, Lx/Nx);
     s->set_val(s->boundarytype, NEUMANN);
     //initialize
     for( int index = 0; index < numelectrodes; index++){
@@ -36,13 +38,15 @@ int main() {
 
     s->init_rho( );
     s->init_eps( ); //will replace with reading from file eventually
-    s->set_BCs(0, 0, 0, 0, 0, 0); //Dirichlet boundary conditions
+    s->set_BCs(0, 0, 0, 0, 0, 0); //boundary conditions
     //reset solution vector and call for SOR_GEN
     s->set_val( s->solvemethod, SOR_GEN);
     s->solve();
     s->write_2D(s->V, FILENAMESOR_GEN);
     s->write_2D(s->rho, FILENAMERHO);
-    s->del_V();
-    delete[] s->N;
+    s->del(s->V);
+    s->del(s->N);
+    s->del(s->rho);
+    s->del(s->electrodemap);
     return 0;
 }
