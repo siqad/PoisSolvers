@@ -10,7 +10,7 @@ int main() {
     double Lx = 1.0;
     double Ly = 1.0;
     double Lz = 1.0;
-    int numelectrodes = 2;
+    int numelectrodes = 4;
     Solver sol;
     Solver * s = &sol;
     std::vector<Electrodes> elec(numelectrodes);
@@ -20,15 +20,20 @@ int main() {
 //    s->set_val(s->h, LATTICECONSTANT);
     s->set_val(s->h2, Lx*Lx/Nx/Nx);
     s->set_val(s->h, Lx/Nx);
-    s->set_val(s->boundarytype, NEUMANN);
+    s->set_val(s->boundarytype, DIRICHLET);
     //initialize
     for( int index = 0; index < numelectrodes; index++){
       elec[index].init_elec(); //init all electrodes
     }
+    //4 total electrodes, arranged in a square
     elec[0].centre = {Nx/4, Ny/4, Nz/2};
     elec[0].dims = {Nx/8, Ny/8, Nz/8};
     elec[1].centre = {3*Nx/4, 3*Ny/4, Nz/2};
     elec[1].dims = {Nx/8, Ny/8, Nz/8};
+    elec[2].centre = {3*Nx/4, Ny/4, Nz/2};
+    elec[2].dims = {Nx/8, Ny/8, Nz/8};
+    elec[3].centre = {Nx/4, 3*Ny/4, Nz/2};
+    elec[3].dims = {Nx/8, Ny/8, Nz/8};
     s->rho = s->init_val( 0, s->rho);
     s->V = s->init_val( 0, s->V ); //Need to initiate V before setting Boundary conds.
     s->electrodemap = s->init_val( 0, s-> electrodemap );
@@ -44,6 +49,10 @@ int main() {
     s->solve();
     s->write_2D(s->V, FILENAMESOR_GEN);
     s->write_2D(s->rho, FILENAMERHO);
+
+//need to delete all the arrays created with new. (init_val() and set_val())
+
+std::cout << "DELETING VARIABLES" << std::endl;
     s->del(s->V);
     s->del(s->N);
     s->del(s->rho);

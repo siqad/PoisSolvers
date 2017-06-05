@@ -1,8 +1,8 @@
 //
 // Created by nathan on 03/05/17.
 // A BUNCH OF SOLVER CLASS METHODS
-//Compute solution to Poisson's equation assuming Dirichlet boundary condition.
-//
+// Compute solution to Poisson's equation assuming Dirichlet boundary condition.
+// Maybe seal off Jacobi and Gauss-Seidel and normal SOR methods in favor of SOR_GEN?
 
 #include "solver.h"
 #include <iostream>
@@ -14,6 +14,9 @@
 #include <fstream>
 #include <cmath>
 
+
+//set_val, used to assign values to class attributes.
+//TODO phase out vectors from program in favor of arrays
 void Solver::set_val( std::vector<int> &vec, int a, int b, int c ){
   vec.resize(3);
   vec[0] = a;
@@ -40,6 +43,7 @@ void Solver::set_val( double &val, double a ){
   val = a;
 }
 
+//init_val, used for initializing arrays.
 double * Solver::init_val( double val, double* prev ){ //fills the entire vector with val
   double * arr = new double[N[0]*N[1]*N[2]];
   for(int i=0;i < N[0]*N[1]*N[2]; i++){
@@ -56,6 +60,7 @@ std::pair<double, double> * Solver::init_val( double val, std::pair<double, doub
   return arr;
 }
 
+//del, used for deleting arrays crated with new
 void Solver::del( double* arr ){
   delete[] arr;
 }
@@ -66,6 +71,8 @@ void Solver::del( std::pair<double, double>* arr ){
   delete[] arr;
 }
 
+//init_rho, initializes rho with values.
+//TODO change to read from file or from rho object or pointer to rho object
 void Solver::init_rho( void ){
   double x, y, z;
   for( int i = 0; i < N[0]; i++){
@@ -80,6 +87,8 @@ void Solver::init_rho( void ){
   }
 }
 
+//init_eps, initializes eps with values.
+//TODO change to read from file or from eps object or pointer to eps object
 void Solver::init_eps( void ){
   eps.resize(N[0]*N[1]*N[2]);
   double x, y, z;
@@ -99,6 +108,7 @@ void Solver::init_eps( void ){
   }
 }
 
+//calls the appropriate poisson solver.
 void Solver::solve( void ){
   switch (solvemethod) {
     case SOR:           poisson3DSOR();
@@ -111,6 +121,7 @@ void Solver::solve( void ){
   }
 }
 
+//sets boundary condition for both Dirichlet and Neumann types.
 void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0, double VzL){
   int i = 0;
   int j = 0;//RHO contains the boundary condition. setting V is for Dirichlet.
@@ -157,6 +168,7 @@ void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0
   }
 }
 
+//write 3D data to file
 void Solver::write( std::vector<double> &vals, std::string filename ){
   std::ofstream outfile;
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
@@ -174,6 +186,7 @@ void Solver::write( std::vector<double> &vals, std::string filename ){
   std::cout << "Ending." << std::endl;
 }
 
+//write 2D data to file
 void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   std::ofstream outfile;
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
@@ -205,6 +218,7 @@ void Solver::write_2D( double* vals, std::string filename ){
   std::cout << "Ending." << std::endl;
 }
 
+//get new values for a, needed when permittivity changes locally
 void Solver::get_a( std::vector<double> *ptra, std::vector<double> &eps, const int &ind){
   ptra->at(0) = (eps[ind]+eps[ind-1]+eps[ind-N[2]]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1]+
          eps[ind-N[1]*N[2]-N[2]]+eps[ind-N[1]*N[2]-N[2]-1])/8;
@@ -216,6 +230,7 @@ void Solver::get_a( std::vector<double> *ptra, std::vector<double> &eps, const i
   ptra->at(6) = (eps[ind-1]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]-1]+eps[ind-N[1]*N[2]-N[2]-1])/4;//k - 1
 }
 
+//check whether permittivity changes locally, and remember for later
 void Solver::check_eps (std::vector<double> &eps, std::vector<bool> * pisChangingeps){
   int ind = N[1]*N[2] + N[2] + 1;
   for (int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
@@ -235,6 +250,7 @@ void Solver::check_eps (std::vector<double> &eps, std::vector<bool> * pisChangin
   }
 }
 
+//get value at boundary based on Neumann boundary condition
 void Solver::calc_Neumann( int i, int j, int k, int boundarytype ){
   //For Neumann Boundary Conditions
     if( i == 0 ){ //x == 0;
@@ -252,6 +268,7 @@ void Solver::calc_Neumann( int i, int j, int k, int boundarytype ){
     }
 }
 
+//uses Generalised Successive Over Relaxation method to solve poisson's equation.
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
@@ -326,6 +343,7 @@ void Solver::poisson3DSOR_gen( void ){
   std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
 }
 
+//Uses Successive Over Relaxation method to solve poisson's equation
 void Solver::poisson3DSOR( void ){
   double Vold;
   double currError; //largest error on current loop
@@ -362,6 +380,7 @@ void Solver::poisson3DSOR( void ){
   std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
 }
 
+//Uses Iterative Jacobi method to solve poisson's equation
 void Solver::poisson3DJacobi( void ){
   double* Vold = new double[sizeof(V)]; //needed to calculate error between new and old values
   double currError; //largest error on current loop
@@ -397,6 +416,7 @@ void Solver::poisson3DJacobi( void ){
   delete[] Vold;
 }
 
+//Uses Iterative Gauss-Seidel method to solve poisson's equation
 void Solver::poisson3DGaussSeidel ( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
