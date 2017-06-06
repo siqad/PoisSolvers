@@ -1,2 +1,0 @@
-/usr/bin/ar cr libmultigrid.a  CMakeFiles/multigrid.dir/boundary_conditions.cpp.o CMakeFiles/multigrid.dir/fdarray.cpp.o CMakeFiles/multigrid.dir/fdbase.cpp.o CMakeFiles/multigrid.dir/fdvecarray.cpp.o CMakeFiles/multigrid.dir/multigrid_base.cpp.o CMakeFiles/multigrid.dir/multigrid_linear.cpp.o CMakeFiles/multigrid.dir/multigrid_nonlinear.cpp.o CMakeFiles/multigrid.dir/stack.cpp.o CMakeFiles/multigrid.dir/settings.cpp.o
-/usr/bin/ranlib libmultigrid.a

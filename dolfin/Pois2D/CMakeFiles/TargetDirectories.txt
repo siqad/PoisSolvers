@@ -1,3 +1,0 @@
-/home/nathan/dolfin/Pois2D/CMakeFiles/rebuild_cache.dir
-/home/nathan/dolfin/Pois2D/CMakeFiles/edit_cache.dir
-/home/nathan/dolfin/Pois2D/CMakeFiles/demo_poisson.dir
