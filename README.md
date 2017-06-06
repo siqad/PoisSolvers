@@ -10,8 +10,7 @@ multigrid
   Implements a multigrid algorithm to solve the Poisson's equation.
 
 PoisFFT
-  Uses the fftw library to implement a Fourier transform based solver.
+  Uses the fftw library to implement a Fourier transform based solver. This solution is used to verify the simple case for poissonsolver below.
 
 poissonsolver
-  Uses the Jacobi method to solve the Poisson's equation.
-  Will be improved with the Gauss-Seidel method, as well as the SOR method.
+  Uses the Successive Over-relaxation method to solve a generalised Poisson's equation. The generalised equation takes into account variable permittivity, and allows for electrodes to be arbitrarily placed within the solving range.

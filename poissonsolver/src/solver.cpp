@@ -81,7 +81,7 @@ void Solver::init_rho( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2]; //set rho with plane wave in x direction (one full wave)
-        rho[i*N[1]*N[2] + j*N[2] + k] = Q_E*sin(x*2*PI/L[0]);
+        rho[i*N[1]*N[2] + j*N[2] + k] = 50*Q_E*sin(x*2*PI/L[0]);
       }
     }
   }
