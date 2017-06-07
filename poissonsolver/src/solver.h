@@ -22,19 +22,21 @@
 #define FILENAMERHO "outfileRHO.txt"
 #define FILENAMEEPS "outfileEPS.txt"
 #define FILENAMEELEC "outfileELEC.txt"
-#define MAXERROR 1e-3
+#define MAXERROR 1e-2
 #define PI 3.14159265358979323846
 #define DIRICHLET 0
 #define NEUMANN 1
 //from http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/photoelec.html
 #define WF_GOLD 5.1 //workfunction for gold in eV
+#define WF_COPPER 4.7 //workfunction for copper in eV
+#define WF_ZINC 4.3 //workfunction for zinc in eV
+#define WF_CESIUM 2.1 //workfunction for cesium in eV
 //from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
 #define CHI_SI 4.05//electron affinity for silicon in eV
 
 void poisson1DJacobi(void);
 void poisson1DGaussSeidel(void);
 void poisson1DSOR(void);
-
 class Solver {
 public:
     //variables
@@ -54,10 +56,11 @@ public:
     void set_N(int, int, int);
     void set_L(double, double, double);
     void set_val(int&, int);
-    void set_val(double&, double);
+    double set_val(double);
     void set_val(std::vector<double>&, double, double, double);
     void set_val(std::vector<int>&, int, int, int);
     int* set_val( int, int, int );
+    double* set_val( double, double);
     double* init_val( double, double*);
     std::pair<double, double>* init_val( double, std::pair<double, double>*);
     void init_rho(void);
@@ -76,6 +79,13 @@ public:
     void del( int* );
     void del( double* );
     void del( std::pair<double, double>* );
+
+
+    double ohmic_contact( unsigned long int );
+    double normal_eps( unsigned long int, double*, std::vector<double>);
+    double normal( unsigned long int, double*);
+
+
 };
 
 #endif //POISSONSOLVER_SOLVER_H

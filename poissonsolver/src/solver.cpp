@@ -39,8 +39,14 @@ void Solver::set_val( std::vector<double> &vec, double a, double b, double c ){
 void Solver::set_val( int &val, int a ){
   val = a;
 }
-void Solver::set_val( double &val, double a ){
-  val = a;
+double Solver::set_val( double a ){
+  return a;
+}
+double* Solver::set_val( double a, double b){
+  double * arr = new double[3];
+  arr[0] = a;
+  arr[1] = b;
+  return arr;
 }
 
 //init_val, used for initializing arrays.
@@ -173,7 +179,7 @@ void Solver::write( std::vector<double> &vals, std::string filename ){
   std::ofstream outfile;
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping data to " << filename << std::endl;
-  const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
+  static const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
       for (int k = 0; k < N[2]; k++){ //save data as x y z V
@@ -191,8 +197,8 @@ void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   std::ofstream outfile;
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping data to " << filename << std::endl;
-  const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
-  const int k = N[2]/2;
+  static const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
+  static const int k = N[2]/2;
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
         outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
@@ -206,8 +212,8 @@ void Solver::write_2D( double* vals, std::string filename ){
   std::ofstream outfile;
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping data to " << filename << std::endl;
-  const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
-  const int k = N[2]/2;
+  static const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
+  static const int k = N[2]/2;
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
         outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
@@ -268,13 +274,36 @@ void Solver::calc_Neumann( int i, int j, int k, int boundarytype ){
     }
 }
 
+double Solver::ohmic_contact( unsigned long int ind ){
+  return (electrodemap[ind+1].second + electrodemap[ind-1].second +
+         electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
+         electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
+         ((electrodemap[ind+1].first + electrodemap[ind-1].first +
+         electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
+         electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
+}
+
+double Solver::normal_eps( unsigned long int ind, double* overrelax, std::vector<double> a ){
+  return overrelax[1]*V[ind] + overrelax[0]*(
+           a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
+           a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
+           a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0];
+}
+
+double Solver::normal( unsigned long int ind, double* overrelax){
+  return overrelax[1]*V[ind] + overrelax[0]*(
+           V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
+           V[ind-1*N[2]] + V[ind+1*N[2]] +
+           V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
+}
 //uses Generalised Successive Over Relaxation method to solve poisson's equation.
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR ()
+//  static const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR () = 1.85
+  double* overrelax = set_val(1.85/6, -0.85);
   std::vector<double> a(7);
   std::vector<double> * ptra = &a;
   std::vector<bool> isChangingeps(N[0]*N[1]*N[2]);
@@ -283,7 +312,7 @@ void Solver::poisson3DSOR_gen( void ){
   std::cout << "DOING SOR_GEN" << std::endl;
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
-  unsigned int ind;
+  unsigned long int ind;
   do{
       currError = 0;  //reset error for every run
       for ( int i = 0; i < N[0]; i++){ //for all x points except endpoints
@@ -291,9 +320,9 @@ void Solver::poisson3DSOR_gen( void ){
           for (int k = 0; k < N[2]; k++){
             ind = i*N[1]*N[2] + j*N[2] + k;
             //directly on face, do boundary first.
-            if ((boundarytype == NEUMANN)&&(i == 0 || j == 0 || k == 0 || i == N[0]-1 || j == N[1]-1 || k == N[2]-1)){
+            if ((boundarytype == NEUMANN)&&((i == 0) || (i == N[0]-1) || (j == N[1]-1) || (j == 0) || (k == 0) || (k == N[2]-1))){
                 calc_Neumann(i, j, k, boundarytype); //Dirichlet boundary handled by set_BCs() in main
-            } else if (i != 0 && j != 0 && k != 0 && i != N[0]-1 && j != N[1]-1 && k != N[2]-1){ //interior point, do normal.
+            } else if ((i != 0) && (i != N[0]-1) && (j != N[1]-1) && (j != 0) && (k != 0) && (k != N[2]-1)){ //interior point, do normal.
               if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
                 Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
                 if( electrodemap[ind+1].first!=0 || electrodemap[ind-1].first!=0 ||
@@ -303,25 +332,36 @@ void Solver::poisson3DSOR_gen( void ){
                 //Rectangular electrodes, only one side of bulk can interface with electrode.
                 //Work function and electrode voltage = 0 for non-electrode sites. Add all sides, since only one of them
                 //is non-zero
+
+                V[ind] = ohmic_contact(ind);
+/*
                   V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
                            electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
                            electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
                            ((electrodemap[ind+1].first + electrodemap[ind-1].first +
                            electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
                            electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
+*/
+
                 } else { //not directly beside an electrode, perform normal calculation.
                   if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
                     //there is a difference in permittivity, get new a values
                     get_a(ptra, eps, ind);
+                    V[ind] = normal_eps(ind, overrelax, a);
+/*
                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
                              a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
                              a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
                              a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
+*/
                   } else { //no difference in permittivity, do not calculate new a values
+                    V[ind] = normal(ind, overrelax);
+/*
                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
                              V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
                              V[ind-1*N[2]] + V[ind+1*N[2]] +
                              V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+*/
                   }
                 }
                 if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
@@ -336,7 +376,7 @@ void Solver::poisson3DSOR_gen( void ){
       }
       cycleCount++;
       if (cycleCount%50 == 0){
-        std::cout << "On iteration " << cycleCount << " with " << currError << "% error." << std::endl;
+        std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
       }
   }while( currError > MAXERROR );
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
@@ -348,7 +388,7 @@ void Solver::poisson3DSOR( void ){
   double Vold;
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
+  static const std::vector<double> overrelax = {1.85/6, -0.85}; //overrelaxation parameter for SOR
   std::cout << "DOING SOR" << std::endl;
   //obtain additional spacing value
   std::cout << "Iterating..." << std::endl;
