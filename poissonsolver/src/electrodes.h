@@ -9,6 +9,7 @@ class Solver;
 
 class Electrodes{
   public:
+
     std::vector<int> centre; //x, y, z for centre of rectangle (lattice space)
     std::vector<int> dims; //x, y, z dimensions for rectangle (in lattice units)
     double potential; //voltage of electrode

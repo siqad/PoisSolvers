@@ -75,7 +75,7 @@ void Solver::init_rho( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2]; //set rho with plane wave in x direction (one full wave)
-        rho[i*N[1]*N[2] + j*N[2] + k] = 50*Q_E*sin(x*2*PI/L[0]);
+        rho[i*N[1]*N[2] + j*N[2] + k] = 75*Q_E*sin(x*2*PI/L[0]);
       }
     }
   }
@@ -200,11 +200,10 @@ void Solver::write_2D( double* vals, std::string filename ){
   std::ofstream outfile;
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping data to " << filename << std::endl;
-  static const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
   static const int k = N[2]/2;
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
-        outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
+        outfile << std::setprecision(5) << std::scientific << i * L[0]/N[0] << " " << j * L[1]/N[1] <<
                 " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
     }
     outfile << std::endl;
@@ -225,16 +224,16 @@ void Solver::get_a( double* a, double* eps, int ind){
 }
 
 //check whether permittivity changes locally, and remember for later
-void Solver::check_eps (double *eps, std::vector<bool> * pisChangingeps){
+void Solver::check_eps (double *eps, bool* isChangingeps){
   int ind = N[1]*N[2] + N[2] + 1;
   for (int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
     for (int j = 1; j < N[1]-1; j++){
       for (int k = 1; k < N[2]-1; k++){
         if( (eps[ind] != eps[ind+1]) || (eps[ind] != eps[ind-1]) || (eps[ind] != eps[ind+N[2]]) ||
           (eps[ind] != eps[ind-N[2]]) || (eps[ind] != eps[ind+N[1]*N[2]]) || (eps[ind] != eps[ind-N[1]*N[2]]) ){
-          pisChangingeps->at(ind) = true; //eps changing on a boundary
+          isChangingeps[ind] = true; //eps changing on a boundary
         } else {
-          pisChangingeps->at(ind) = false; //eps changing on a boundary
+          isChangingeps[ind] = false; //eps changing on a boundary
         }
         ++ind;
       }
@@ -245,21 +244,21 @@ void Solver::check_eps (double *eps, std::vector<bool> * pisChangingeps){
 }
 
 //check whether branch should do boundary or interior calculation
-void Solver::check_branch0( bool* branch ){
+void Solver::check_exterior( bool* isExterior ){
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
       for (int k = 0; k < N[2]; k++){
         int ind = i*N[1]*N[2] + j*N[2] + k;
         if((i == 0) || (i == N[0]-1) || (j == N[1]-1) || (j == 0) || (k == 0) || (k == N[2]-1)){
-          branch[ind] = true;
+          isExterior[ind] = true;
         } else {
-          branch[ind] = false;
+          isExterior[ind] = false;
         }
       }
     }
   }
 }//check whether branch should do normal or ohmic calculation
-void Solver::check_branch1( bool* branch ){
+void Solver::check_elec( bool* isBesideElec ){
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
       for (int k = 0; k < N[2]; k++){
@@ -267,9 +266,9 @@ void Solver::check_branch1( bool* branch ){
         if( electrodemap[ind+1].first!=0 || electrodemap[ind-1].first!=0 ||
             electrodemap[ind+N[2]].first!=0 || electrodemap[ind-N[2]].first!=0 ||
             electrodemap[ind+N[1]*N[2]].first!=0 || electrodemap[ind-N[1]*N[2]].first!=0 ){
-          branch[ind] = true;
+          isBesideElec[ind] = true;
         } else {
-          branch[ind] = false;
+          isBesideElec[ind] = false;
         }
       }
     }
@@ -294,29 +293,6 @@ void Solver::calc_Neumann( int i, int j, int k){
     }
 }
 
-double Solver::ohmic_contact( unsigned long int ind ){
-  return (electrodemap[ind+1].second + electrodemap[ind-1].second +
-         electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
-         electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
-         ((electrodemap[ind+1].first + electrodemap[ind-1].first +
-         electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
-         electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
-}
-
-double Solver::normal_eps( unsigned long int ind, double* overrelax, double* a ){
-  return overrelax[1]*V[ind] + overrelax[0]*(
-           a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
-           a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
-           a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0];
-}
-
-double Solver::normal( unsigned long int ind, double* overrelax){
-  return overrelax[1]*V[ind] + overrelax[0]*(
-           V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
-           V[ind-1*N[2]] + V[ind+1*N[2]] +
-           V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
-}
-
 //uses Generalised Successive Over Relaxation method to solve poisson's equation.
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_gen( void ){
@@ -325,13 +301,12 @@ void Solver::poisson3DSOR_gen( void ){
   unsigned int cycleCount = 0; //iteration count, for reporting
   double * overrelax = set_val(1.85/6, -0.85);
   double * a = new double[7];
-  bool* besideElectrode = new bool[N[0]*N[1]*N[2]];
-  bool* exterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
-  std::vector<bool> isChangingeps(N[0]*N[1]*N[2]);
-  std::vector<bool> * pisChangingeps = &isChangingeps;
-  check_eps( eps, pisChangingeps);
-  check_branch0( exterior );
-  check_branch1( besideElectrode );
+  bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
+  bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
+  bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
+  check_eps( eps, isChangingeps);
+  check_exterior( isExterior );
+  check_elec( isBesideElec );
   std::cout << "DOING SOR_GEN" << std::endl;
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
@@ -343,17 +318,16 @@ void Solver::poisson3DSOR_gen( void ){
           for (int k = 0; k < N[2]; k++){
             ind = i*N[1]*N[2] + j*N[2] + k;
             //directly on face, do boundary first.
-            if ((boundarytype == NEUMANN)&&(exterior[ind]==true)){
+            if ((boundarytype == NEUMANN)&&(isExterior[ind]==true)){
                 calc_Neumann(i, j, k); //Dirichlet boundary handled by set_BCs() in main
-            } else if (exterior[ind] == false){ //interior point, do normal.
+            } else if (isExterior[ind] == false){ //interior point, do normal.
               if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
                 Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
-                if(besideElectrode[ind] == true){
+                if(isBesideElec[ind] == true){
                 //Current cell is NEXT TO an electrode, ignore other effects and use workfunction ohmic contact calculation
                 //Rectangular electrodes, only one side of bulk can interface with electrode.
                 //Work function and electrode voltage = 0 for non-electrode sites. Add all sides, since only one of them
                 //is non-zero
-//                  V[ind] = ohmic_contact(ind);
                   V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
                            electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
                            electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
@@ -362,15 +336,12 @@ void Solver::poisson3DSOR_gen( void ){
                            electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
                 } else { //not directly beside an electrode, perform normal calculation.
                   if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
-                    //there is a difference in permittivity, get new a values
-                    get_a( a, eps, ind);
-//                    V[ind] = normal_eps(ind, overrelax, a);
+                    get_a( a, eps, ind); //there is a difference in permittivity, get new a values
                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
                              a[4]*V[ind-N[1]*N[2]] + a[1]*V[ind+N[1]*N[2]] +
                              a[5]*V[ind-N[2]] + a[2]*V[ind+N[2]] +
                              a[6]*V[ind-1] + a[3]*V[ind+1] + rho[ind]*h2/EPS0)/a[0]; //calculate new potential
                   } else { //no difference in permittivity, do not calculate new a values
-//                    V[ind] = normal(ind, overrelax);
                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
                              V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
                              V[ind-1*N[2]] + V[ind+1*N[2]] +
@@ -396,8 +367,9 @@ void Solver::poisson3DSOR_gen( void ){
   std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
   delete[] a;
   delete[] overrelax;
-  delete[] exterior;
-  delete[] besideElectrode;
+  delete[] isExterior;
+  delete[] isBesideElec;
+  delete[] isChangingeps;
 }
 
 //Uses Successive Over Relaxation method to solve poisson's equation

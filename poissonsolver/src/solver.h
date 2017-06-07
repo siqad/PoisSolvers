@@ -76,13 +76,13 @@ public:
     void write_2D(std::vector<double>&, std::string);
     void write_2D( double* vals, std::string filename );
     void get_a(double *, double *, int);
-    void check_eps(double *, std::vector<bool> *);
+    void check_eps(double *, bool*);
     void del( int* );
     void del( double* );
     void del( std::pair<double, double>* );
 
-    void check_branch0( bool* );
-    void check_branch1( bool* );
+    void check_exterior( bool* );
+    void check_elec( bool* );
     double ohmic_contact( unsigned long int );
     double normal_eps( unsigned long int, double*, double*);
     double normal( unsigned long int, double*);
