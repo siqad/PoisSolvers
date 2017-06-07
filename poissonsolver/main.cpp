@@ -15,11 +15,11 @@ int main() {
     Solver * s = &sol;
     std::vector<Electrodes> elec(numelectrodes);
     s->N = s->set_val(Nx, Ny, Nz);
-    s->set_val(s->L, Lx, Ly, Lz);
+    s->L = s->set_val(Lx, Ly, Lz);
 //REQUIRE CONSISTENT L/N IN ALL X, Y, Z
     s->h2 = Lx*Lx/Nx/Nx;
     s->h = Lx/Nx;
-    s->set_val(s->boundarytype, NEUMANN);
+    s->boundarytype = NEUMANN;
     //initialize
     for( int index = 0; index < numelectrodes; index++){
       elec[index].init_elec(); //init all electrodes
@@ -47,12 +47,11 @@ int main() {
     for( int index = 0; index < numelectrodes; index++){
       elec[index].draw(s); //draw all electrodes into electrodemap
     }
-
     s->init_rho( );
     s->init_eps( ); //will replace with reading from file eventually
     s->set_BCs(0, 0, 0, 0, 0, 0); //boundary conditions
     //reset solution vector and call for SOR_GEN
-    s->set_val( s->solvemethod, SOR_GEN);
+    s->solvemethod = SOR_GEN;
     s->solve();
     s->write_2D(s->V, FILENAMESOR_GEN);
     s->write_2D(s->rho, FILENAMERHO);
@@ -60,8 +59,10 @@ int main() {
 //need to delete all the arrays created with new. (init_val() and set_val())
 std::cout << "DELETING VARIABLES" << std::endl;
     s->del(s->V);
+    s->del(s->L);
     s->del(s->N);
     s->del(s->rho);
     s->del(s->electrodemap);
+    s->del(s->eps);
     return 0;
 }

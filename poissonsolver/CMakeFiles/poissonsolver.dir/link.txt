@@ -1,1 +1,1 @@
-/usr/bin/c++   -pg   CMakeFiles/poissonsolver.dir/src/solver.cpp.o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o CMakeFiles/poissonsolver.dir/main.cpp.o  -o poissonsolver 
+/usr/bin/c++     CMakeFiles/poissonsolver.dir/src/solver.cpp.o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o CMakeFiles/poissonsolver.dir/main.cpp.o  -o poissonsolver 

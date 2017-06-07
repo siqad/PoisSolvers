@@ -1,0 +1,1612 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 33.93     22.71    22.71 214229760     0.00     0.00  Solver::normal(unsigned long, double*)
+ 33.08     44.86    22.14        1    22.14    66.07  Solver::poisson3DSOR_gen()
+  4.81     48.08     3.22 218743640     0.00     0.00  std::_Bit_reference::operator bool() const
+  3.91     50.70     2.62 219684832     0.00     0.00  std::vector<bool, std::allocator<bool> >::operator[](unsigned long)
+  3.54     53.07     2.37  4513880     0.00     0.00  Solver::get_a(double*, std::vector<double, std::allocator<double> >&, int const&)
+  3.47     55.39     2.32 221567219     0.00     0.00  std::_Bit_iterator_base::_Bit_iterator_base(unsigned long*, unsigned int)
+  3.39     57.66     2.27 219684832     0.00     0.00  std::_Bit_reference::_Bit_reference(unsigned long*, unsigned long)
+  3.33     59.89     2.23 219684832     0.00     0.00  std::_Bit_iterator::operator*() const
+  2.70     61.70     1.81 219684833     0.00     0.00  std::_Bit_iterator::_Bit_iterator(unsigned long*, unsigned int)
+  2.42     63.32     1.62 370949016     0.00     0.00  std::vector<double, std::allocator<double> >::operator[](unsigned long)
+  0.97     63.97     0.65 13819880     0.00     0.00  Solver::calc_Neumann(int, int, int, int)
+  0.76     64.48     0.51        1     0.51     0.52  std::vector<double, std::allocator<double> >::resize(unsigned long)
+  0.75     64.98     0.50 221567219     0.00     0.00  std::iterator<std::random_access_iterator_tag, bool, long, bool*, bool&>::iterator()
+  0.64     65.41     0.43  4513880     0.00     0.00  Solver::normal_eps(unsigned long, double*, double*)
+  0.52     65.76     0.35   941192     0.00     0.00  std::_Bit_reference::operator=(bool)
+  0.48     66.08     0.32        1     0.32     0.32  std::vector<bool, std::allocator<bool> >::~vector()
+  0.30     66.28     0.20        2     0.10     0.10  std::_Bit_iterator::_Bit_iterator()
+  0.24     66.44     0.16        1     0.16     0.16  _GLOBAL__sub_I__ZN6Solver7set_valEiii
+  0.18     66.56     0.12        1     0.12     0.71  Solver::check_eps(std::vector<double, std::allocator<double> >&, std::vector<bool, std::allocator<bool> >*)
+  0.10     66.63     0.07        1     0.07     0.60  Solver::init_eps()
+  0.04     66.66     0.03  1882384     0.00     0.00  std::_Bit_const_iterator::_Bit_const_iterator(std::_Bit_iterator const&)
+  0.04     66.69     0.03   941192     0.00     0.00  std::vector<bool, std::allocator<bool> >::begin() const
+  0.04     66.72     0.03        2     0.02     0.02  Solver::init_val(double, double*)
+  0.04     66.75     0.03        1     0.03     0.03  Solver::check_branch(bool*)
+  0.04     66.78     0.03        1     0.03     0.03  Solver::init_rho()
+  0.04     66.81     0.03        1     0.03     0.05  Solver::init_val(double, std::pair<double, double>*)
+  0.03     66.83     0.02  1000000     0.00     0.00  std::pair<double, double>::pair()
+  0.03     66.85     0.02   941192     0.00     0.00  std::vector<bool, std::allocator<bool> >::at(unsigned long)
+  0.03     66.87     0.02   941192     0.00     0.00  std::operator-(std::_Bit_iterator_base const&, std::_Bit_iterator_base const&)
+  0.03     66.89     0.02   812160     0.00     0.00  Solver::ohmic_contact(unsigned long)
+  0.01     66.90     0.01   941192     0.00     0.00  std::vector<bool, std::allocator<bool> >::end() const
+  0.01     66.91     0.01   941192     0.00     0.00  std::vector<bool, std::allocator<bool> >::size() const
+  0.01     66.92     0.01        3     0.00     0.00  void std::_Destroy_aux<true>::__destroy<double*>(double*, double*)
+  0.01     66.93     0.01        2     0.01     0.01  Solver::write_2D(double*, std::string)
+  0.01     66.94     0.01        1     0.01     0.01  std::_Bit_iterator::operator+(long) const
+  0.01     66.95     0.01        1     0.01     0.01  __gnu_cxx::__enable_if<std::__is_scalar<double>::__value, double*>::__type std::__fill_n_a<double*, unsigned long, double>(double*, unsigned long, double const&)
+  0.00     66.95     0.00   941192     0.00     0.00  std::vector<bool, std::allocator<bool> >::_M_range_check(unsigned long) const
+  0.00     66.95     0.00    40000     0.00     0.00  std::vector<double, std::allocator<double> >::operator[](unsigned long) const
+  0.00     66.95     0.00    40000     0.00     0.00  std::operator&(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+  0.00     66.95     0.00    20000     0.00     0.00  std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+  0.00     66.95     0.00    20000     0.00     0.00  std::setprecision(int)
+  0.00     66.95     0.00    20000     0.00     0.00  std::operator&=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags)
+  0.00     66.95     0.00    20000     0.00     0.00  std::operator~(std::_Ios_Fmtflags)
+  0.00     66.95     0.00    20000     0.00     0.00  std::operator|=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags)
+  0.00     66.95     0.00    20000     0.00     0.00  std::operator|(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+  0.00     66.95     0.00    17584     0.00     0.00  std::vector<int, std::allocator<int> >::operator[](unsigned long)
+  0.00     66.95     0.00       64     0.00     0.00  std::vector<int, std::allocator<int> >::size() const
+  0.00     66.95     0.00       40     0.00     0.00  std::_Iter_base<int*, false>::_S_base(int*)
+  0.00     66.95     0.00       40     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator()
+  0.00     66.95     0.00       40     0.00     0.00  std::_Niter_base<int*>::iterator_type std::__niter_base<int*>(int*)
+  0.00     66.95     0.00       32     0.00     0.00  std::_Iter_base<int const*, false>::_S_base(int const*)
+  0.00     66.95     0.00       24     0.00     0.00  __gnu_cxx::new_allocator<int>::max_size() const
+  0.00     66.95     0.00       24     0.00     0.00  void std::_Destroy_aux<true>::__destroy<int*>(int*, int*)
+  0.00     66.95     0.00       24     0.00     0.00  std::vector<Electrodes, std::allocator<Electrodes> >::operator[](unsigned long)
+  0.00     66.95     0.00       24     0.00     0.00  void std::_Destroy<int*>(int*, int*)
+  0.00     66.95     0.00       24     0.00     0.00  void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&)
+  0.00     66.95     0.00       16     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const
+  0.00     66.95     0.00       16     0.00     0.00  std::move_iterator<int*>::base() const
+  0.00     66.95     0.00       16     0.00     0.00  std::initializer_list<int>::begin() const
+  0.00     66.95     0.00       16     0.00     0.00  std::vector<int, std::allocator<int> >::max_size() const
+  0.00     66.95     0.00       16     0.00     0.00  std::_Iter_base<std::move_iterator<int*>, true>::_S_base(std::move_iterator<int*>)
+  0.00     66.95     0.00       16     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long)
+  0.00     66.95     0.00       16     0.00     0.00  std::move_iterator<int*>::move_iterator(int*)
+  0.00     66.95     0.00       16     0.00     0.00  std::enable_if<std::allocator_traits<std::allocator<int> >::__maxsize_helper<std::allocator<int> const>::value, unsigned long>::type std::allocator_traits<std::allocator<int> >::_S_max_size<std::allocator<int> const>(std::allocator<int> const&)
+  0.00     66.95     0.00       16     0.00     0.00  std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&)
+  0.00     66.95     0.00       16     0.00     0.00  std::_Miter_base<int const*>::iterator_type std::__miter_base<int const*>(int const*)
+  0.00     66.95     0.00       16     0.00     0.00  std::_Miter_base<std::move_iterator<int*> >::iterator_type std::__miter_base<std::move_iterator<int*> >(std::move_iterator<int*>)
+  0.00     66.95     0.00       16     0.00     0.00  std::_Niter_base<int const*>::iterator_type std::__niter_base<int const*>(int const*)
+  0.00     66.95     0.00       16     0.00     0.00  std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int*, std::move_iterator<int*> >(int*)
+  0.00     66.95     0.00        9     0.00     0.00  unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+  0.00     66.95     0.00        8     0.00     0.00  __gnu_cxx::new_allocator<int>::deallocate(int*, unsigned long)
+  0.00     66.95     0.00        8     0.00     0.00  __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*)
+  0.00     66.95     0.00        8     0.00     0.00  __gnu_cxx::new_allocator<int>::new_allocator()
+  0.00     66.95     0.00        8     0.00     0.00  __gnu_cxx::new_allocator<int>::~new_allocator()
+  0.00     66.95     0.00        8     0.00     0.00  std::initializer_list<int>::end() const
+  0.00     66.95     0.00        8     0.00     0.00  std::initializer_list<int>::size() const
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::capacity() const
+  0.00     66.95     0.00        8     0.00     0.00  std::allocator<int>::allocator()
+  0.00     66.95     0.00        8     0.00     0.00  std::allocator<int>::~allocator()
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*)
+  0.00     66.95     0.00        8     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long)
+  0.00     66.95     0.00        8     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl()
+  0.00     66.95     0.00        8     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl()
+  0.00     66.95     0.00        8     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::_Vector_base()
+  0.00     66.95     0.00        8     0.00     0.00  std::_Vector_base<int, std::allocator<int> >::~_Vector_base()
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  0.00     66.95     0.00        8     0.00     0.00  void std::__uninitialized_default_n_1<true>::__uninit_default_n<int*, unsigned long>(int*, unsigned long)
+  0.00     66.95     0.00        8     0.00     0.00  void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag)
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::_M_erase_at_end(int*)
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::_M_default_append(unsigned long)
+  0.00     66.95     0.00        8     0.00     0.00  void std::vector<int, std::allocator<int> >::_M_assign_dispatch<int const*>(int const*, int const*, std::__false_type)
+  0.00     66.95     0.00        8     0.00     0.00  void std::vector<int, std::allocator<int> >::assign<int const*, void>(int const*, int const*)
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::resize(unsigned long)
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::vector()
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::~vector()
+  0.00     66.95     0.00        8     0.00     0.00  std::vector<int, std::allocator<int> >::operator=(std::initializer_list<int>)
+  0.00     66.95     0.00        8     0.00     0.00  std::iterator_traits<int const*>::difference_type std::__distance<int const*>(int const*, int const*, std::random_access_iterator_tag)
+  0.00     66.95     0.00        8     0.00     0.00  __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, int*>::__type std::__fill_n_a<int*, unsigned long, int>(int*, unsigned long, int const&)
+  0.00     66.95     0.00        8     0.00     0.00  Electrodes* std::__addressof<Electrodes>(Electrodes&)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__copy_move_a<true, int*, int*>(int*, int*, int*)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__copy_move_a2<false, int const*, int*>(int const*, int const*, int*)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  0.00     66.95     0.00        8     0.00     0.00  std::iterator_traits<int const*>::iterator_category std::__iterator_category<int const*>(int const* const&)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&)
+  0.00     66.95     0.00        8     0.00     0.00  void std::__uninitialized_default_n<int*, unsigned long>(int*, unsigned long)
+  0.00     66.95     0.00        8     0.00     0.00  void std::__uninitialized_default_n_a<int*, unsigned long, int>(int*, unsigned long, std::allocator<int>&)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::copy<int const*, int*>(int const*, int const*, int*)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+  0.00     66.95     0.00        8     0.00     0.00  int* std::fill_n<int*, unsigned long, int>(int*, unsigned long, int const&)
+  0.00     66.95     0.00        8     0.00     0.00  std::iterator_traits<int const*>::difference_type std::distance<int const*>(int const*, int const*)
+  0.00     66.95     0.00        7     0.00     0.00  std::vector<double, std::allocator<double> >::size() const
+  0.00     66.95     0.00        6     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator()
+  0.00     66.95     0.00        5     0.00     0.00  std::_Iter_base<double*, false>::_S_base(double*)
+  0.00     66.95     0.00        5     0.00     0.00  std::_Niter_base<double*>::iterator_type std::__niter_base<double*>(double*)
+  0.00     66.95     0.00        4     0.00     0.00  Electrodes::draw(Solver*)
+  0.00     66.95     0.00        4     0.00     0.00  Electrodes::init_elec()
+  0.00     66.95     0.00        4     0.00     0.00  Electrodes::Electrodes()
+  0.00     66.95     0.00        4     0.00     0.00  Electrodes::~Electrodes()
+  0.00     66.95     0.00        4     0.00     0.00  __gnu_cxx::new_allocator<double>::max_size() const
+  0.00     66.95     0.00        4     0.00     0.00  std::_Iter_base<double const*, false>::_S_base(double const*)
+  0.00     66.95     0.00        4     0.00     0.00  void std::_Construct<Electrodes>(Electrodes*)
+  0.00     66.95     0.00        4     0.00     0.00  void std::_Destroy<Electrodes>(Electrodes*)
+  0.00     66.95     0.00        4     0.00     0.00  operator new(unsigned long, void*)
+  0.00     66.95     0.00        3     0.00     0.00  Solver::del(double*)
+  0.00     66.95     0.00        3     0.00     0.00  __gnu_cxx::new_allocator<double>::~new_allocator()
+  0.00     66.95     0.00        3     0.00     0.00  std::allocator<double>::~allocator()
+  0.00     66.95     0.00        3     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long)
+  0.00     66.95     0.00        3     0.00     0.00  void std::_Destroy<double*>(double*, double*)
+  0.00     66.95     0.00        3     0.00     0.00  void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&)
+  0.00     66.95     0.00        2     0.00     0.00  __gnu_cxx::new_allocator<Electrodes>::~new_allocator()
+  0.00     66.95     0.00        2     0.00     0.00  __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long)
+  0.00     66.95     0.00        2     0.00     0.00  __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*)
+  0.00     66.95     0.00        2     0.00     0.00  __gnu_cxx::new_allocator<double>::new_allocator()
+  0.00     66.95     0.00        2     0.00     0.00  __gnu_cxx::new_allocator<unsigned long>::~new_allocator()
+  0.00     66.95     0.00        2     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const
+  0.00     66.95     0.00        2     0.00     0.00  std::move_iterator<double*>::base() const
+  0.00     66.95     0.00        2     0.00     0.00  std::initializer_list<double>::begin() const
+  0.00     66.95     0.00        2     0.00     0.00  std::vector<double, std::allocator<double> >::max_size() const
+  0.00     66.95     0.00        2     0.00     0.00  std::allocator<Electrodes>::~allocator()
+  0.00     66.95     0.00        2     0.00     0.00  std::allocator<double>::allocator()
+  0.00     66.95     0.00        2     0.00     0.00  std::allocator<unsigned long>::~allocator()
+  0.00     66.95     0.00        2     0.00     0.00  std::_Iter_base<unsigned long*, false>::_S_base(unsigned long*)
+  0.00     66.95     0.00        2     0.00     0.00  std::_Iter_base<std::move_iterator<double*>, true>::_S_base(std::move_iterator<double*>)
+  0.00     66.95     0.00        2     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_get_Tp_allocator()
+  0.00     66.95     0.00        2     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long)
+  0.00     66.95     0.00        2     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl()
+  0.00     66.95     0.00        2     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::~_Vector_base()
+  0.00     66.95     0.00        2     0.00     0.00  std::_Bvector_base<std::allocator<bool> >::_S_nword(unsigned long)
+  0.00     66.95     0.00        2     0.00     0.00  std::move_iterator<double*>::move_iterator(double*)
+  0.00     66.95     0.00        2     0.00     0.00  std::enable_if<std::allocator_traits<std::allocator<double> >::__maxsize_helper<std::allocator<double> const>::value, unsigned long>::type std::allocator_traits<std::allocator<double> >::_S_max_size<std::allocator<double> const>(std::allocator<double> const&)
+  0.00     66.95     0.00        2     0.00     0.00  std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&)
+  0.00     66.95     0.00        2     0.00     0.00  std::_Miter_base<double const*>::iterator_type std::__miter_base<double const*>(double const*)
+  0.00     66.95     0.00        2     0.00     0.00  std::_Miter_base<std::move_iterator<double*> >::iterator_type std::__miter_base<std::move_iterator<double*> >(std::move_iterator<double*>)
+  0.00     66.95     0.00        2     0.00     0.00  std::_Niter_base<double const*>::iterator_type std::__niter_base<double const*>(double const*)
+  0.00     66.95     0.00        2     0.00     0.00  std::_Niter_base<unsigned long*>::iterator_type std::__niter_base<unsigned long*>(unsigned long*)
+  0.00     66.95     0.00        2     0.00     0.00  std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double*, std::move_iterator<double*> >(double*)
+  0.00     66.95     0.00        2     0.00     0.00  std::operator|(std::_Ios_Openmode, std::_Ios_Openmode)
+  0.00     66.95     0.00        1     0.00     0.00  _GLOBAL__sub_I__ZN10Electrodes9init_elecEv
+  0.00     66.95     0.00        1     0.00     0.00  _GLOBAL__sub_I_main
+  0.00     66.95     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00     66.95     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00     66.95     0.00        1     0.00     0.00  __static_initialization_and_destruction_0(int, int)
+  0.00     66.95     0.00        1     0.00     0.00  Solver::del(std::pair<double, double>*)
+  0.00     66.95     0.00        1     0.00     0.00  Solver::del(int*)
+  0.00     66.95     0.00        1     0.00    66.07  Solver::solve()
+  0.00     66.95     0.00        1     0.00     0.00  Solver::set_BCs(double, double, double, double, double, double)
+  0.00     66.95     0.00        1     0.00     0.00  Solver::set_val(double, double)
+  0.00     66.95     0.00        1     0.00     0.00  Solver::set_val(double, double, double)
+  0.00     66.95     0.00        1     0.00     0.00  Solver::set_val(int, int, int)
+  0.00     66.95     0.00        1     0.00     0.00  Solver::Solver()
+  0.00     66.95     0.00        1     0.00     0.01  Solver::~Solver()
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<Electrodes>::deallocate(Electrodes*, unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<Electrodes>::allocate(unsigned long, void const*)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<Electrodes>::new_allocator(__gnu_cxx::new_allocator<Electrodes> const&)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<Electrodes>::new_allocator()
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<bool>::new_allocator()
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<bool>::~new_allocator()
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<unsigned long>::deallocate(unsigned long*, unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<unsigned long>::allocate(unsigned long, void const*)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<unsigned long>::new_allocator(__gnu_cxx::new_allocator<unsigned long> const&)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<unsigned long>::new_allocator()
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<Electrodes>::max_size() const
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::new_allocator<unsigned long>::max_size() const
+  0.00     66.95     0.00        1     0.00     0.00  std::initializer_list<double>::end() const
+  0.00     66.95     0.00        1     0.00     0.00  std::initializer_list<double>::size() const
+  0.00     66.95     0.00        1     0.00     0.00  std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const
+  0.00     66.95     0.00        1     0.00     0.00  std::allocator<Electrodes>::allocator()
+  0.00     66.95     0.00        1     0.00     0.00  std::allocator<Electrodes>::allocator(std::allocator<Electrodes> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::allocator<bool>::allocator()
+  0.00     66.95     0.00        1     0.00     0.00  std::allocator<bool>::~allocator()
+  0.00     66.95     0.00        1     0.00     0.00  std::allocator<double>::allocator(std::allocator<double> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::allocator<unsigned long>::allocator<bool>(std::allocator<bool> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::allocator<unsigned long>::allocator(std::allocator<unsigned long> const&)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  void std::_Destroy_aux<false>::__destroy<Electrodes*>(Electrodes*, Electrodes*)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_allocate(unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::_Vector_impl(std::allocator<Electrodes> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::~_Vector_impl()
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_deallocate(Electrodes*, unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_create_storage(unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_base(unsigned long, std::allocator<Electrodes> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<Electrodes, std::allocator<Electrodes> >::~_Vector_base()
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl()
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Vector_base<double, std::allocator<double> >::_Vector_base()
+  0.00     66.95     0.00        1     0.00     0.00  std::_Bit_iterator::operator+=(long)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Bvector_base<std::allocator<bool> >::_M_allocate(unsigned long)
+  0.00     66.95     0.00        1     0.00     0.20  std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::_Bvector_impl(std::allocator<unsigned long>&&)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::~_Bvector_impl()
+  0.00     66.95     0.00        1     0.00     0.00  std::_Bvector_base<std::allocator<bool> >::_M_deallocate()
+  0.00     66.95     0.00        1     0.00     0.20  std::_Bvector_base<std::allocator<bool> >::_Bvector_base(std::allocator<bool> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::_Bvector_base<std::allocator<bool> >::~_Bvector_base()
+  0.00     66.95     0.00        1     0.00     0.00  std::_Bit_iterator_base::_M_incr(long)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  0.00     66.95     0.00        1     0.00     0.00  void std::__uninitialized_default_n_1<false>::__uninit_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long)
+  0.00     66.95     0.00        1     0.00     0.01  void std::__uninitialized_default_n_1<true>::__uninit_default_n<double*, unsigned long>(double*, unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  std::vector<Electrodes, std::allocator<Electrodes> >::_M_default_initialize(unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  std::vector<Electrodes, std::allocator<Electrodes> >::vector(unsigned long, std::allocator<Electrodes> const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::vector<Electrodes, std::allocator<Electrodes> >::~vector()
+  0.00     66.95     0.00        1     0.00     0.01  std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long)
+  0.00     66.95     0.00        1     0.00     0.21  std::vector<bool, std::allocator<bool> >::vector(unsigned long, std::allocator<bool> const&)
+  0.00     66.95     0.00        1     0.00     0.21  std::vector<bool, std::allocator<bool> >::vector(unsigned long, bool const&, std::allocator<bool> const&)
+  0.00     66.95     0.00        1     0.00     0.01  std::vector<double, std::allocator<double> >::_M_default_append(unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag)
+  0.00     66.95     0.00        1     0.00     0.00  std::vector<double, std::allocator<double> >::vector()
+  0.00     66.95     0.00        1     0.00     0.00  std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&)
+  0.00     66.95     0.00        1     0.00     0.01  std::vector<double, std::allocator<double> >::~vector()
+  0.00     66.95     0.00        1     0.00     0.00  std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__copy_move_a<true, double*, double*>(double*, double*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  0.00     66.95     0.00        1     0.00     0.00  std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&)
+  0.00     66.95     0.00        1     0.00     0.00  void std::__uninitialized_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long)
+  0.00     66.95     0.00        1     0.00     0.01  void std::__uninitialized_default_n<double*, unsigned long>(double*, unsigned long)
+  0.00     66.95     0.00        1     0.00     0.00  void std::__uninitialized_default_n_a<Electrodes*, unsigned long, Electrodes>(Electrodes*, unsigned long, std::allocator<Electrodes>&)
+  0.00     66.95     0.00        1     0.00     0.01  void std::__uninitialized_default_n_a<double*, unsigned long, double>(double*, unsigned long, std::allocator<double>&)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::copy<double const*, double*>(double const*, double const*, double*)
+  0.00     66.95     0.00        1     0.00     0.00  double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  0.00     66.95     0.00        1     0.00     0.00  void std::fill<unsigned long*, int>(unsigned long*, unsigned long*, int const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::remove_reference<std::allocator<unsigned long>&>::type&& std::move<std::allocator<unsigned long>&>(std::allocator<unsigned long>&)
+  0.00     66.95     0.00        1     0.00     0.01  double* std::fill_n<double*, unsigned long, double>(double*, unsigned long, double const&)
+  0.00     66.95     0.00        1     0.00     0.00  void std::_Destroy<Electrodes*>(Electrodes*, Electrodes*)
+  0.00     66.95     0.00        1     0.00     0.00  void std::_Destroy<Electrodes*, Electrodes>(Electrodes*, Electrodes*, std::allocator<Electrodes>&)
+  0.00     66.95     0.00        1     0.00     0.00  __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, void>::__type std::__fill_a<unsigned long*, int>(unsigned long*, unsigned long*, int const&)
+  0.00     66.95     0.00        1     0.00     0.00  std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*)
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.01% of 66.95 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     99.8    0.00   66.79                 main [1]
+                0.00   66.07       1/1           Solver::solve() [3]
+                0.07    0.53       1/1           Solver::init_eps() [15]
+                0.03    0.02       1/1           Solver::init_val(double, std::pair<double, double>*) [33]
+                0.03    0.00       2/2           Solver::init_val(double, double*) [35]
+                0.03    0.00       1/1           Solver::init_rho() [37]
+                0.01    0.00       2/2           Solver::write_2D(double*, std::string) [46]
+                0.00    0.01       1/1           Solver::~Solver() [53]
+                0.00    0.00      24/24          std::vector<Electrodes, std::allocator<Electrodes> >::operator[](unsigned long) [77]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::operator=(std::initializer_list<int>) [121]
+                0.00    0.00       4/4           Electrodes::init_elec() [144]
+                0.00    0.00       4/4           Electrodes::draw(Solver*) [143]
+                0.00    0.00       3/3           Solver::del(double*) [152]
+                0.00    0.00       1/1           Solver::Solver() [195]
+                0.00    0.00       1/1           std::allocator<Electrodes>::allocator() [212]
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::vector(unsigned long, std::allocator<Electrodes> const&) [243]
+                0.00    0.00       1/2           std::allocator<Electrodes>::~allocator() [165]
+                0.00    0.00       1/1           Solver::set_val(int, int, int) [194]
+                0.00    0.00       1/1           Solver::set_val(double, double, double) [193]
+                0.00    0.00       1/1           Solver::set_BCs(double, double, double, double, double, double) [191]
+                0.00    0.00       1/1           Solver::del(int*) [190]
+                0.00    0.00       1/1           Solver::del(std::pair<double, double>*) [189]
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::~vector() [244]
+-----------------------------------------------
+               22.14   43.92       1/1           Solver::solve() [3]
+[2]     98.7   22.14   43.92       1         Solver::poisson3DSOR_gen() [2]
+               22.71    0.94 214229760/214229760     Solver::normal(unsigned long, double*) [4]
+                2.61    9.07 218743640/219684832     std::vector<bool, std::allocator<bool> >::operator[](unsigned long) [5]
+                3.22    0.00 218743640/218743640     std::_Bit_reference::operator bool() const [8]
+                2.37    0.63 4513880/4513880     Solver::get_a(double*, std::vector<double, std::allocator<double> >&, int const&) [9]
+                0.12    0.59       1/1           Solver::check_eps(std::vector<double, std::allocator<double> >&, std::vector<bool, std::allocator<bool> >*) [13]
+                0.65    0.00 13819880/13819880     Solver::calc_Neumann(int, int, int, int) [14]
+                0.43    0.00 4513880/4513880     Solver::normal_eps(unsigned long, double*, double*) [18]
+                0.32    0.00       1/1           std::vector<bool, std::allocator<bool> >::~vector() [20]
+                0.00    0.21       1/1           std::vector<bool, std::allocator<bool> >::vector(unsigned long, std::allocator<bool> const&) [21]
+                0.03    0.00       1/1           Solver::check_branch(bool*) [36]
+                0.02    0.00  812160/812160      Solver::ohmic_contact(unsigned long) [40]
+                0.00    0.00       1/1           Solver::set_val(double, double) [192]
+                0.00    0.00       1/1           std::allocator<bool>::allocator() [214]
+                0.00    0.00       1/1           std::allocator<bool>::~allocator() [215]
+-----------------------------------------------
+                0.00   66.07       1/1           main [1]
+[3]     98.7    0.00   66.07       1         Solver::solve() [3]
+               22.14   43.92       1/1           Solver::poisson3DSOR_gen() [2]
+-----------------------------------------------
+               22.71    0.94 214229760/214229760     Solver::poisson3DSOR_gen() [2]
+[4]     35.3   22.71    0.94 214229760         Solver::normal(unsigned long, double*) [4]
+                0.94    0.00 214229760/370949016     std::vector<double, std::allocator<double> >::operator[](unsigned long) [12]
+-----------------------------------------------
+                0.01    0.04  941192/219684832     std::vector<bool, std::allocator<bool> >::at(unsigned long) [26]
+                2.61    9.07 218743640/219684832     Solver::poisson3DSOR_gen() [2]
+[5]     17.5    2.62    9.11 219684832         std::vector<bool, std::allocator<bool> >::operator[](unsigned long) [5]
+                1.81    2.80 219684832/219684833     std::_Bit_iterator::_Bit_iterator(unsigned long*, unsigned int) [6]
+                2.23    2.27 219684832/219684832     std::_Bit_iterator::operator*() const [7]
+-----------------------------------------------
+                0.00    0.00       1/219684833     std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long) [42]
+                1.81    2.80 219684832/219684833     std::vector<bool, std::allocator<bool> >::operator[](unsigned long) [5]
+[6]      6.9    1.81    2.80 219684833         std::_Bit_iterator::_Bit_iterator(unsigned long*, unsigned int) [6]
+                2.30    0.50 219684833/221567219     std::_Bit_iterator_base::_Bit_iterator_base(unsigned long*, unsigned int) [10]
+-----------------------------------------------
+                2.23    2.27 219684832/219684832     std::vector<bool, std::allocator<bool> >::operator[](unsigned long) [5]
+[7]      6.7    2.23    2.27 219684832         std::_Bit_iterator::operator*() const [7]
+                2.27    0.00 219684832/219684832     std::_Bit_reference::_Bit_reference(unsigned long*, unsigned long) [11]
+-----------------------------------------------
+                3.22    0.00 218743640/218743640     Solver::poisson3DSOR_gen() [2]
+[8]      4.8    3.22    0.00 218743640         std::_Bit_reference::operator bool() const [8]
+-----------------------------------------------
+                2.37    0.63 4513880/4513880     Solver::poisson3DSOR_gen() [2]
+[9]      4.5    2.37    0.63 4513880         Solver::get_a(double*, std::vector<double, std::allocator<double> >&, int const&) [9]
+                0.63    0.00 144444160/370949016     std::vector<double, std::allocator<double> >::operator[](unsigned long) [12]
+-----------------------------------------------
+                0.00    0.00       2/221567219     std::_Bit_iterator::_Bit_iterator() [23]
+                0.02    0.00 1882384/221567219     std::_Bit_const_iterator::_Bit_const_iterator(std::_Bit_iterator const&) [32]
+                2.30    0.50 219684833/221567219     std::_Bit_iterator::_Bit_iterator(unsigned long*, unsigned int) [6]
+[10]     4.2    2.32    0.50 221567219         std::_Bit_iterator_base::_Bit_iterator_base(unsigned long*, unsigned int) [10]
+                0.50    0.00 221567219/221567219     std::iterator<std::random_access_iterator_tag, bool, long, bool*, bool&>::iterator() [17]
+-----------------------------------------------
+                2.27    0.00 219684832/219684832     std::_Bit_iterator::operator*() const [7]
+[11]     3.4    2.27    0.00 219684832         std::_Bit_reference::_Bit_reference(unsigned long*, unsigned long) [11]
+-----------------------------------------------
+                0.00    0.00 1000000/370949016     Solver::init_eps() [15]
+                0.05    0.00 11275096/370949016     Solver::check_eps(std::vector<double, std::allocator<double> >&, std::vector<bool, std::allocator<bool> >*) [13]
+                0.63    0.00 144444160/370949016     Solver::get_a(double*, std::vector<double, std::allocator<double> >&, int const&) [9]
+                0.94    0.00 214229760/370949016     Solver::normal(unsigned long, double*) [4]
+[12]     2.4    1.62    0.00 370949016         std::vector<double, std::allocator<double> >::operator[](unsigned long) [12]
+-----------------------------------------------
+                0.12    0.59       1/1           Solver::poisson3DSOR_gen() [2]
+[13]     1.1    0.12    0.59       1         Solver::check_eps(std::vector<double, std::allocator<double> >&, std::vector<bool, std::allocator<bool> >*) [13]
+                0.35    0.00  941192/941192      std::_Bit_reference::operator=(bool) [19]
+                0.02    0.17  941192/941192      std::vector<bool, std::allocator<bool> >::at(unsigned long) [26]
+                0.05    0.00 11275096/370949016     std::vector<double, std::allocator<double> >::operator[](unsigned long) [12]
+-----------------------------------------------
+                0.65    0.00 13819880/13819880     Solver::poisson3DSOR_gen() [2]
+[14]     1.0    0.65    0.00 13819880         Solver::calc_Neumann(int, int, int, int) [14]
+-----------------------------------------------
+                0.07    0.53       1/1           main [1]
+[15]     0.9    0.07    0.53       1         Solver::init_eps() [15]
+                0.51    0.01       1/1           std::vector<double, std::allocator<double> >::resize(unsigned long) [16]
+                0.00    0.00 1000000/370949016     std::vector<double, std::allocator<double> >::operator[](unsigned long) [12]
+-----------------------------------------------
+                0.51    0.01       1/1           Solver::init_eps() [15]
+[16]     0.8    0.51    0.01       1         std::vector<double, std::allocator<double> >::resize(unsigned long) [16]
+                0.00    0.01       1/1           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+                0.00    0.00       2/7           std::vector<double, std::allocator<double> >::size() const [139]
+-----------------------------------------------
+                0.50    0.00 221567219/221567219     std::_Bit_iterator_base::_Bit_iterator_base(unsigned long*, unsigned int) [10]
+[17]     0.7    0.50    0.00 221567219         std::iterator<std::random_access_iterator_tag, bool, long, bool*, bool&>::iterator() [17]
+-----------------------------------------------
+                0.43    0.00 4513880/4513880     Solver::poisson3DSOR_gen() [2]
+[18]     0.6    0.43    0.00 4513880         Solver::normal_eps(unsigned long, double*, double*) [18]
+-----------------------------------------------
+                0.35    0.00  941192/941192      Solver::check_eps(std::vector<double, std::allocator<double> >&, std::vector<bool, std::allocator<bool> >*) [13]
+[19]     0.5    0.35    0.00  941192         std::_Bit_reference::operator=(bool) [19]
+-----------------------------------------------
+                0.32    0.00       1/1           Solver::poisson3DSOR_gen() [2]
+[20]     0.5    0.32    0.00       1         std::vector<bool, std::allocator<bool> >::~vector() [20]
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::~_Bvector_base() [237]
+-----------------------------------------------
+                0.00    0.21       1/1           Solver::poisson3DSOR_gen() [2]
+[21]     0.3    0.00    0.21       1         std::vector<bool, std::allocator<bool> >::vector(unsigned long, std::allocator<bool> const&) [21]
+                0.00    0.21       1/1           std::vector<bool, std::allocator<bool> >::vector(unsigned long, bool const&, std::allocator<bool> const&) [22]
+-----------------------------------------------
+                0.00    0.21       1/1           std::vector<bool, std::allocator<bool> >::vector(unsigned long, std::allocator<bool> const&) [21]
+[22]     0.3    0.00    0.21       1         std::vector<bool, std::allocator<bool> >::vector(unsigned long, bool const&, std::allocator<bool> const&) [22]
+                0.00    0.20       1/1           std::_Bvector_base<std::allocator<bool> >::_Bvector_base(std::allocator<bool> const&) [25]
+                0.00    0.01       1/1           std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long) [42]
+                0.00    0.00       1/1           void std::fill<unsigned long*, int>(unsigned long*, unsigned long*, int const&) [263]
+-----------------------------------------------
+                0.20    0.00       2/2           std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::_Bvector_impl(std::allocator<unsigned long>&&) [24]
+[23]     0.3    0.20    0.00       2         std::_Bit_iterator::_Bit_iterator() [23]
+                0.00    0.00       2/221567219     std::_Bit_iterator_base::_Bit_iterator_base(unsigned long*, unsigned int) [10]
+-----------------------------------------------
+                0.00    0.20       1/1           std::_Bvector_base<std::allocator<bool> >::_Bvector_base(std::allocator<bool> const&) [25]
+[24]     0.3    0.00    0.20       1         std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::_Bvector_impl(std::allocator<unsigned long>&&) [24]
+                0.20    0.00       2/2           std::_Bit_iterator::_Bit_iterator() [23]
+                0.00    0.00       1/1           std::remove_reference<std::allocator<unsigned long>&>::type&& std::move<std::allocator<unsigned long>&>(std::allocator<unsigned long>&) [264]
+                0.00    0.00       1/1           std::allocator<unsigned long>::allocator(std::allocator<unsigned long> const&) [218]
+-----------------------------------------------
+                0.00    0.20       1/1           std::vector<bool, std::allocator<bool> >::vector(unsigned long, bool const&, std::allocator<bool> const&) [22]
+[25]     0.3    0.00    0.20       1         std::_Bvector_base<std::allocator<bool> >::_Bvector_base(std::allocator<bool> const&) [25]
+                0.00    0.20       1/1           std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::_Bvector_impl(std::allocator<unsigned long>&&) [24]
+                0.00    0.00       1/1           std::allocator<unsigned long>::allocator<bool>(std::allocator<bool> const&) [217]
+                0.00    0.00       1/2           std::allocator<unsigned long>::~allocator() [167]
+-----------------------------------------------
+                0.02    0.17  941192/941192      Solver::check_eps(std::vector<double, std::allocator<double> >&, std::vector<bool, std::allocator<bool> >*) [13]
+[26]     0.3    0.02    0.17  941192         std::vector<bool, std::allocator<bool> >::at(unsigned long) [26]
+                0.00    0.12  941192/941192      std::vector<bool, std::allocator<bool> >::_M_range_check(unsigned long) const [29]
+                0.01    0.04  941192/219684832     std::vector<bool, std::allocator<bool> >::operator[](unsigned long) [5]
+-----------------------------------------------
+                0.16    0.00       1/1           __libc_csu_init [28]
+[27]     0.2    0.16    0.00       1         _GLOBAL__sub_I__ZN6Solver7set_valEiii [27]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [186]
+-----------------------------------------------
+                                                 <spontaneous>
+[28]     0.2    0.00    0.16                 __libc_csu_init [28]
+                0.16    0.00       1/1           _GLOBAL__sub_I__ZN6Solver7set_valEiii [27]
+                0.00    0.00       1/1           _GLOBAL__sub_I_main [185]
+                0.00    0.00       1/1           _GLOBAL__sub_I__ZN10Electrodes9init_elecEv [184]
+-----------------------------------------------
+                0.00    0.12  941192/941192      std::vector<bool, std::allocator<bool> >::at(unsigned long) [26]
+[29]     0.2    0.00    0.12  941192         std::vector<bool, std::allocator<bool> >::_M_range_check(unsigned long) const [29]
+                0.01    0.11  941192/941192      std::vector<bool, std::allocator<bool> >::size() const [30]
+-----------------------------------------------
+                0.01    0.11  941192/941192      std::vector<bool, std::allocator<bool> >::_M_range_check(unsigned long) const [29]
+[30]     0.2    0.01    0.11  941192         std::vector<bool, std::allocator<bool> >::size() const [30]
+                0.03    0.03  941192/941192      std::vector<bool, std::allocator<bool> >::begin() const [31]
+                0.01    0.03  941192/941192      std::vector<bool, std::allocator<bool> >::end() const [34]
+                0.02    0.00  941192/941192      std::operator-(std::_Bit_iterator_base const&, std::_Bit_iterator_base const&) [39]
+-----------------------------------------------
+                0.03    0.03  941192/941192      std::vector<bool, std::allocator<bool> >::size() const [30]
+[31]     0.1    0.03    0.03  941192         std::vector<bool, std::allocator<bool> >::begin() const [31]
+                0.02    0.01  941192/1882384     std::_Bit_const_iterator::_Bit_const_iterator(std::_Bit_iterator const&) [32]
+-----------------------------------------------
+                0.02    0.01  941192/1882384     std::vector<bool, std::allocator<bool> >::begin() const [31]
+                0.02    0.01  941192/1882384     std::vector<bool, std::allocator<bool> >::end() const [34]
+[32]     0.1    0.03    0.02 1882384         std::_Bit_const_iterator::_Bit_const_iterator(std::_Bit_iterator const&) [32]
+                0.02    0.00 1882384/221567219     std::_Bit_iterator_base::_Bit_iterator_base(unsigned long*, unsigned int) [10]
+-----------------------------------------------
+                0.03    0.02       1/1           main [1]
+[33]     0.1    0.03    0.02       1         Solver::init_val(double, std::pair<double, double>*) [33]
+                0.02    0.00 1000000/1000000     std::pair<double, double>::pair() [38]
+-----------------------------------------------
+                0.01    0.03  941192/941192      std::vector<bool, std::allocator<bool> >::size() const [30]
+[34]     0.1    0.01    0.03  941192         std::vector<bool, std::allocator<bool> >::end() const [34]
+                0.02    0.01  941192/1882384     std::_Bit_const_iterator::_Bit_const_iterator(std::_Bit_iterator const&) [32]
+-----------------------------------------------
+                0.03    0.00       2/2           main [1]
+[35]     0.0    0.03    0.00       2         Solver::init_val(double, double*) [35]
+-----------------------------------------------
+                0.03    0.00       1/1           Solver::poisson3DSOR_gen() [2]
+[36]     0.0    0.03    0.00       1         Solver::check_branch(bool*) [36]
+-----------------------------------------------
+                0.03    0.00       1/1           main [1]
+[37]     0.0    0.03    0.00       1         Solver::init_rho() [37]
+-----------------------------------------------
+                0.02    0.00 1000000/1000000     Solver::init_val(double, std::pair<double, double>*) [33]
+[38]     0.0    0.02    0.00 1000000         std::pair<double, double>::pair() [38]
+-----------------------------------------------
+                0.02    0.00  941192/941192      std::vector<bool, std::allocator<bool> >::size() const [30]
+[39]     0.0    0.02    0.00  941192         std::operator-(std::_Bit_iterator_base const&, std::_Bit_iterator_base const&) [39]
+-----------------------------------------------
+                0.02    0.00  812160/812160      Solver::poisson3DSOR_gen() [2]
+[40]     0.0    0.02    0.00  812160         Solver::ohmic_contact(unsigned long) [40]
+-----------------------------------------------
+                0.00    0.01       1/1           std::vector<double, std::allocator<double> >::resize(unsigned long) [16]
+[41]     0.0    0.00    0.01       1         std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+                0.00    0.01       1/1           void std::__uninitialized_default_n_a<double*, unsigned long, double>(double*, unsigned long, std::allocator<double>&) [51]
+                0.00    0.00       1/3           void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [45]
+                0.00    0.00       3/6           std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [140]
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [211]
+                0.00    0.00       1/7           std::vector<double, std::allocator<double> >::size() const [139]
+                0.00    0.00       1/2           std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [171]
+                0.00    0.00       1/1           double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [260]
+                0.00    0.00       1/3           std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [155]
+-----------------------------------------------
+                0.00    0.01       1/1           std::vector<bool, std::allocator<bool> >::vector(unsigned long, bool const&, std::allocator<bool> const&) [22]
+[42]     0.0    0.00    0.01       1         std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long) [42]
+                0.01    0.00       1/1           std::_Bit_iterator::operator+(long) const [47]
+                0.00    0.00       1/219684833     std::_Bit_iterator::_Bit_iterator(unsigned long*, unsigned int) [6]
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_M_allocate(unsigned long) [234]
+                0.00    0.00       1/2           std::_Bvector_base<std::allocator<bool> >::_S_nword(unsigned long) [174]
+-----------------------------------------------
+                0.01    0.00       3/3           void std::_Destroy<double*>(double*, double*) [44]
+[43]     0.0    0.01    0.00       3         void std::_Destroy_aux<true>::__destroy<double*>(double*, double*) [43]
+-----------------------------------------------
+                0.00    0.01       3/3           void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [45]
+[44]     0.0    0.00    0.01       3         void std::_Destroy<double*>(double*, double*) [44]
+                0.01    0.00       3/3           void std::_Destroy_aux<true>::__destroy<double*>(double*, double*) [43]
+-----------------------------------------------
+                0.00    0.00       1/3           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+                0.00    0.01       2/3           std::vector<double, std::allocator<double> >::~vector() [54]
+[45]     0.0    0.00    0.01       3         void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [45]
+                0.00    0.01       3/3           void std::_Destroy<double*>(double*, double*) [44]
+-----------------------------------------------
+                0.01    0.00       2/2           main [1]
+[46]     0.0    0.01    0.00       2         Solver::write_2D(double*, std::string) [46]
+                0.00    0.00   40000/40000       std::vector<double, std::allocator<double> >::operator[](unsigned long) const [61]
+                0.00    0.00   20000/20000       std::setprecision(int) [64]
+                0.00    0.00       2/2           std::operator|(std::_Ios_Openmode, std::_Ios_Openmode) [183]
+                0.00    0.00       1/2           std::allocator<double>::allocator() [166]
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [247]
+                0.00    0.00       1/3           std::allocator<double>::~allocator() [154]
+-----------------------------------------------
+                0.01    0.00       1/1           std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long) [42]
+[47]     0.0    0.01    0.00       1         std::_Bit_iterator::operator+(long) const [47]
+                0.00    0.00       1/1           std::_Bit_iterator::operator+=(long) [233]
+-----------------------------------------------
+                0.00    0.01       1/1           void std::__uninitialized_default_n<double*, unsigned long>(double*, unsigned long) [50]
+[48]     0.0    0.00    0.01       1         void std::__uninitialized_default_n_1<true>::__uninit_default_n<double*, unsigned long>(double*, unsigned long) [48]
+                0.00    0.01       1/1           double* std::fill_n<double*, unsigned long, double>(double*, unsigned long, double const&) [52]
+-----------------------------------------------
+                0.01    0.00       1/1           double* std::fill_n<double*, unsigned long, double>(double*, unsigned long, double const&) [52]
+[49]     0.0    0.01    0.00       1         __gnu_cxx::__enable_if<std::__is_scalar<double>::__value, double*>::__type std::__fill_n_a<double*, unsigned long, double>(double*, unsigned long, double const&) [49]
+-----------------------------------------------
+                0.00    0.01       1/1           void std::__uninitialized_default_n_a<double*, unsigned long, double>(double*, unsigned long, std::allocator<double>&) [51]
+[50]     0.0    0.00    0.01       1         void std::__uninitialized_default_n<double*, unsigned long>(double*, unsigned long) [50]
+                0.00    0.01       1/1           void std::__uninitialized_default_n_1<true>::__uninit_default_n<double*, unsigned long>(double*, unsigned long) [48]
+-----------------------------------------------
+                0.00    0.01       1/1           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+[51]     0.0    0.00    0.01       1         void std::__uninitialized_default_n_a<double*, unsigned long, double>(double*, unsigned long, std::allocator<double>&) [51]
+                0.00    0.01       1/1           void std::__uninitialized_default_n<double*, unsigned long>(double*, unsigned long) [50]
+-----------------------------------------------
+                0.00    0.01       1/1           void std::__uninitialized_default_n_1<true>::__uninit_default_n<double*, unsigned long>(double*, unsigned long) [48]
+[52]     0.0    0.00    0.01       1         double* std::fill_n<double*, unsigned long, double>(double*, unsigned long, double const&) [52]
+                0.01    0.00       1/1           __gnu_cxx::__enable_if<std::__is_scalar<double>::__value, double*>::__type std::__fill_n_a<double*, unsigned long, double>(double*, unsigned long, double const&) [49]
+                0.00    0.00       1/5           std::_Niter_base<double*>::iterator_type std::__niter_base<double*>(double*) [142]
+-----------------------------------------------
+                0.00    0.01       1/1           main [1]
+[53]     0.0    0.00    0.01       1         Solver::~Solver() [53]
+                0.00    0.01       1/1           std::vector<double, std::allocator<double> >::~vector() [54]
+-----------------------------------------------
+                0.00    0.01       1/1           Solver::~Solver() [53]
+[54]     0.0    0.00    0.01       1         std::vector<double, std::allocator<double> >::~vector() [54]
+                0.00    0.01       2/3           void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&) [45]
+                0.00    0.00       2/6           std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [140]
+                0.00    0.00       2/2           std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [173]
+-----------------------------------------------
+                0.00    0.00   40000/40000       Solver::write_2D(double*, std::string) [46]
+[61]     0.0    0.00    0.00   40000         std::vector<double, std::allocator<double> >::operator[](unsigned long) const [61]
+-----------------------------------------------
+                0.00    0.00   20000/40000       std::operator&=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags) [65]
+                0.00    0.00   20000/40000       std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [63]
+[62]     0.0    0.00    0.00   40000         std::operator&(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [62]
+-----------------------------------------------
+                0.00    0.00   20000/20000       std::scientific(std::ios_base&) [277]
+[63]     0.0    0.00    0.00   20000         std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [63]
+                0.00    0.00   20000/20000       std::operator~(std::_Ios_Fmtflags) [66]
+                0.00    0.00   20000/20000       std::operator&=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags) [65]
+                0.00    0.00   20000/40000       std::operator&(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [62]
+                0.00    0.00   20000/20000       std::operator|=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags) [67]
+-----------------------------------------------
+                0.00    0.00   20000/20000       Solver::write_2D(double*, std::string) [46]
+[64]     0.0    0.00    0.00   20000         std::setprecision(int) [64]
+-----------------------------------------------
+                0.00    0.00   20000/20000       std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [63]
+[65]     0.0    0.00    0.00   20000         std::operator&=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags) [65]
+                0.00    0.00   20000/40000       std::operator&(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [62]
+-----------------------------------------------
+                0.00    0.00   20000/20000       std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [63]
+[66]     0.0    0.00    0.00   20000         std::operator~(std::_Ios_Fmtflags) [66]
+-----------------------------------------------
+                0.00    0.00   20000/20000       std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [63]
+[67]     0.0    0.00    0.00   20000         std::operator|=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags) [67]
+                0.00    0.00   20000/20000       std::operator|(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [68]
+-----------------------------------------------
+                0.00    0.00   20000/20000       std::operator|=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags) [67]
+[68]     0.0    0.00    0.00   20000         std::operator|(std::_Ios_Fmtflags, std::_Ios_Fmtflags) [68]
+-----------------------------------------------
+                0.00    0.00   17584/17584       Electrodes::draw(Solver*) [143]
+[69]     0.0    0.00    0.00   17584         std::vector<int, std::allocator<int> >::operator[](unsigned long) [69]
+-----------------------------------------------
+                0.00    0.00       8/64          std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+                0.00    0.00       8/64          void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag) [113]
+                0.00    0.00      16/64          std::vector<int, std::allocator<int> >::resize(unsigned long) [118]
+                0.00    0.00      32/64          std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const [100]
+[70]     0.0    0.00    0.00      64         std::vector<int, std::allocator<int> >::size() const [70]
+-----------------------------------------------
+                0.00    0.00      40/40          std::_Niter_base<int*>::iterator_type std::__niter_base<int*>(int*) [73]
+[71]     0.0    0.00    0.00      40         std::_Iter_base<int*, false>::_S_base(int*) [71]
+-----------------------------------------------
+                0.00    0.00       8/40          std::vector<int, std::allocator<int> >::_M_erase_at_end(int*) [114]
+                0.00    0.00       8/40          std::vector<int, std::allocator<int> >::~vector() [120]
+                0.00    0.00      24/40          std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+[72]     0.0    0.00    0.00      40         std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() [72]
+-----------------------------------------------
+                0.00    0.00       8/40          int* std::fill_n<int*, unsigned long, int>(int*, unsigned long, int const&) [137]
+                0.00    0.00       8/40          int* std::__copy_move_a2<false, int const*, int*>(int const*, int const*, int*) [127]
+                0.00    0.00      24/40          int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*) [128]
+[73]     0.0    0.00    0.00      40         std::_Niter_base<int*>::iterator_type std::__niter_base<int*>(int*) [73]
+                0.00    0.00      40/40          std::_Iter_base<int*, false>::_S_base(int*) [71]
+-----------------------------------------------
+                0.00    0.00      16/32          std::_Miter_base<int const*>::iterator_type std::__miter_base<int const*>(int const*) [89]
+                0.00    0.00      16/32          std::_Niter_base<int const*>::iterator_type std::__niter_base<int const*>(int const*) [91]
+[74]     0.0    0.00    0.00      32         std::_Iter_base<int const*, false>::_S_base(int const*) [74]
+-----------------------------------------------
+                0.00    0.00       8/24          __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*) [95]
+                0.00    0.00      16/24          std::enable_if<std::allocator_traits<std::allocator<int> >::__maxsize_helper<std::allocator<int> const>::value, unsigned long>::type std::allocator_traits<std::allocator<int> >::_S_max_size<std::allocator<int> const>(std::allocator<int> const&) [87]
+[75]     0.0    0.00    0.00      24         __gnu_cxx::new_allocator<int>::max_size() const [75]
+-----------------------------------------------
+                0.00    0.00      24/24          void std::_Destroy<int*>(int*, int*) [78]
+[76]     0.0    0.00    0.00      24         void std::_Destroy_aux<true>::__destroy<int*>(int*, int*) [76]
+-----------------------------------------------
+                0.00    0.00      24/24          main [1]
+[77]     0.0    0.00    0.00      24         std::vector<Electrodes, std::allocator<Electrodes> >::operator[](unsigned long) [77]
+-----------------------------------------------
+                0.00    0.00      24/24          void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&) [79]
+[78]     0.0    0.00    0.00      24         void std::_Destroy<int*>(int*, int*) [78]
+                0.00    0.00      24/24          void std::_Destroy_aux<true>::__destroy<int*>(int*, int*) [76]
+-----------------------------------------------
+                0.00    0.00       8/24          std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+                0.00    0.00       8/24          std::vector<int, std::allocator<int> >::_M_erase_at_end(int*) [114]
+                0.00    0.00       8/24          std::vector<int, std::allocator<int> >::~vector() [120]
+[79]     0.0    0.00    0.00      24         void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&) [79]
+                0.00    0.00      24/24          void std::_Destroy<int*>(int*, int*) [78]
+-----------------------------------------------
+                0.00    0.00      16/16          std::vector<int, std::allocator<int> >::max_size() const [83]
+[80]     0.0    0.00    0.00      16         std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const [80]
+-----------------------------------------------
+                0.00    0.00      16/16          std::_Iter_base<std::move_iterator<int*>, true>::_S_base(std::move_iterator<int*>) [84]
+[81]     0.0    0.00    0.00      16         std::move_iterator<int*>::base() const [81]
+-----------------------------------------------
+                0.00    0.00       8/16          std::initializer_list<int>::end() const [98]
+                0.00    0.00       8/16          std::vector<int, std::allocator<int> >::operator=(std::initializer_list<int>) [121]
+[82]     0.0    0.00    0.00      16         std::initializer_list<int>::begin() const [82]
+-----------------------------------------------
+                0.00    0.00      16/16          std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const [100]
+[83]     0.0    0.00    0.00      16         std::vector<int, std::allocator<int> >::max_size() const [83]
+                0.00    0.00      16/16          std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const [80]
+                0.00    0.00      16/16          std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&) [88]
+-----------------------------------------------
+                0.00    0.00      16/16          std::_Miter_base<std::move_iterator<int*> >::iterator_type std::__miter_base<std::move_iterator<int*> >(std::move_iterator<int*>) [90]
+[84]     0.0    0.00    0.00      16         std::_Iter_base<std::move_iterator<int*>, true>::_S_base(std::move_iterator<int*>) [84]
+                0.00    0.00      16/16          std::move_iterator<int*>::base() const [81]
+-----------------------------------------------
+                0.00    0.00       8/16          std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+                0.00    0.00       8/16          std::_Vector_base<int, std::allocator<int> >::~_Vector_base() [110]
+[85]     0.0    0.00    0.00      16         std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long) [85]
+                0.00    0.00       8/8           __gnu_cxx::new_allocator<int>::deallocate(int*, unsigned long) [94]
+-----------------------------------------------
+                0.00    0.00      16/16          std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int*, std::move_iterator<int*> >(int*) [92]
+[86]     0.0    0.00    0.00      16         std::move_iterator<int*>::move_iterator(int*) [86]
+-----------------------------------------------
+                0.00    0.00      16/16          std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&) [88]
+[87]     0.0    0.00    0.00      16         std::enable_if<std::allocator_traits<std::allocator<int> >::__maxsize_helper<std::allocator<int> const>::value, unsigned long>::type std::allocator_traits<std::allocator<int> >::_S_max_size<std::allocator<int> const>(std::allocator<int> const&) [87]
+                0.00    0.00      16/24          __gnu_cxx::new_allocator<int>::max_size() const [75]
+-----------------------------------------------
+                0.00    0.00      16/16          std::vector<int, std::allocator<int> >::max_size() const [83]
+[88]     0.0    0.00    0.00      16         std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&) [88]
+                0.00    0.00      16/16          std::enable_if<std::allocator_traits<std::allocator<int> >::__maxsize_helper<std::allocator<int> const>::value, unsigned long>::type std::allocator_traits<std::allocator<int> >::_S_max_size<std::allocator<int> const>(std::allocator<int> const&) [87]
+-----------------------------------------------
+                0.00    0.00      16/16          int* std::copy<int const*, int*>(int const*, int const*, int*) [135]
+[89]     0.0    0.00    0.00      16         std::_Miter_base<int const*>::iterator_type std::__miter_base<int const*>(int const*) [89]
+                0.00    0.00      16/32          std::_Iter_base<int const*, false>::_S_base(int const*) [74]
+-----------------------------------------------
+                0.00    0.00      16/16          int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [136]
+[90]     0.0    0.00    0.00      16         std::_Miter_base<std::move_iterator<int*> >::iterator_type std::__miter_base<std::move_iterator<int*> >(std::move_iterator<int*>) [90]
+                0.00    0.00      16/16          std::_Iter_base<std::move_iterator<int*>, true>::_S_base(std::move_iterator<int*>) [84]
+-----------------------------------------------
+                0.00    0.00      16/16          int* std::__copy_move_a2<false, int const*, int*>(int const*, int const*, int*) [127]
+[91]     0.0    0.00    0.00      16         std::_Niter_base<int const*>::iterator_type std::__niter_base<int const*>(int const*) [91]
+                0.00    0.00      16/32          std::_Iter_base<int const*, false>::_S_base(int const*) [74]
+-----------------------------------------------
+                0.00    0.00      16/16          int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&) [134]
+[92]     0.0    0.00    0.00      16         std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int*, std::move_iterator<int*> >(int*) [92]
+                0.00    0.00      16/16          std::move_iterator<int*>::move_iterator(int*) [86]
+-----------------------------------------------
+                0.00    0.00       1/9           std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [211]
+                0.00    0.00       8/9           std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const [100]
+[93]     0.0    0.00    0.00       9         unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [93]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long) [85]
+[94]     0.0    0.00    0.00       8         __gnu_cxx::new_allocator<int>::deallocate(int*, unsigned long) [94]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long) [106]
+[95]     0.0    0.00    0.00       8         __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*) [95]
+                0.00    0.00       8/24          __gnu_cxx::new_allocator<int>::max_size() const [75]
+-----------------------------------------------
+                0.00    0.00       8/8           std::allocator<int>::allocator() [102]
+[96]     0.0    0.00    0.00       8         __gnu_cxx::new_allocator<int>::new_allocator() [96]
+-----------------------------------------------
+                0.00    0.00       8/8           std::allocator<int>::~allocator() [103]
+[97]     0.0    0.00    0.00       8         __gnu_cxx::new_allocator<int>::~new_allocator() [97]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::operator=(std::initializer_list<int>) [121]
+[98]     0.0    0.00    0.00       8         std::initializer_list<int>::end() const [98]
+                0.00    0.00       8/16          std::initializer_list<int>::begin() const [82]
+                0.00    0.00       8/8           std::initializer_list<int>::size() const [99]
+-----------------------------------------------
+                0.00    0.00       8/8           std::initializer_list<int>::end() const [98]
+[99]     0.0    0.00    0.00       8         std::initializer_list<int>::size() const [99]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+[100]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const [100]
+                0.00    0.00      32/64          std::vector<int, std::allocator<int> >::size() const [70]
+                0.00    0.00      16/16          std::vector<int, std::allocator<int> >::max_size() const [83]
+                0.00    0.00       8/9           unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [93]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag) [113]
+[101]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::capacity() const [101]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl() [107]
+[102]    0.0    0.00    0.00       8         std::allocator<int>::allocator() [102]
+                0.00    0.00       8/8           __gnu_cxx::new_allocator<int>::new_allocator() [96]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl() [108]
+[103]    0.0    0.00    0.00       8         std::allocator<int>::~allocator() [103]
+                0.00    0.00       8/8           __gnu_cxx::new_allocator<int>::~new_allocator() [97]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*) [125]
+[104]    0.0    0.00    0.00       8         int* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*) [104]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::__copy_move_a<true, int*, int*>(int*, int*, int*) [126]
+[105]    0.0    0.00    0.00       8         int* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*) [105]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+[106]    0.0    0.00    0.00       8         std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long) [106]
+                0.00    0.00       8/8           __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*) [95]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_Vector_base() [109]
+[107]    0.0    0.00    0.00       8         std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl() [107]
+                0.00    0.00       8/8           std::allocator<int>::allocator() [102]
+-----------------------------------------------
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::~_Vector_base() [110]
+[108]    0.0    0.00    0.00       8         std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl() [108]
+                0.00    0.00       8/8           std::allocator<int>::~allocator() [103]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::vector() [119]
+[109]    0.0    0.00    0.00       8         std::_Vector_base<int, std::allocator<int> >::_Vector_base() [109]
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl() [107]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::~vector() [120]
+[110]    0.0    0.00    0.00       8         std::_Vector_base<int, std::allocator<int> >::~_Vector_base() [110]
+                0.00    0.00       8/16          std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long) [85]
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl() [108]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [129]
+[111]    0.0    0.00    0.00       8         int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [111]
+                0.00    0.00       8/8           int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [136]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::__uninitialized_default_n<int*, unsigned long>(int*, unsigned long) [132]
+[112]    0.0    0.00    0.00       8         void std::__uninitialized_default_n_1<true>::__uninit_default_n<int*, unsigned long>(int*, unsigned long) [112]
+                0.00    0.00       8/8           int* std::fill_n<int*, unsigned long, int>(int*, unsigned long, int const&) [137]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::_M_assign_dispatch<int const*>(int const*, int const*, std::__false_type) [116]
+[113]    0.0    0.00    0.00       8         void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag) [113]
+                0.00    0.00       8/8           std::iterator_traits<int const*>::difference_type std::distance<int const*>(int const*, int const*) [138]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::capacity() const [101]
+                0.00    0.00       8/64          std::vector<int, std::allocator<int> >::size() const [70]
+                0.00    0.00       8/8           int* std::copy<int const*, int*>(int const*, int const*, int*) [135]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::_M_erase_at_end(int*) [114]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag) [113]
+[114]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::_M_erase_at_end(int*) [114]
+                0.00    0.00       8/40          std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() [72]
+                0.00    0.00       8/24          void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&) [79]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::resize(unsigned long) [118]
+[115]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+                0.00    0.00      24/40          std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() [72]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const [100]
+                0.00    0.00       8/64          std::vector<int, std::allocator<int> >::size() const [70]
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long) [106]
+                0.00    0.00       8/8           int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&) [134]
+                0.00    0.00       8/8           void std::__uninitialized_default_n_a<int*, unsigned long, int>(int*, unsigned long, std::allocator<int>&) [133]
+                0.00    0.00       8/24          void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&) [79]
+                0.00    0.00       8/16          std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long) [85]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::assign<int const*, void>(int const*, int const*) [117]
+[116]    0.0    0.00    0.00       8         void std::vector<int, std::allocator<int> >::_M_assign_dispatch<int const*>(int const*, int const*, std::__false_type) [116]
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag) [113]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::operator=(std::initializer_list<int>) [121]
+[117]    0.0    0.00    0.00       8         void std::vector<int, std::allocator<int> >::assign<int const*, void>(int const*, int const*) [117]
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::_M_assign_dispatch<int const*>(int const*, int const*, std::__false_type) [116]
+-----------------------------------------------
+                0.00    0.00       8/8           Electrodes::init_elec() [144]
+[118]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::resize(unsigned long) [118]
+                0.00    0.00      16/64          std::vector<int, std::allocator<int> >::size() const [70]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+-----------------------------------------------
+                0.00    0.00       8/8           Electrodes::Electrodes() [145]
+[119]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::vector() [119]
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::_Vector_base() [109]
+-----------------------------------------------
+                0.00    0.00       8/8           Electrodes::~Electrodes() [146]
+[120]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::~vector() [120]
+                0.00    0.00       8/40          std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() [72]
+                0.00    0.00       8/24          void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&) [79]
+                0.00    0.00       8/8           std::_Vector_base<int, std::allocator<int> >::~_Vector_base() [110]
+-----------------------------------------------
+                0.00    0.00       8/8           main [1]
+[121]    0.0    0.00    0.00       8         std::vector<int, std::allocator<int> >::operator=(std::initializer_list<int>) [121]
+                0.00    0.00       8/8           std::initializer_list<int>::end() const [98]
+                0.00    0.00       8/16          std::initializer_list<int>::begin() const [82]
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::assign<int const*, void>(int const*, int const*) [117]
+-----------------------------------------------
+                0.00    0.00       8/8           std::iterator_traits<int const*>::difference_type std::distance<int const*>(int const*, int const*) [138]
+[122]    0.0    0.00    0.00       8         std::iterator_traits<int const*>::difference_type std::__distance<int const*>(int const*, int const*, std::random_access_iterator_tag) [122]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::fill_n<int*, unsigned long, int>(int*, unsigned long, int const&) [137]
+[123]    0.0    0.00    0.00       8         __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, int*>::__type std::__fill_n_a<int*, unsigned long, int>(int*, unsigned long, int const&) [123]
+-----------------------------------------------
+                0.00    0.00       4/8           void std::_Destroy_aux<false>::__destroy<Electrodes*>(Electrodes*, Electrodes*) [221]
+                0.00    0.00       4/8           void std::__uninitialized_default_n_1<false>::__uninit_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [241]
+[124]    0.0    0.00    0.00       8         Electrodes* std::__addressof<Electrodes>(Electrodes&) [124]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::__copy_move_a2<false, int const*, int*>(int const*, int const*, int*) [127]
+[125]    0.0    0.00    0.00       8         int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*) [125]
+                0.00    0.00       8/8           int* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*) [104]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*) [128]
+[126]    0.0    0.00    0.00       8         int* std::__copy_move_a<true, int*, int*>(int*, int*, int*) [126]
+                0.00    0.00       8/8           int* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*) [105]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::copy<int const*, int*>(int const*, int const*, int*) [135]
+[127]    0.0    0.00    0.00       8         int* std::__copy_move_a2<false, int const*, int*>(int const*, int const*, int*) [127]
+                0.00    0.00      16/16          std::_Niter_base<int const*>::iterator_type std::__niter_base<int const*>(int const*) [91]
+                0.00    0.00       8/40          std::_Niter_base<int*>::iterator_type std::__niter_base<int*>(int*) [73]
+                0.00    0.00       8/8           int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*) [125]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [136]
+[128]    0.0    0.00    0.00       8         int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*) [128]
+                0.00    0.00      24/40          std::_Niter_base<int*>::iterator_type std::__niter_base<int*>(int*) [73]
+                0.00    0.00       8/8           int* std::__copy_move_a<true, int*, int*>(int*, int*, int*) [126]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&) [131]
+[129]    0.0    0.00    0.00       8         int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [129]
+                0.00    0.00       8/8           int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [111]
+-----------------------------------------------
+                0.00    0.00       8/8           std::iterator_traits<int const*>::difference_type std::distance<int const*>(int const*, int const*) [138]
+[130]    0.0    0.00    0.00       8         std::iterator_traits<int const*>::iterator_category std::__iterator_category<int const*>(int const* const&) [130]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&) [134]
+[131]    0.0    0.00    0.00       8         int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&) [131]
+                0.00    0.00       8/8           int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [129]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::__uninitialized_default_n_a<int*, unsigned long, int>(int*, unsigned long, std::allocator<int>&) [133]
+[132]    0.0    0.00    0.00       8         void std::__uninitialized_default_n<int*, unsigned long>(int*, unsigned long) [132]
+                0.00    0.00       8/8           void std::__uninitialized_default_n_1<true>::__uninit_default_n<int*, unsigned long>(int*, unsigned long) [112]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+[133]    0.0    0.00    0.00       8         void std::__uninitialized_default_n_a<int*, unsigned long, int>(int*, unsigned long, std::allocator<int>&) [133]
+                0.00    0.00       8/8           void std::__uninitialized_default_n<int*, unsigned long>(int*, unsigned long) [132]
+-----------------------------------------------
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::_M_default_append(unsigned long) [115]
+[134]    0.0    0.00    0.00       8         int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&) [134]
+                0.00    0.00      16/16          std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int*, std::move_iterator<int*> >(int*) [92]
+                0.00    0.00       8/8           int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&) [131]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag) [113]
+[135]    0.0    0.00    0.00       8         int* std::copy<int const*, int*>(int const*, int const*, int*) [135]
+                0.00    0.00      16/16          std::_Miter_base<int const*>::iterator_type std::__miter_base<int const*>(int const*) [89]
+                0.00    0.00       8/8           int* std::__copy_move_a2<false, int const*, int*>(int const*, int const*, int*) [127]
+-----------------------------------------------
+                0.00    0.00       8/8           int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [111]
+[136]    0.0    0.00    0.00       8         int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [136]
+                0.00    0.00      16/16          std::_Miter_base<std::move_iterator<int*> >::iterator_type std::__miter_base<std::move_iterator<int*> >(std::move_iterator<int*>) [90]
+                0.00    0.00       8/8           int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*) [128]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::__uninitialized_default_n_1<true>::__uninit_default_n<int*, unsigned long>(int*, unsigned long) [112]
+[137]    0.0    0.00    0.00       8         int* std::fill_n<int*, unsigned long, int>(int*, unsigned long, int const&) [137]
+                0.00    0.00       8/40          std::_Niter_base<int*>::iterator_type std::__niter_base<int*>(int*) [73]
+                0.00    0.00       8/8           __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, int*>::__type std::__fill_n_a<int*, unsigned long, int>(int*, unsigned long, int const&) [123]
+-----------------------------------------------
+                0.00    0.00       8/8           void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag) [113]
+[138]    0.0    0.00    0.00       8         std::iterator_traits<int const*>::difference_type std::distance<int const*>(int const*, int const*) [138]
+                0.00    0.00       8/8           std::iterator_traits<int const*>::iterator_category std::__iterator_category<int const*>(int const* const&) [130]
+                0.00    0.00       8/8           std::iterator_traits<int const*>::difference_type std::__distance<int const*>(int const*, int const*, std::random_access_iterator_tag) [122]
+-----------------------------------------------
+                0.00    0.00       1/7           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+                0.00    0.00       2/7           std::vector<double, std::allocator<double> >::resize(unsigned long) [16]
+                0.00    0.00       4/7           std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [211]
+[139]    0.0    0.00    0.00       7         std::vector<double, std::allocator<double> >::size() const [139]
+-----------------------------------------------
+                0.00    0.00       1/6           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [245]
+                0.00    0.00       2/6           std::vector<double, std::allocator<double> >::~vector() [54]
+                0.00    0.00       3/6           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+[140]    0.0    0.00    0.00       6         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [140]
+-----------------------------------------------
+                0.00    0.00       5/5           std::_Niter_base<double*>::iterator_type std::__niter_base<double*>(double*) [142]
+[141]    0.0    0.00    0.00       5         std::_Iter_base<double*, false>::_S_base(double*) [141]
+-----------------------------------------------
+                0.00    0.00       1/5           double* std::fill_n<double*, unsigned long, double>(double*, unsigned long, double const&) [52]
+                0.00    0.00       1/5           double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [251]
+                0.00    0.00       3/5           double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [252]
+[142]    0.0    0.00    0.00       5         std::_Niter_base<double*>::iterator_type std::__niter_base<double*>(double*) [142]
+                0.00    0.00       5/5           std::_Iter_base<double*, false>::_S_base(double*) [141]
+-----------------------------------------------
+                0.00    0.00       4/4           main [1]
+[143]    0.0    0.00    0.00       4         Electrodes::draw(Solver*) [143]
+                0.00    0.00   17584/17584       std::vector<int, std::allocator<int> >::operator[](unsigned long) [69]
+-----------------------------------------------
+                0.00    0.00       4/4           main [1]
+[144]    0.0    0.00    0.00       4         Electrodes::init_elec() [144]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::resize(unsigned long) [118]
+-----------------------------------------------
+                0.00    0.00       4/4           void std::_Construct<Electrodes>(Electrodes*) [149]
+[145]    0.0    0.00    0.00       4         Electrodes::Electrodes() [145]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::vector() [119]
+-----------------------------------------------
+                0.00    0.00       4/4           void std::_Destroy<Electrodes>(Electrodes*) [150]
+[146]    0.0    0.00    0.00       4         Electrodes::~Electrodes() [146]
+                0.00    0.00       8/8           std::vector<int, std::allocator<int> >::~vector() [120]
+-----------------------------------------------
+                0.00    0.00       2/4           __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [158]
+                0.00    0.00       2/4           std::enable_if<std::allocator_traits<std::allocator<double> >::__maxsize_helper<std::allocator<double> const>::value, unsigned long>::type std::allocator_traits<std::allocator<double> >::_S_max_size<std::allocator<double> const>(std::allocator<double> const&) [176]
+[147]    0.0    0.00    0.00       4         __gnu_cxx::new_allocator<double>::max_size() const [147]
+-----------------------------------------------
+                0.00    0.00       2/4           std::_Miter_base<double const*>::iterator_type std::__miter_base<double const*>(double const*) [178]
+                0.00    0.00       2/4           std::_Niter_base<double const*>::iterator_type std::__niter_base<double const*>(double const*) [180]
+[148]    0.0    0.00    0.00       4         std::_Iter_base<double const*, false>::_S_base(double const*) [148]
+-----------------------------------------------
+                0.00    0.00       4/4           void std::__uninitialized_default_n_1<false>::__uninit_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [241]
+[149]    0.0    0.00    0.00       4         void std::_Construct<Electrodes>(Electrodes*) [149]
+                0.00    0.00       4/4           operator new(unsigned long, void*) [151]
+                0.00    0.00       4/4           Electrodes::Electrodes() [145]
+-----------------------------------------------
+                0.00    0.00       4/4           void std::_Destroy_aux<false>::__destroy<Electrodes*>(Electrodes*, Electrodes*) [221]
+[150]    0.0    0.00    0.00       4         void std::_Destroy<Electrodes>(Electrodes*) [150]
+                0.00    0.00       4/4           Electrodes::~Electrodes() [146]
+-----------------------------------------------
+                0.00    0.00       4/4           void std::_Construct<Electrodes>(Electrodes*) [149]
+[151]    0.0    0.00    0.00       4         operator new(unsigned long, void*) [151]
+-----------------------------------------------
+                0.00    0.00       3/3           main [1]
+[152]    0.0    0.00    0.00       3         Solver::del(double*) [152]
+-----------------------------------------------
+                0.00    0.00       3/3           std::allocator<double>::~allocator() [154]
+[153]    0.0    0.00    0.00       3         __gnu_cxx::new_allocator<double>::~new_allocator() [153]
+-----------------------------------------------
+                0.00    0.00       1/3           Solver::write_2D(double*, std::string) [46]
+                0.00    0.00       2/3           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [172]
+[154]    0.0    0.00    0.00       3         std::allocator<double>::~allocator() [154]
+                0.00    0.00       3/3           __gnu_cxx::new_allocator<double>::~new_allocator() [153]
+-----------------------------------------------
+                0.00    0.00       1/3           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+                0.00    0.00       2/3           std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [173]
+[155]    0.0    0.00    0.00       3         std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [155]
+                0.00    0.00       2/2           __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long) [157]
+-----------------------------------------------
+                0.00    0.00       2/2           std::allocator<Electrodes>::~allocator() [165]
+[156]    0.0    0.00    0.00       2         __gnu_cxx::new_allocator<Electrodes>::~new_allocator() [156]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [155]
+[157]    0.0    0.00    0.00       2         __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long) [157]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [171]
+[158]    0.0    0.00    0.00       2         __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [158]
+                0.00    0.00       2/4           __gnu_cxx::new_allocator<double>::max_size() const [147]
+-----------------------------------------------
+                0.00    0.00       2/2           std::allocator<double>::allocator() [166]
+[159]    0.0    0.00    0.00       2         __gnu_cxx::new_allocator<double>::new_allocator() [159]
+-----------------------------------------------
+                0.00    0.00       2/2           std::allocator<unsigned long>::~allocator() [167]
+[160]    0.0    0.00    0.00       2         __gnu_cxx::new_allocator<unsigned long>::~new_allocator() [160]
+-----------------------------------------------
+                0.00    0.00       2/2           std::vector<double, std::allocator<double> >::max_size() const [164]
+[161]    0.0    0.00    0.00       2         std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const [161]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Iter_base<std::move_iterator<double*>, true>::_S_base(std::move_iterator<double*>) [169]
+[162]    0.0    0.00    0.00       2         std::move_iterator<double*>::base() const [162]
+-----------------------------------------------
+                0.00    0.00       1/2           std::initializer_list<double>::end() const [209]
+                0.00    0.00       1/2           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [247]
+[163]    0.0    0.00    0.00       2         std::initializer_list<double>::begin() const [163]
+-----------------------------------------------
+                0.00    0.00       2/2           std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [211]
+[164]    0.0    0.00    0.00       2         std::vector<double, std::allocator<double> >::max_size() const [164]
+                0.00    0.00       2/2           std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const [161]
+                0.00    0.00       2/2           std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [177]
+-----------------------------------------------
+                0.00    0.00       1/2           main [1]
+                0.00    0.00       1/2           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::~_Vector_impl() [224]
+[165]    0.0    0.00    0.00       2         std::allocator<Electrodes>::~allocator() [165]
+                0.00    0.00       2/2           __gnu_cxx::new_allocator<Electrodes>::~new_allocator() [156]
+-----------------------------------------------
+                0.00    0.00       1/2           Solver::write_2D(double*, std::string) [46]
+                0.00    0.00       1/2           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [230]
+[166]    0.0    0.00    0.00       2         std::allocator<double>::allocator() [166]
+                0.00    0.00       2/2           __gnu_cxx::new_allocator<double>::new_allocator() [159]
+-----------------------------------------------
+                0.00    0.00       1/2           std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::~_Bvector_impl() [235]
+                0.00    0.00       1/2           std::_Bvector_base<std::allocator<bool> >::_Bvector_base(std::allocator<bool> const&) [25]
+[167]    0.0    0.00    0.00       2         std::allocator<unsigned long>::~allocator() [167]
+                0.00    0.00       2/2           __gnu_cxx::new_allocator<unsigned long>::~new_allocator() [160]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Niter_base<unsigned long*>::iterator_type std::__niter_base<unsigned long*>(unsigned long*) [181]
+[168]    0.0    0.00    0.00       2         std::_Iter_base<unsigned long*, false>::_S_base(unsigned long*) [168]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Miter_base<std::move_iterator<double*> >::iterator_type std::__miter_base<std::move_iterator<double*> >(std::move_iterator<double*>) [179]
+[169]    0.0    0.00    0.00       2         std::_Iter_base<std::move_iterator<double*>, true>::_S_base(std::move_iterator<double*>) [169]
+                0.00    0.00       2/2           std::move_iterator<double*>::base() const [162]
+-----------------------------------------------
+                0.00    0.00       1/2           std::vector<Electrodes, std::allocator<Electrodes> >::~vector() [244]
+                0.00    0.00       1/2           std::vector<Electrodes, std::allocator<Electrodes> >::_M_default_initialize(unsigned long) [242]
+[170]    0.0    0.00    0.00       2         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_get_Tp_allocator() [170]
+-----------------------------------------------
+                0.00    0.00       1/2           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+                0.00    0.00       1/2           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [245]
+[171]    0.0    0.00    0.00       2         std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [171]
+                0.00    0.00       2/2           __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [158]
+-----------------------------------------------
+                0.00    0.00       2/2           std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [173]
+[172]    0.0    0.00    0.00       2         std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [172]
+                0.00    0.00       2/3           std::allocator<double>::~allocator() [154]
+-----------------------------------------------
+                0.00    0.00       2/2           std::vector<double, std::allocator<double> >::~vector() [54]
+[173]    0.0    0.00    0.00       2         std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [173]
+                0.00    0.00       2/2           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [172]
+                0.00    0.00       2/3           std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [155]
+-----------------------------------------------
+                0.00    0.00       1/2           std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long) [42]
+                0.00    0.00       1/2           std::_Bvector_base<std::allocator<bool> >::_M_allocate(unsigned long) [234]
+[174]    0.0    0.00    0.00       2         std::_Bvector_base<std::allocator<bool> >::_S_nword(unsigned long) [174]
+-----------------------------------------------
+                0.00    0.00       2/2           std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double*, std::move_iterator<double*> >(double*) [182]
+[175]    0.0    0.00    0.00       2         std::move_iterator<double*>::move_iterator(double*) [175]
+-----------------------------------------------
+                0.00    0.00       2/2           std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [177]
+[176]    0.0    0.00    0.00       2         std::enable_if<std::allocator_traits<std::allocator<double> >::__maxsize_helper<std::allocator<double> const>::value, unsigned long>::type std::allocator_traits<std::allocator<double> >::_S_max_size<std::allocator<double> const>(std::allocator<double> const&) [176]
+                0.00    0.00       2/4           __gnu_cxx::new_allocator<double>::max_size() const [147]
+-----------------------------------------------
+                0.00    0.00       2/2           std::vector<double, std::allocator<double> >::max_size() const [164]
+[177]    0.0    0.00    0.00       2         std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [177]
+                0.00    0.00       2/2           std::enable_if<std::allocator_traits<std::allocator<double> >::__maxsize_helper<std::allocator<double> const>::value, unsigned long>::type std::allocator_traits<std::allocator<double> >::_S_max_size<std::allocator<double> const>(std::allocator<double> const&) [176]
+-----------------------------------------------
+                0.00    0.00       2/2           double* std::copy<double const*, double*>(double const*, double const*, double*) [261]
+[178]    0.0    0.00    0.00       2         std::_Miter_base<double const*>::iterator_type std::__miter_base<double const*>(double const*) [178]
+                0.00    0.00       2/4           std::_Iter_base<double const*, false>::_S_base(double const*) [148]
+-----------------------------------------------
+                0.00    0.00       2/2           double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [262]
+[179]    0.0    0.00    0.00       2         std::_Miter_base<std::move_iterator<double*> >::iterator_type std::__miter_base<std::move_iterator<double*> >(std::move_iterator<double*>) [179]
+                0.00    0.00       2/2           std::_Iter_base<std::move_iterator<double*>, true>::_S_base(std::move_iterator<double*>) [169]
+-----------------------------------------------
+                0.00    0.00       2/2           double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [251]
+[180]    0.0    0.00    0.00       2         std::_Niter_base<double const*>::iterator_type std::__niter_base<double const*>(double const*) [180]
+                0.00    0.00       2/4           std::_Iter_base<double const*, false>::_S_base(double const*) [148]
+-----------------------------------------------
+                0.00    0.00       2/2           void std::fill<unsigned long*, int>(unsigned long*, unsigned long*, int const&) [263]
+[181]    0.0    0.00    0.00       2         std::_Niter_base<unsigned long*>::iterator_type std::__niter_base<unsigned long*>(unsigned long*) [181]
+                0.00    0.00       2/2           std::_Iter_base<unsigned long*, false>::_S_base(unsigned long*) [168]
+-----------------------------------------------
+                0.00    0.00       2/2           double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [260]
+[182]    0.0    0.00    0.00       2         std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double*, std::move_iterator<double*> >(double*) [182]
+                0.00    0.00       2/2           std::move_iterator<double*>::move_iterator(double*) [175]
+-----------------------------------------------
+                0.00    0.00       2/2           Solver::write_2D(double*, std::string) [46]
+[183]    0.0    0.00    0.00       2         std::operator|(std::_Ios_Openmode, std::_Ios_Openmode) [183]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [28]
+[184]    0.0    0.00    0.00       1         _GLOBAL__sub_I__ZN10Electrodes9init_elecEv [184]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [187]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [28]
+[185]    0.0    0.00    0.00       1         _GLOBAL__sub_I_main [185]
+                0.00    0.00       1/1           __static_initialization_and_destruction_0(int, int) [188]
+-----------------------------------------------
+                0.00    0.00       1/1           _GLOBAL__sub_I__ZN6Solver7set_valEiii [27]
+[186]    0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [186]
+-----------------------------------------------
+                0.00    0.00       1/1           _GLOBAL__sub_I__ZN10Electrodes9init_elecEv [184]
+[187]    0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [187]
+-----------------------------------------------
+                0.00    0.00       1/1           _GLOBAL__sub_I_main [185]
+[188]    0.0    0.00    0.00       1         __static_initialization_and_destruction_0(int, int) [188]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[189]    0.0    0.00    0.00       1         Solver::del(std::pair<double, double>*) [189]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[190]    0.0    0.00    0.00       1         Solver::del(int*) [190]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[191]    0.0    0.00    0.00       1         Solver::set_BCs(double, double, double, double, double, double) [191]
+-----------------------------------------------
+                0.00    0.00       1/1           Solver::poisson3DSOR_gen() [2]
+[192]    0.0    0.00    0.00       1         Solver::set_val(double, double) [192]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[193]    0.0    0.00    0.00       1         Solver::set_val(double, double, double) [193]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[194]    0.0    0.00    0.00       1         Solver::set_val(int, int, int) [194]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[195]    0.0    0.00    0.00       1         Solver::Solver() [195]
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector() [246]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_deallocate(Electrodes*, unsigned long) [225]
+[196]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<Electrodes>::deallocate(Electrodes*, unsigned long) [196]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_allocate(unsigned long) [222]
+[197]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<Electrodes>::allocate(unsigned long, void const*) [197]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<Electrodes>::max_size() const [207]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<Electrodes>::allocator(std::allocator<Electrodes> const&) [213]
+[198]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<Electrodes>::new_allocator(__gnu_cxx::new_allocator<Electrodes> const&) [198]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<Electrodes>::allocator() [212]
+[199]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<Electrodes>::new_allocator() [199]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<bool>::allocator() [214]
+[200]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<bool>::new_allocator() [200]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<bool>::~allocator() [215]
+[201]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<bool>::~new_allocator() [201]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<double>::allocator(std::allocator<double> const&) [216]
+[202]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&) [202]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_M_deallocate() [236]
+[203]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<unsigned long>::deallocate(unsigned long*, unsigned long) [203]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_M_allocate(unsigned long) [234]
+[204]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<unsigned long>::allocate(unsigned long, void const*) [204]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<unsigned long>::max_size() const [208]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<unsigned long>::allocator(std::allocator<unsigned long> const&) [218]
+[205]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<unsigned long>::new_allocator(__gnu_cxx::new_allocator<unsigned long> const&) [205]
+-----------------------------------------------
+                0.00    0.00       1/1           std::allocator<unsigned long>::allocator<bool>(std::allocator<bool> const&) [217]
+[206]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<unsigned long>::new_allocator() [206]
+-----------------------------------------------
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<Electrodes>::allocate(unsigned long, void const*) [197]
+[207]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<Electrodes>::max_size() const [207]
+-----------------------------------------------
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<unsigned long>::allocate(unsigned long, void const*) [204]
+[208]    0.0    0.00    0.00       1         __gnu_cxx::new_allocator<unsigned long>::max_size() const [208]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [247]
+[209]    0.0    0.00    0.00       1         std::initializer_list<double>::end() const [209]
+                0.00    0.00       1/2           std::initializer_list<double>::begin() const [163]
+                0.00    0.00       1/1           std::initializer_list<double>::size() const [210]
+-----------------------------------------------
+                0.00    0.00       1/1           std::initializer_list<double>::end() const [209]
+[210]    0.0    0.00    0.00       1         std::initializer_list<double>::size() const [210]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+[211]    0.0    0.00    0.00       1         std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [211]
+                0.00    0.00       4/7           std::vector<double, std::allocator<double> >::size() const [139]
+                0.00    0.00       2/2           std::vector<double, std::allocator<double> >::max_size() const [164]
+                0.00    0.00       1/9           unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&) [93]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[212]    0.0    0.00    0.00       1         std::allocator<Electrodes>::allocator() [212]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<Electrodes>::new_allocator() [199]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::_Vector_impl(std::allocator<Electrodes> const&) [223]
+[213]    0.0    0.00    0.00       1         std::allocator<Electrodes>::allocator(std::allocator<Electrodes> const&) [213]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<Electrodes>::new_allocator(__gnu_cxx::new_allocator<Electrodes> const&) [198]
+-----------------------------------------------
+                0.00    0.00       1/1           Solver::poisson3DSOR_gen() [2]
+[214]    0.0    0.00    0.00       1         std::allocator<bool>::allocator() [214]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<bool>::new_allocator() [200]
+-----------------------------------------------
+                0.00    0.00       1/1           Solver::poisson3DSOR_gen() [2]
+[215]    0.0    0.00    0.00       1         std::allocator<bool>::~allocator() [215]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<bool>::~new_allocator() [201]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [229]
+[216]    0.0    0.00    0.00       1         std::allocator<double>::allocator(std::allocator<double> const&) [216]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&) [202]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_Bvector_base(std::allocator<bool> const&) [25]
+[217]    0.0    0.00    0.00       1         std::allocator<unsigned long>::allocator<bool>(std::allocator<bool> const&) [217]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<unsigned long>::new_allocator() [206]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::_Bvector_impl(std::allocator<unsigned long>&&) [24]
+[218]    0.0    0.00    0.00       1         std::allocator<unsigned long>::allocator(std::allocator<unsigned long> const&) [218]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<unsigned long>::new_allocator(__gnu_cxx::new_allocator<unsigned long> const&) [205]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*) [249]
+[219]    0.0    0.00    0.00       1         double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [219]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__copy_move_a<true, double*, double*>(double*, double*, double*) [250]
+[220]    0.0    0.00    0.00       1         double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [220]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::_Destroy<Electrodes*>(Electrodes*, Electrodes*) [265]
+[221]    0.0    0.00    0.00       1         void std::_Destroy_aux<false>::__destroy<Electrodes*>(Electrodes*, Electrodes*) [221]
+                0.00    0.00       4/4           void std::_Destroy<Electrodes>(Electrodes*) [150]
+                0.00    0.00       4/8           Electrodes* std::__addressof<Electrodes>(Electrodes&) [124]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_create_storage(unsigned long) [226]
+[222]    0.0    0.00    0.00       1         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_allocate(unsigned long) [222]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<Electrodes>::allocate(unsigned long, void const*) [197]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_base(unsigned long, std::allocator<Electrodes> const&) [227]
+[223]    0.0    0.00    0.00       1         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::_Vector_impl(std::allocator<Electrodes> const&) [223]
+                0.00    0.00       1/1           std::allocator<Electrodes>::allocator(std::allocator<Electrodes> const&) [213]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::~_Vector_base() [228]
+[224]    0.0    0.00    0.00       1         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::~_Vector_impl() [224]
+                0.00    0.00       1/2           std::allocator<Electrodes>::~allocator() [165]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::~_Vector_base() [228]
+[225]    0.0    0.00    0.00       1         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_deallocate(Electrodes*, unsigned long) [225]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<Electrodes>::deallocate(Electrodes*, unsigned long) [196]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_base(unsigned long, std::allocator<Electrodes> const&) [227]
+[226]    0.0    0.00    0.00       1         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_create_storage(unsigned long) [226]
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_allocate(unsigned long) [222]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::vector(unsigned long, std::allocator<Electrodes> const&) [243]
+[227]    0.0    0.00    0.00       1         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_base(unsigned long, std::allocator<Electrodes> const&) [227]
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::_Vector_impl(std::allocator<Electrodes> const&) [223]
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_create_storage(unsigned long) [226]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::~vector() [244]
+[228]    0.0    0.00    0.00       1         std::_Vector_base<Electrodes, std::allocator<Electrodes> >::~_Vector_base() [228]
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_deallocate(Electrodes*, unsigned long) [225]
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::~_Vector_impl() [224]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [231]
+[229]    0.0    0.00    0.00       1         std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [229]
+                0.00    0.00       1/1           std::allocator<double>::allocator(std::allocator<double> const&) [216]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_base() [232]
+[230]    0.0    0.00    0.00       1         std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [230]
+                0.00    0.00       1/2           std::allocator<double>::allocator() [166]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [247]
+[231]    0.0    0.00    0.00       1         std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [231]
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [229]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector() [246]
+[232]    0.0    0.00    0.00       1         std::_Vector_base<double, std::allocator<double> >::_Vector_base() [232]
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [230]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bit_iterator::operator+(long) const [47]
+[233]    0.0    0.00    0.00       1         std::_Bit_iterator::operator+=(long) [233]
+                0.00    0.00       1/1           std::_Bit_iterator_base::_M_incr(long) [238]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long) [42]
+[234]    0.0    0.00    0.00       1         std::_Bvector_base<std::allocator<bool> >::_M_allocate(unsigned long) [234]
+                0.00    0.00       1/2           std::_Bvector_base<std::allocator<bool> >::_S_nword(unsigned long) [174]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<unsigned long>::allocate(unsigned long, void const*) [204]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::~_Bvector_base() [237]
+[235]    0.0    0.00    0.00       1         std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::~_Bvector_impl() [235]
+                0.00    0.00       1/2           std::allocator<unsigned long>::~allocator() [167]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::~_Bvector_base() [237]
+[236]    0.0    0.00    0.00       1         std::_Bvector_base<std::allocator<bool> >::_M_deallocate() [236]
+                0.00    0.00       1/1           __gnu_cxx::new_allocator<unsigned long>::deallocate(unsigned long*, unsigned long) [203]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<bool, std::allocator<bool> >::~vector() [20]
+[237]    0.0    0.00    0.00       1         std::_Bvector_base<std::allocator<bool> >::~_Bvector_base() [237]
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_M_deallocate() [236]
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::~_Bvector_impl() [235]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bit_iterator::operator+=(long) [233]
+[238]    0.0    0.00    0.00       1         std::_Bit_iterator_base::_M_incr(long) [238]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*) [253]
+[239]    0.0    0.00    0.00       1         double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [239]
+                0.00    0.00       1/1           double* std::copy<double const*, double*>(double const*, double const*, double*) [261]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [254]
+[240]    0.0    0.00    0.00       1         double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [240]
+                0.00    0.00       1/1           double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [262]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::__uninitialized_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [258]
+[241]    0.0    0.00    0.00       1         void std::__uninitialized_default_n_1<false>::__uninit_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [241]
+                0.00    0.00       4/8           Electrodes* std::__addressof<Electrodes>(Electrodes&) [124]
+                0.00    0.00       4/4           void std::_Construct<Electrodes>(Electrodes*) [149]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::vector(unsigned long, std::allocator<Electrodes> const&) [243]
+[242]    0.0    0.00    0.00       1         std::vector<Electrodes, std::allocator<Electrodes> >::_M_default_initialize(unsigned long) [242]
+                0.00    0.00       1/2           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_get_Tp_allocator() [170]
+                0.00    0.00       1/1           void std::__uninitialized_default_n_a<Electrodes*, unsigned long, Electrodes>(Electrodes*, unsigned long, std::allocator<Electrodes>&) [259]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[243]    0.0    0.00    0.00       1         std::vector<Electrodes, std::allocator<Electrodes> >::vector(unsigned long, std::allocator<Electrodes> const&) [243]
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_base(unsigned long, std::allocator<Electrodes> const&) [227]
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::_M_default_initialize(unsigned long) [242]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[244]    0.0    0.00    0.00       1         std::vector<Electrodes, std::allocator<Electrodes> >::~vector() [244]
+                0.00    0.00       1/2           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_get_Tp_allocator() [170]
+                0.00    0.00       1/1           std::_Vector_base<Electrodes, std::allocator<Electrodes> >::~_Vector_base() [228]
+                0.00    0.00       1/1           void std::_Destroy<Electrodes*, Electrodes>(Electrodes*, Electrodes*, std::allocator<Electrodes>&) [266]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [247]
+[245]    0.0    0.00    0.00       1         void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [245]
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [268]
+                0.00    0.00       1/2           std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [171]
+                0.00    0.00       1/6           std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [140]
+                0.00    0.00       1/1           double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&) [256]
+-----------------------------------------------
+                0.00    0.00       1/1           Solver::Solver() [195]
+[246]    0.0    0.00    0.00       1         std::vector<double, std::allocator<double> >::vector() [246]
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_base() [232]
+-----------------------------------------------
+                0.00    0.00       1/1           Solver::write_2D(double*, std::string) [46]
+[247]    0.0    0.00    0.00       1         std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&) [247]
+                0.00    0.00       1/1           std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [231]
+                0.00    0.00       1/1           std::initializer_list<double>::end() const [209]
+                0.00    0.00       1/2           std::initializer_list<double>::begin() const [163]
+                0.00    0.00       1/1           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [245]
+-----------------------------------------------
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [268]
+[248]    0.0    0.00    0.00       1         std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag) [248]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [251]
+[249]    0.0    0.00    0.00       1         double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*) [249]
+                0.00    0.00       1/1           double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [219]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [252]
+[250]    0.0    0.00    0.00       1         double* std::__copy_move_a<true, double*, double*>(double*, double*, double*) [250]
+                0.00    0.00       1/1           double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [220]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::copy<double const*, double*>(double const*, double const*, double*) [261]
+[251]    0.0    0.00    0.00       1         double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [251]
+                0.00    0.00       2/2           std::_Niter_base<double const*>::iterator_type std::__niter_base<double const*>(double const*) [180]
+                0.00    0.00       1/5           std::_Niter_base<double*>::iterator_type std::__niter_base<double*>(double*) [142]
+                0.00    0.00       1/1           double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*) [249]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [262]
+[252]    0.0    0.00    0.00       1         double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [252]
+                0.00    0.00       3/5           std::_Niter_base<double*>::iterator_type std::__niter_base<double*>(double*) [142]
+                0.00    0.00       1/1           double* std::__copy_move_a<true, double*, double*>(double*, double*, double*) [250]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&) [256]
+[253]    0.0    0.00    0.00       1         double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*) [253]
+                0.00    0.00       1/1           double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [239]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&) [257]
+[254]    0.0    0.00    0.00       1         double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [254]
+                0.00    0.00       1/1           double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [240]
+-----------------------------------------------
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [268]
+[255]    0.0    0.00    0.00       1         std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&) [255]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [245]
+[256]    0.0    0.00    0.00       1         double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&) [256]
+                0.00    0.00       1/1           double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*) [253]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [260]
+[257]    0.0    0.00    0.00       1         double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&) [257]
+                0.00    0.00       1/1           double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [254]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::__uninitialized_default_n_a<Electrodes*, unsigned long, Electrodes>(Electrodes*, unsigned long, std::allocator<Electrodes>&) [259]
+[258]    0.0    0.00    0.00       1         void std::__uninitialized_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [258]
+                0.00    0.00       1/1           void std::__uninitialized_default_n_1<false>::__uninit_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [241]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::_M_default_initialize(unsigned long) [242]
+[259]    0.0    0.00    0.00       1         void std::__uninitialized_default_n_a<Electrodes*, unsigned long, Electrodes>(Electrodes*, unsigned long, std::allocator<Electrodes>&) [259]
+                0.00    0.00       1/1           void std::__uninitialized_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [258]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [41]
+[260]    0.0    0.00    0.00       1         double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&) [260]
+                0.00    0.00       2/2           std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double*, std::move_iterator<double*> >(double*) [182]
+                0.00    0.00       1/1           double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&) [257]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [239]
+[261]    0.0    0.00    0.00       1         double* std::copy<double const*, double*>(double const*, double const*, double*) [261]
+                0.00    0.00       2/2           std::_Miter_base<double const*>::iterator_type std::__miter_base<double const*>(double const*) [178]
+                0.00    0.00       1/1           double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*) [251]
+-----------------------------------------------
+                0.00    0.00       1/1           double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [240]
+[262]    0.0    0.00    0.00       1         double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [262]
+                0.00    0.00       2/2           std::_Miter_base<std::move_iterator<double*> >::iterator_type std::__miter_base<std::move_iterator<double*> >(std::move_iterator<double*>) [179]
+                0.00    0.00       1/1           double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*) [252]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<bool, std::allocator<bool> >::vector(unsigned long, bool const&, std::allocator<bool> const&) [22]
+[263]    0.0    0.00    0.00       1         void std::fill<unsigned long*, int>(unsigned long*, unsigned long*, int const&) [263]
+                0.00    0.00       2/2           std::_Niter_base<unsigned long*>::iterator_type std::__niter_base<unsigned long*>(unsigned long*) [181]
+                0.00    0.00       1/1           __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, void>::__type std::__fill_a<unsigned long*, int>(unsigned long*, unsigned long*, int const&) [267]
+-----------------------------------------------
+                0.00    0.00       1/1           std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::_Bvector_impl(std::allocator<unsigned long>&&) [24]
+[264]    0.0    0.00    0.00       1         std::remove_reference<std::allocator<unsigned long>&>::type&& std::move<std::allocator<unsigned long>&>(std::allocator<unsigned long>&) [264]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::_Destroy<Electrodes*, Electrodes>(Electrodes*, Electrodes*, std::allocator<Electrodes>&) [266]
+[265]    0.0    0.00    0.00       1         void std::_Destroy<Electrodes*>(Electrodes*, Electrodes*) [265]
+                0.00    0.00       1/1           void std::_Destroy_aux<false>::__destroy<Electrodes*>(Electrodes*, Electrodes*) [221]
+-----------------------------------------------
+                0.00    0.00       1/1           std::vector<Electrodes, std::allocator<Electrodes> >::~vector() [244]
+[266]    0.0    0.00    0.00       1         void std::_Destroy<Electrodes*, Electrodes>(Electrodes*, Electrodes*, std::allocator<Electrodes>&) [266]
+                0.00    0.00       1/1           void std::_Destroy<Electrodes*>(Electrodes*, Electrodes*) [265]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::fill<unsigned long*, int>(unsigned long*, unsigned long*, int const&) [263]
+[267]    0.0    0.00    0.00       1         __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, void>::__type std::__fill_a<unsigned long*, int>(unsigned long*, unsigned long*, int const&) [267]
+-----------------------------------------------
+                0.00    0.00       1/1           void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag) [245]
+[268]    0.0    0.00    0.00       1         std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*) [268]
+                0.00    0.00       1/1           std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&) [255]
+                0.00    0.00       1/1           std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag) [248]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+ [184] _GLOBAL__sub_I__ZN10Electrodes9init_elecEv [215] std::allocator<bool>::~allocator() [16] std::vector<double, std::allocator<double> >::resize(unsigned long)
+  [27] _GLOBAL__sub_I__ZN6Solver7set_valEiii [216] std::allocator<double>::allocator(std::allocator<double> const&) [246] std::vector<double, std::allocator<double> >::vector()
+ [185] _GLOBAL__sub_I_main   [166] std::allocator<double>::allocator() [247] std::vector<double, std::allocator<double> >::vector(std::initializer_list<double>, std::allocator<double> const&)
+ [186] __static_initialization_and_destruction_0(int, int) [154] std::allocator<double>::~allocator() [54] std::vector<double, std::allocator<double> >::~vector()
+ [187] __static_initialization_and_destruction_0(int, int) [102] std::allocator<int>::allocator() [12] std::vector<double, std::allocator<double> >::operator[](unsigned long)
+ [188] __static_initialization_and_destruction_0(int, int) [103] std::allocator<int>::~allocator() [113] void std::vector<int, std::allocator<int> >::_M_assign_aux<int const*>(int const*, int const*, std::forward_iterator_tag)
+ [143] Electrodes::draw(Solver*) [217] std::allocator<unsigned long>::allocator<bool>(std::allocator<bool> const&) [114] std::vector<int, std::allocator<int> >::_M_erase_at_end(int*)
+ [144] Electrodes::init_elec() [218] std::allocator<unsigned long>::allocator(std::allocator<unsigned long> const&) [115] std::vector<int, std::allocator<int> >::_M_default_append(unsigned long)
+ [145] Electrodes::Electrodes() [167] std::allocator<unsigned long>::~allocator() [116] void std::vector<int, std::allocator<int> >::_M_assign_dispatch<int const*>(int const*, int const*, std::__false_type)
+ [146] Electrodes::~Electrodes() [148] std::_Iter_base<double const*, false>::_S_base(double const*) [117] void std::vector<int, std::allocator<int> >::assign<int const*, void>(int const*, int const*)
+  [18] Solver::normal_eps(unsigned long, double*, double*) [74] std::_Iter_base<int const*, false>::_S_base(int const*) [118] std::vector<int, std::allocator<int> >::resize(unsigned long)
+  [14] Solver::calc_Neumann(int, int, int, int) [141] std::_Iter_base<double*, false>::_S_base(double*) [119] std::vector<int, std::allocator<int> >::vector()
+  [36] Solver::check_branch(bool*) [71] std::_Iter_base<int*, false>::_S_base(int*) [120] std::vector<int, std::allocator<int> >::~vector()
+  [40] Solver::ohmic_contact(unsigned long) [168] std::_Iter_base<unsigned long*, false>::_S_base(unsigned long*) [121] std::vector<int, std::allocator<int> >::operator=(std::initializer_list<int>)
+   [2] Solver::poisson3DSOR_gen() [169] std::_Iter_base<std::move_iterator<double*>, true>::_S_base(std::move_iterator<double*>) [69] std::vector<int, std::allocator<int> >::operator[](unsigned long)
+ [189] Solver::del(std::pair<double, double>*) [84] std::_Iter_base<std::move_iterator<int*>, true>::_S_base(std::move_iterator<int*>) [63] std::ios_base::setf(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+ [152] Solver::del(double*)  [219] double* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [17] std::iterator<std::random_access_iterator_tag, bool, long, bool*, bool&>::iterator()
+ [190] Solver::del(int*)     [104] int* std::__copy_move<false, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*) [149] void std::_Construct<Electrodes>(Electrodes*)
+   [9] Solver::get_a(double*, std::vector<double, std::allocator<double> >&, int const&) [220] double* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<double>(double const*, double const*, double*) [248] std::iterator_traits<double const*>::difference_type std::__distance<double const*>(double const*, double const*, std::random_access_iterator_tag)
+   [3] Solver::solve()       [105] int* std::__copy_move<true, true, std::random_access_iterator_tag>::__copy_m<int>(int const*, int const*, int*) [122] std::iterator_traits<int const*>::difference_type std::__distance<int const*>(int const*, int const*, std::random_access_iterator_tag)
+   [4] Solver::normal(unsigned long, double*) [221] void std::_Destroy_aux<false>::__destroy<Electrodes*>(Electrodes*, Electrodes*) [49] __gnu_cxx::__enable_if<std::__is_scalar<double>::__value, double*>::__type std::__fill_n_a<double*, unsigned long, double>(double*, unsigned long, double const&)
+ [191] Solver::set_BCs(double, double, double, double, double, double) [43] void std::_Destroy_aux<true>::__destroy<double*>(double*, double*) [123] __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, int*>::__type std::__fill_n_a<int*, unsigned long, int>(int*, unsigned long, int const&)
+ [192] Solver::set_val(double, double) [76] void std::_Destroy_aux<true>::__destroy<int*>(int*, int*) [124] Electrodes* std::__addressof<Electrodes>(Electrodes&)
+ [193] Solver::set_val(double, double, double) [222] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_allocate(unsigned long) [178] std::_Miter_base<double const*>::iterator_type std::__miter_base<double const*>(double const*)
+ [194] Solver::set_val(int, int, int) [223] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::_Vector_impl(std::allocator<Electrodes> const&) [89] std::_Miter_base<int const*>::iterator_type std::__miter_base<int const*>(int const*)
+  [15] Solver::init_eps()    [224] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_impl::~_Vector_impl() [179] std::_Miter_base<std::move_iterator<double*> >::iterator_type std::__miter_base<std::move_iterator<double*> >(std::move_iterator<double*>)
+  [37] Solver::init_rho()    [225] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_deallocate(Electrodes*, unsigned long) [90] std::_Miter_base<std::move_iterator<int*> >::iterator_type std::__miter_base<std::move_iterator<int*> >(std::move_iterator<int*>)
+  [33] Solver::init_val(double, std::pair<double, double>*) [226] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_create_storage(unsigned long) [180] std::_Niter_base<double const*>::iterator_type std::__niter_base<double const*>(double const*)
+  [35] Solver::init_val(double, double*) [170] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_M_get_Tp_allocator() [91] std::_Niter_base<int const*>::iterator_type std::__niter_base<int const*>(int const*)
+  [46] Solver::write_2D(double*, std::string) [227] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::_Vector_base(unsigned long, std::allocator<Electrodes> const&) [142] std::_Niter_base<double*>::iterator_type std::__niter_base<double*>(double*)
+  [13] Solver::check_eps(std::vector<double, std::allocator<double> >&, std::vector<bool, std::allocator<bool> >*) [228] std::_Vector_base<Electrodes, std::allocator<Electrodes> >::~_Vector_base() [73] std::_Niter_base<int*>::iterator_type std::__niter_base<int*>(int*)
+ [195] Solver::Solver()      [171] std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) [181] std::_Niter_base<unsigned long*>::iterator_type std::__niter_base<unsigned long*>(unsigned long*)
+  [53] Solver::~Solver()     [229] std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl(std::allocator<double> const&) [64] std::setprecision(int)
+ [196] __gnu_cxx::new_allocator<Electrodes>::deallocate(Electrodes*, unsigned long) [230] std::_Vector_base<double, std::allocator<double> >::_Vector_impl::_Vector_impl() [249] double* std::__copy_move_a<false, double const*, double*>(double const*, double const*, double*)
+ [197] __gnu_cxx::new_allocator<Electrodes>::allocate(unsigned long, void const*) [172] std::_Vector_base<double, std::allocator<double> >::_Vector_impl::~_Vector_impl() [125] int* std::__copy_move_a<false, int const*, int*>(int const*, int const*, int*)
+ [198] __gnu_cxx::new_allocator<Electrodes>::new_allocator(__gnu_cxx::new_allocator<Electrodes> const&) [155] std::_Vector_base<double, std::allocator<double> >::_M_deallocate(double*, unsigned long) [250] double* std::__copy_move_a<true, double*, double*>(double*, double*, double*)
+ [199] __gnu_cxx::new_allocator<Electrodes>::new_allocator() [140] std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() [126] int* std::__copy_move_a<true, int*, int*>(int*, int*, int*)
+ [156] __gnu_cxx::new_allocator<Electrodes>::~new_allocator() [231] std::_Vector_base<double, std::allocator<double> >::_Vector_base(std::allocator<double> const&) [251] double* std::__copy_move_a2<false, double const*, double*>(double const*, double const*, double*)
+ [200] __gnu_cxx::new_allocator<bool>::new_allocator() [232] std::_Vector_base<double, std::allocator<double> >::_Vector_base() [127] int* std::__copy_move_a2<false, int const*, int*>(int const*, int const*, int*)
+ [201] __gnu_cxx::new_allocator<bool>::~new_allocator() [173] std::_Vector_base<double, std::allocator<double> >::~_Vector_base() [252] double* std::__copy_move_a2<true, double*, double*>(double*, double*, double*)
+ [157] __gnu_cxx::new_allocator<double>::deallocate(double*, unsigned long) [106] std::_Vector_base<int, std::allocator<int> >::_M_allocate(unsigned long) [128] int* std::__copy_move_a2<true, int*, int*>(int*, int*, int*)
+ [158] __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) [107] std::_Vector_base<int, std::allocator<int> >::_Vector_impl::_Vector_impl() [253] double* std::uninitialized_copy<double const*, double*>(double const*, double const*, double*)
+ [202] __gnu_cxx::new_allocator<double>::new_allocator(__gnu_cxx::new_allocator<double> const&) [108] std::_Vector_base<int, std::allocator<int> >::_Vector_impl::~_Vector_impl() [254] double* std::uninitialized_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+ [159] __gnu_cxx::new_allocator<double>::new_allocator() [85] std::_Vector_base<int, std::allocator<int> >::_M_deallocate(int*, unsigned long) [129] int* std::uninitialized_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+ [153] __gnu_cxx::new_allocator<double>::~new_allocator() [72] std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() [255] std::iterator_traits<double const*>::iterator_category std::__iterator_category<double const*>(double const* const&)
+  [94] __gnu_cxx::new_allocator<int>::deallocate(int*, unsigned long) [109] std::_Vector_base<int, std::allocator<int> >::_Vector_base() [130] std::iterator_traits<int const*>::iterator_category std::__iterator_category<int const*>(int const* const&)
+  [95] __gnu_cxx::new_allocator<int>::allocate(unsigned long, void const*) [110] std::_Vector_base<int, std::allocator<int> >::~_Vector_base() [256] double* std::__uninitialized_copy_a<double const*, double*, double>(double const*, double const*, double*, std::allocator<double>&)
+  [96] __gnu_cxx::new_allocator<int>::new_allocator() [6] std::_Bit_iterator::_Bit_iterator(unsigned long*, unsigned int) [257] double* std::__uninitialized_copy_a<std::move_iterator<double*>, double*, double>(std::move_iterator<double*>, std::move_iterator<double*>, double*, std::allocator<double>&)
+  [97] __gnu_cxx::new_allocator<int>::~new_allocator() [23] std::_Bit_iterator::_Bit_iterator() [131] int* std::__uninitialized_copy_a<std::move_iterator<int*>, int*, int>(std::move_iterator<int*>, std::move_iterator<int*>, int*, std::allocator<int>&)
+ [203] __gnu_cxx::new_allocator<unsigned long>::deallocate(unsigned long*, unsigned long) [233] std::_Bit_iterator::operator+=(long) [258] void std::__uninitialized_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long)
+ [204] __gnu_cxx::new_allocator<unsigned long>::allocate(unsigned long, void const*) [234] std::_Bvector_base<std::allocator<bool> >::_M_allocate(unsigned long) [50] void std::__uninitialized_default_n<double*, unsigned long>(double*, unsigned long)
+ [205] __gnu_cxx::new_allocator<unsigned long>::new_allocator(__gnu_cxx::new_allocator<unsigned long> const&) [24] std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::_Bvector_impl(std::allocator<unsigned long>&&) [132] void std::__uninitialized_default_n<int*, unsigned long>(int*, unsigned long)
+ [206] __gnu_cxx::new_allocator<unsigned long>::new_allocator() [235] std::_Bvector_base<std::allocator<bool> >::_Bvector_impl::~_Bvector_impl() [259] void std::__uninitialized_default_n_a<Electrodes*, unsigned long, Electrodes>(Electrodes*, unsigned long, std::allocator<Electrodes>&)
+ [160] __gnu_cxx::new_allocator<unsigned long>::~new_allocator() [236] std::_Bvector_base<std::allocator<bool> >::_M_deallocate() [51] void std::__uninitialized_default_n_a<double*, unsigned long, double>(double*, unsigned long, std::allocator<double>&)
+ [207] __gnu_cxx::new_allocator<Electrodes>::max_size() const [174] std::_Bvector_base<std::allocator<bool> >::_S_nword(unsigned long) [133] void std::__uninitialized_default_n_a<int*, unsigned long, int>(int*, unsigned long, std::allocator<int>&)
+ [147] __gnu_cxx::new_allocator<double>::max_size() const [25] std::_Bvector_base<std::allocator<bool> >::_Bvector_base(std::allocator<bool> const&) [182] std::move_iterator<double*> std::__make_move_if_noexcept_iterator<double*, std::move_iterator<double*> >(double*)
+  [75] __gnu_cxx::new_allocator<int>::max_size() const [237] std::_Bvector_base<std::allocator<bool> >::~_Bvector_base() [92] std::move_iterator<int*> std::__make_move_if_noexcept_iterator<int*, std::move_iterator<int*> >(int*)
+ [208] __gnu_cxx::new_allocator<unsigned long>::max_size() const [175] std::move_iterator<double*>::move_iterator(double*) [260] double* std::__uninitialized_move_if_noexcept_a<double*, double*, std::allocator<double> >(double*, double*, double*, std::allocator<double>&)
+ [161] std::_Vector_base<double, std::allocator<double> >::_M_get_Tp_allocator() const [86] std::move_iterator<int*>::move_iterator(int*) [134] int* std::__uninitialized_move_if_noexcept_a<int*, int*, std::allocator<int> >(int*, int*, int*, std::allocator<int>&)
+  [80] std::_Vector_base<int, std::allocator<int> >::_M_get_Tp_allocator() const [11] std::_Bit_reference::_Bit_reference(unsigned long*, unsigned long) [93] unsigned long const& std::max<unsigned long>(unsigned long const&, unsigned long const&)
+   [7] std::_Bit_iterator::operator*() const [19] std::_Bit_reference::operator=(bool) [261] double* std::copy<double const*, double*>(double const*, double const*, double*)
+  [47] std::_Bit_iterator::operator+(long) const [176] std::enable_if<std::allocator_traits<std::allocator<double> >::__maxsize_helper<std::allocator<double> const>::value, unsigned long>::type std::allocator_traits<std::allocator<double> >::_S_max_size<std::allocator<double> const>(std::allocator<double> const&) [135] int* std::copy<int const*, int*>(int const*, int const*, int*)
+ [162] std::move_iterator<double*>::base() const [177] std::allocator_traits<std::allocator<double> >::max_size(std::allocator<double> const&) [262] double* std::copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*)
+  [81] std::move_iterator<int*>::base() const [87] std::enable_if<std::allocator_traits<std::allocator<int> >::__maxsize_helper<std::allocator<int> const>::value, unsigned long>::type std::allocator_traits<std::allocator<int> >::_S_max_size<std::allocator<int> const>(std::allocator<int> const&) [136] int* std::copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*)
+   [8] std::_Bit_reference::operator bool() const [88] std::allocator_traits<std::allocator<int> >::max_size(std::allocator<int> const&) [263] void std::fill<unsigned long*, int>(unsigned long*, unsigned long*, int const&)
+ [209] std::initializer_list<double>::end() const [238] std::_Bit_iterator_base::_M_incr(long) [264] std::remove_reference<std::allocator<unsigned long>&>::type&& std::move<std::allocator<unsigned long>&>(std::allocator<unsigned long>&)
+ [210] std::initializer_list<double>::size() const [10] std::_Bit_iterator_base::_Bit_iterator_base(unsigned long*, unsigned int) [52] double* std::fill_n<double*, unsigned long, double>(double*, unsigned long, double const&)
+ [163] std::initializer_list<double>::begin() const [32] std::_Bit_const_iterator::_Bit_const_iterator(std::_Bit_iterator const&) [137] int* std::fill_n<int*, unsigned long, int>(int*, unsigned long, int const&)
+  [98] std::initializer_list<int>::end() const [239] double* std::__uninitialized_copy<true>::__uninit_copy<double const*, double*>(double const*, double const*, double*) [150] void std::_Destroy<Electrodes>(Electrodes*)
+  [99] std::initializer_list<int>::size() const [240] double* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<double*>, double*>(std::move_iterator<double*>, std::move_iterator<double*>, double*) [265] void std::_Destroy<Electrodes*>(Electrodes*, Electrodes*)
+  [82] std::initializer_list<int>::begin() const [111] int* std::__uninitialized_copy<true>::__uninit_copy<std::move_iterator<int*>, int*>(std::move_iterator<int*>, std::move_iterator<int*>, int*) [266] void std::_Destroy<Electrodes*, Electrodes>(Electrodes*, Electrodes*, std::allocator<Electrodes>&)
+  [29] std::vector<bool, std::allocator<bool> >::_M_range_check(unsigned long) const [241] void std::__uninitialized_default_n_1<false>::__uninit_default_n<Electrodes*, unsigned long>(Electrodes*, unsigned long) [44] void std::_Destroy<double*>(double*, double*)
+  [34] std::vector<bool, std::allocator<bool> >::end() const [48] void std::__uninitialized_default_n_1<true>::__uninit_default_n<double*, unsigned long>(double*, unsigned long) [45] void std::_Destroy<double*, double>(double*, double*, std::allocator<double>&)
+  [30] std::vector<bool, std::allocator<bool> >::size() const [112] void std::__uninitialized_default_n_1<true>::__uninit_default_n<int*, unsigned long>(int*, unsigned long) [78] void std::_Destroy<int*>(int*, int*)
+  [31] std::vector<bool, std::allocator<bool> >::begin() const [38] std::pair<double, double>::pair() [79] void std::_Destroy<int*, int>(int*, int*, std::allocator<int>&)
+ [211] std::vector<double, std::allocator<double> >::_M_check_len(unsigned long, char const*) const [242] std::vector<Electrodes, std::allocator<Electrodes> >::_M_default_initialize(unsigned long) [267] __gnu_cxx::__enable_if<std::__is_scalar<int>::__value, void>::__type std::__fill_a<unsigned long*, int>(unsigned long*, unsigned long*, int const&)
+ [139] std::vector<double, std::allocator<double> >::size() const [243] std::vector<Electrodes, std::allocator<Electrodes> >::vector(unsigned long, std::allocator<Electrodes> const&) [268] std::iterator_traits<double const*>::difference_type std::distance<double const*>(double const*, double const*)
+ [164] std::vector<double, std::allocator<double> >::max_size() const [244] std::vector<Electrodes, std::allocator<Electrodes> >::~vector() [138] std::iterator_traits<int const*>::difference_type std::distance<int const*>(int const*, int const*)
+  [61] std::vector<double, std::allocator<double> >::operator[](unsigned long) const [77] std::vector<Electrodes, std::allocator<Electrodes> >::operator[](unsigned long) [65] std::operator&=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags)
+ [100] std::vector<int, std::allocator<int> >::_M_check_len(unsigned long, char const*) const [42] std::vector<bool, std::allocator<bool> >::_M_initialize(unsigned long) [62] std::operator&(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+  [70] std::vector<int, std::allocator<int> >::size() const [26] std::vector<bool, std::allocator<bool> >::at(unsigned long) [66] std::operator~(std::_Ios_Fmtflags)
+ [101] std::vector<int, std::allocator<int> >::capacity() const [21] std::vector<bool, std::allocator<bool> >::vector(unsigned long, std::allocator<bool> const&) [39] std::operator-(std::_Bit_iterator_base const&, std::_Bit_iterator_base const&)
+  [83] std::vector<int, std::allocator<int> >::max_size() const [22] std::vector<bool, std::allocator<bool> >::vector(unsigned long, bool const&, std::allocator<bool> const&) [67] std::operator|=(std::_Ios_Fmtflags&, std::_Ios_Fmtflags)
+ [212] std::allocator<Electrodes>::allocator() [20] std::vector<bool, std::allocator<bool> >::~vector() [68] std::operator|(std::_Ios_Fmtflags, std::_Ios_Fmtflags)
+ [213] std::allocator<Electrodes>::allocator(std::allocator<Electrodes> const&) [5] std::vector<bool, std::allocator<bool> >::operator[](unsigned long) [183] std::operator|(std::_Ios_Openmode, std::_Ios_Openmode)
+ [165] std::allocator<Electrodes>::~allocator() [41] std::vector<double, std::allocator<double> >::_M_default_append(unsigned long) [151] operator new(unsigned long, void*)
+ [214] std::allocator<bool>::allocator() [245] void std::vector<double, std::allocator<double> >::_M_range_initialize<double const*>(double const*, double const*, std::forward_iterator_tag)

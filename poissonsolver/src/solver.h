@@ -47,20 +47,21 @@ public:
     double*  rho; //Volume charge density
     double h2;
     double h;
-    std::vector<double>  L; //Physical lengths for each dimension
-    std::vector<double>  eps; //Relative permittivity
+    double*  L; //Physical lengths for each dimension
+    double * eps;
     std::pair<double, double>* electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
 
     //functions
-    void calc_Neumann(int, int, int, int);
+    void calc_Neumann(int, int, int);
     void set_N(int, int, int);
     void set_L(double, double, double);
     void set_val(int&, int);
     double set_val(double);
     void set_val(std::vector<double>&, double, double, double);
     void set_val(std::vector<int>&, int, int, int);
-    int* set_val( int, int, int );
-    double* set_val( double, double);
+    int* set_val(int, int, int );
+    double* set_val(double, double);
+    double* set_val(double, double, double);
     double* init_val( double, double*);
     std::pair<double, double>* init_val( double, std::pair<double, double>*);
     void init_rho(void);
@@ -74,15 +75,16 @@ public:
     void write(std::vector<double>&, std::string );
     void write_2D(std::vector<double>&, std::string);
     void write_2D( double* vals, std::string filename );
-    void get_a(std::vector<double> *, std::vector<double>&, const int&);
-    void check_eps(std::vector<double>&, std::vector<bool> *);
+    void get_a(double *, double *, int);
+    void check_eps(double *, std::vector<bool> *);
     void del( int* );
     void del( double* );
     void del( std::pair<double, double>* );
 
-
+    void check_branch0( bool* );
+    void check_branch1( bool* );
     double ohmic_contact( unsigned long int );
-    double normal_eps( unsigned long int, double*, std::vector<double>);
+    double normal_eps( unsigned long int, double*, double*);
     double normal( unsigned long int, double*);
 
 
