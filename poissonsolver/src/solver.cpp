@@ -382,11 +382,19 @@ void Solver::poisson3DSOR_gen( void ){
   }while( currError > MAXERROR );
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
   std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
-  delete[] a;
   delete[] overrelax;
   delete[] isExterior;
   delete[] isBesideElec;
   delete[] isChangingeps;
+  for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
+    for ( int j = 1; j < N[1]-1; j++){
+      for (int k = 1; k < N[2]-1; k++){
+        ind = i*N[1]*N[2] + j*N[2] + k;
+        delete[] a[ind];
+      }
+    }
+  }
+  delete[] a;
 }
 
 //Uses Successive Over Relaxation method to solve poisson's equation
