@@ -40,14 +40,14 @@ double* Solver::set_val( double a, double b){
 //init_val, used for initializing arrays.
 double * Solver::init_val( double val, double* prev ){ //fills the entire vector with val
   double * arr = new double[N[0]*N[1]*N[2]];
-  for(int i=0;i < N[0]*N[1]*N[2]; i++){
+  for(int i = 0; i < N[0]*N[1]*N[2]; i++){
     arr[i] = val;
   }
   return arr;
 }
-std::pair<double, double> * Solver::init_val( double val, std::pair<double, double>* prev ){ //fills the entire vector with val
-  std::pair<double, double> * arr = new std::pair<double, double>[N[0]*N[1]*N[2]];
-  for(int i=0;i < N[0]*N[1]*N[2]; i++){
+std::pair<double,double>* Solver::init_val( double val, std::pair<double, double>* prev ){ //fills the entire vector with val
+  std::pair<double,double> * arr = new std::pair<double, double>[N[0]*N[1]*N[2]];
+  for(int i = 0; i < N[0]*N[1]*N[2]; i++){
     arr[i].first = val;
     arr[i].second = val;
   }
@@ -70,13 +70,13 @@ void Solver::del( std::pair<double, double>* arr ){
 void Solver::init_rho( void ){
   double x, y, z;
   std::cout << "Initialising rho..." << std::endl;
-  for( int i = 0; i < N[0]; i++){
+  for(int i = 0; i < N[0]; i++){
     x = i*L[0]/N[0];
-    for( int j = 0; j < N[1]; j++){
+    for(int j = 0; j < N[1]; j++){
       y = j*L[1]/N[1];
-      for( int k = 0; k < N[2]; k++){
+      for(int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2]; //set rho with plane wave in x direction (one full wave)
-          rho[i*N[1]*N[2] + j*N[2] + k] = 1e10*Q_E*sin(x*2*PI/L[0]);
+          rho[i*N[1]*N[2]+j*N[2]+k] = 1e10*Q_E*sin(x*2*PI/L[0]);
       }
     }
   }
@@ -94,7 +94,7 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        eps[i*N[1]*N[2] + j*N[2] + k] = 10*sin(x*2*PI/L[0]) + 15;
+        eps[i*N[1]*N[2]+j*N[2]+k] = 10*sin(x*2*PI/L[0])*sin(y*2*PI/L[1]) + 15;
       }
     }
   }
@@ -102,7 +102,7 @@ void Solver::init_eps( void ){
 
 //calls the appropriate poisson solver.
 void Solver::solve( void ){
-  switch (solvemethod) {
+  switch ( solvemethod ) {
     case SOR:           poisson3DSOR();
                         break;
     case JACOBI:        poisson3DJacobi();
@@ -118,44 +118,45 @@ void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0
   int i = 0;
   int j = 0;//RHO contains the boundary condition. setting V is for Dirichlet.
   int k = 0;//if Neumann BC, V will be overwritten in calc_Neumann()
-  for (j = 0; j<N[1]; j++){  //x = 0
-    for (k = 0; k<N[2]; k++){
-      rho[i*N[1]*N[2] + j*N[2] + k] = Vx0;
+  std::cout << "Applying boundary conditions..." << std::endl;
+  for (j = 0; j < N[1]; j++){  //x = 0
+    for (k = 0; k < N[2]; k++){
+      rho[i*N[1]*N[2]+j*N[2]+k] = Vx0;
     }
   }
-  i = N[0] - 1;  //x = Lx
-  for (j = 0; j<N[1]; j++){
-    for (k = 0; k<N[2]; k++){
-      rho[i*N[1]*N[2] + j*N[2] + k] = VxL;
-      V[i*N[1]*N[2] + j*N[2] + k] = VxL;
+  i = N[0]-1;  //x = Lx
+  for (j = 0; j < N[1]; j++){
+    for (k = 0; k < N[2]; k++){
+      rho[i*N[1]*N[2]+j*N[2]+k] = VxL;
+      V[i*N[1]*N[2]+j*N[2]+k] = VxL;
     }
   }
   j = 0;  //y = 0
-  for (i = 0; i<N[0]; i++){
-    for (k = 0; k<N[2]; k++){
-      rho[i*N[1]*N[2] + j*N[2] + k] = Vy0;
-      V[i*N[1]*N[2] + j*N[2] + k] = Vy0;
+  for (i = 0; i < N[0]; i++){
+    for (k = 0; k < N[2]; k++){
+      rho[i*N[1]*N[2]+j*N[2]+k] = Vy0;
+      V[i*N[1]*N[2]+j*N[2]+k] = Vy0;
     }
   }
   j = N[1]-1;  //y = Ly
-  for (i = 0; i<N[0]; i++){
-    for (k = 0; k<N[2]; k++){
-      rho[i*N[1]*N[2] + j*N[2] + k] = VyL;
-      V[i*N[1]*N[2] + j*N[2] + k] = VyL;
+  for (i = 0; i < N[0]; i++){
+    for (k = 0; k < N[2]; k++){
+      rho[i*N[1]*N[2]+j*N[2]+k] = VyL;
+      V[i*N[1]*N[2]+j*N[2]+k] = VyL;
     }
   }
   k = 0;  //z = 0
-  for (i = 0; i<N[0]; i++){
-    for (j = 0; j<N[1]; j++){
-      rho[i*N[1]*N[2] + j*N[2] + k] = Vz0;
-      V[i*N[1]*N[2] + j*N[2] + k] = Vz0;
+  for (i = 0; i < N[0]; i++){
+    for (j = 0; j < N[1]; j++){
+      rho[i*N[1]*N[2]+j*N[2]+k] = Vz0;
+      V[i*N[1]*N[2]+j*N[2]+k] = Vz0;
     }
   }
   k = 0;  //z = Lz
-  for (i = 0; i<N[0]; i++){
-    for (j = 0; j<N[1]; j++){
-      rho[i*N[1]*N[2] + j*N[2] + k] = VzL;
-      V[i*N[1]*N[2] + j*N[2] + k] = VzL;
+  for (i = 0; i < N[0]; i++){
+    for (j = 0; j < N[1]; j++){
+      rho[i*N[1]*N[2]+j*N[2]+k] = VzL;
+      V[i*N[1]*N[2]+j*N[2]+k] = VzL;
     }
   }
 }
@@ -201,8 +202,8 @@ void Solver::write_2D( double* vals, std::string filename ){
   static const int k = N[2]/2;
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
-        outfile << std::setprecision(5) << std::scientific << i * L[0]/N[0] << " " << j * L[1]/N[1] <<
-                " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
+        outfile << std::setprecision(5) << std::scientific << i*L[0]/N[0] << " " << j*L[1]/N[1] <<
+                " " << vals[i*N[1]*N[2]+j*N[2]+k] << std::endl;
     }
     outfile << std::endl;
   }
@@ -210,7 +211,6 @@ void Solver::write_2D( double* vals, std::string filename ){
 }
 
 //get new values for a, needed when permittivity changes locally.
-// TODO: if eps changes dramatically across sample, will need to change to precompute. a independant of V.
 void Solver::get_a( double* a, double* eps, int ind){
   a[0] = (eps[ind]+eps[ind-1]+eps[ind-N[2]]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1]+
          eps[ind-N[1]*N[2]-N[2]]+eps[ind-N[1]*N[2]-N[2]-1])/8;
@@ -224,10 +224,11 @@ void Solver::get_a( double* a, double* eps, int ind){
 
 //check whether permittivity changes locally, and remember for later
 void Solver::check_eps (double *eps, bool* isChangingeps){
-  int ind = N[1]*N[2] + N[2] + 1;
+  int ind = N[1]*N[2]+N[2]+1;
+  std::cout << "Checking eps..." << std::endl;
   for (int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
     for (int j = 1; j < N[1]-1; j++){
-      for (int k = 1; k < N[2]-1; k++){
+      for (int k = 1; k< N [2]-1; k++){
         if( (eps[ind] != eps[ind+1]) || (eps[ind] != eps[ind-1]) || (eps[ind] != eps[ind+N[2]]) ||
           (eps[ind] != eps[ind-N[2]]) || (eps[ind] != eps[ind+N[1]*N[2]]) || (eps[ind] != eps[ind-N[1]*N[2]]) ){
           isChangingeps[ind] = true; //eps changing on a boundary
@@ -244,11 +245,12 @@ void Solver::check_eps (double *eps, bool* isChangingeps){
 
 //check whether branch should do boundary or interior calculation
 void Solver::check_exterior( bool* isExterior ){
+  std::cout << "Checking exterior..." << std::endl;
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
       for (int k = 0; k < N[2]; k++){
         int ind = i*N[1]*N[2] + j*N[2] + k;
-        if((i == 0) || (i == N[0]-1) || (j == N[1]-1) || (j == 0) || (k == 0) || (k == N[2]-1)){
+        if((i == 0) || (i == N[0]-1) || (j== N[1]-1) || (j == 0) || (k == 0) || (k == N[2]-1)){
           isExterior[ind] = true;
         } else {
           isExterior[ind] = false;
@@ -256,8 +258,11 @@ void Solver::check_exterior( bool* isExterior ){
       }
     }
   }
-}//check whether branch should do normal or ohmic calculation
+}
+
+//check whether branch should do normal or ohmic calculation
 void Solver::check_elec( bool* isBesideElec ){
+  std::cout << "Checking electrodes..." << std::endl;
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
       for (int k = 0; k < N[2]; k++){
@@ -294,7 +299,7 @@ void Solver::calc_Neumann( int i, int j, int k){
 
 void Solver::create_a( double** a){
   unsigned long int ind;
-    std::cout << "Initialising a[0.." << N[0]*N[1]*N[2] << "][0..7]" << std::endl;
+  std::cout << "Initialising a[0.." << N[0]*N[1]*N[2] << "][0..7]" << std::endl;
   for (int i = 0; i < N[0]*N[1]*N[2]; ++i){
     a[i] = new double[7]; //7 a values per point.
   }
@@ -320,10 +325,10 @@ void Solver::poisson3DSOR_gen( void ){
   bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
   bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
-  check_eps( eps, isChangingeps);
+  check_eps( eps, isChangingeps );
   check_exterior( isExterior );
   check_elec( isBesideElec );
-  create_a(a);
+  create_a( a );
   std::cout << "DOING SOR_GEN" << std::endl;
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
@@ -339,7 +344,7 @@ void Solver::poisson3DSOR_gen( void ){
                 calc_Neumann(i, j, k); //Dirichlet boundary handled by set_BCs() in main
             } else if (isExterior[ind] == false){ //interior point, do normal.
               if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
-                Vold = V[ind]; //Save for error comparison, can do in outer do{} loop to speed up.
+                Vold = V[ind]; //Save for error comparison
                 if(isBesideElec[ind] == true){
                 //Current cell is NEXT TO an electrode, ignore other effects and use workfunction ohmic contact calculation
                 //Rectangular electrodes, only one side of bulk can interface with electrode.
@@ -353,7 +358,6 @@ void Solver::poisson3DSOR_gen( void ){
                            electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
                 } else { //not directly beside an electrode, perform normal calculation.
                   if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
-//                    get_a( a, eps, ind); //there is a difference in permittivity, get new a values
                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
                              a[ind][4]*V[ind-N[1]*N[2]] + a[ind][1]*V[ind+N[1]*N[2]] +
                              a[ind][5]*V[ind-N[2]] + a[ind][2]*V[ind+N[2]] +
@@ -381,7 +385,7 @@ void Solver::poisson3DSOR_gen( void ){
       }
   }while( currError > MAXERROR );
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
-  std::cout << "Time elapsed: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << " seconds" << std::endl;
+  std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   delete[] overrelax;
   delete[] isExterior;
   delete[] isBesideElec;
