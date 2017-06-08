@@ -19,7 +19,7 @@ int main() {
 //REQUIRE CONSISTENT L/N IN ALL X, Y, Z
     s->h2 = Lx*Lx/Nx/Nx;
     s->h = Lx/Nx;
-    s->boundarytype = NEUMANN;
+    s->boundarytype = DIRICHLET;
     //initialize
     for( int index = 0; index < numelectrodes; index++){
       elec[index].init_elec(); //init all electrodes

@@ -80,6 +80,7 @@ public:
     void del( int* );
     void del( double* );
     void del( std::pair<double, double>* );
+    void create_a( double** );
 
     void check_exterior( bool* );
     void check_elec( bool* );
