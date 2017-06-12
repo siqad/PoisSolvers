@@ -40,28 +40,26 @@ void poisson1DSOR(void);
 class Solver {
 public:
     //variables
+    Solver();
+    ~Solver();
     int*  N; //Lattice points in each dimension. N[0] for x, N[1] for y, N[2] for z
     int solvemethod; //1 for Jacobi, 2 for Gauss-Seidel, 3 for SOR
     int boundarytype; //0 for Dirichlet and 1 for Neumann.
     double* V;
     double*  rho; //Volume charge density
+    double*  L; //Physical lengths for each dimension
+    double* eps;
     double h2;
     double h;
-    double*  L; //Physical lengths for each dimension
-    double * eps;
     std::pair<double, double>* electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
 
     //functions
     void calc_Neumann(int, int, int);
     void set_N(int, int, int);
     void set_L(double, double, double);
-    void set_val(int&, int);
-    double set_val(double);
-    void set_val(std::vector<double>&, double, double, double);
-    void set_val(std::vector<int>&, int, int, int);
-    int* set_val(int, int, int );
+    void set_val(int, int, int, int* );
     double* set_val(double, double);
-    double* set_val(double, double, double);
+    void set_val(double, double, double, double*);
     double* init_val( double, double*);
     std::pair<double, double>* init_val( double, std::pair<double, double>*);
     void init_rho(void);

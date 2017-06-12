@@ -14,21 +14,29 @@
 #include <fstream>
 #include <cmath>
 
+Solver::Solver(){
+  N = new int[3];
+  L = new double[3];
+}
+Solver::~Solver(){
+  delete[] V;
+  delete[] L;
+  delete[] N;
+  delete[] rho;
+  delete[] electrodemap;
+  delete[] eps;
+}
 
 //set_val, used to assign values to class attributes.
-int* Solver::set_val( int a, int b, int c ){
-  int * arr = new int[3];
+void Solver::set_val( int a, int b, int c , int* arr){
   arr[0] = a;
   arr[1] = b;
   arr[2] = c;
-  return arr;
 }
-double* Solver::set_val( double a, double b, double c ){
-  double * arr = new double[3];
+void Solver::set_val( double a, double b, double c, double* arr){
   arr[0] = a;
   arr[1] = b;
   arr[2] = c;
-  return arr;
 }
 double* Solver::set_val( double a, double b){
   double * arr = new double[3];
@@ -37,15 +45,15 @@ double* Solver::set_val( double a, double b){
   return arr;
 }
 
-//init_val, used for initializing arrays.
-double * Solver::init_val( double val, double* prev ){ //fills the entire vector with val
+//init_val, used for initializing arrays, fills the entire array with val
+double * Solver::init_val( double val, double* prev ){
   double * arr = new double[N[0]*N[1]*N[2]];
   for(int i = 0; i < N[0]*N[1]*N[2]; i++){
     arr[i] = val;
   }
   return arr;
 }
-std::pair<double,double>* Solver::init_val( double val, std::pair<double, double>* prev ){ //fills the entire vector with val
+std::pair<double,double>* Solver::init_val( double val, std::pair<double, double>* prev ){
   std::pair<double,double> * arr = new std::pair<double, double>[N[0]*N[1]*N[2]];
   for(int i = 0; i < N[0]*N[1]*N[2]; i++){
     arr[i].first = val;
@@ -54,19 +62,7 @@ std::pair<double,double>* Solver::init_val( double val, std::pair<double, double
   return arr;
 }
 
-//del, used for deleting arrays crated with new
-void Solver::del( double* arr ){
-  delete[] arr;
-}
-void Solver::del( int* arr ){
-  delete[] arr;
-}
-void Solver::del( std::pair<double, double>* arr ){
-  delete[] arr;
-}
-
 //init_rho, initializes rho with values.
-//TODO change to read from file or from rho object or pointer to rho object
 void Solver::init_rho( void ){
   double x, y, z;
   std::cout << "Initialising rho..." << std::endl;
@@ -83,10 +79,8 @@ void Solver::init_rho( void ){
 }
 
 //init_eps, initializes eps with values.
-//TODO change to read from file or from eps object or pointer to eps object
 void Solver::init_eps( void ){
   std::cout << "Initialising eps..." << std::endl;
-  eps = new double[N[0]*N[1]*N[2]];
   double x, y, z;
   for( int i = 0; i < N[0]; i++){
     x = i*L[0]/N[0];
@@ -116,12 +110,13 @@ void Solver::solve( void ){
 //sets boundary condition for both Dirichlet and Neumann types.
 void Solver::set_BCs (double Vx0, double VxL, double Vy0, double VyL, double Vz0, double VzL){
   int i = 0;
-  int j = 0;//RHO contains the boundary condition. setting V is for Dirichlet.
+  int j = 0;//RHO contains the boundary condition.
   int k = 0;//if Neumann BC, V will be overwritten in calc_Neumann()
   std::cout << "Applying boundary conditions..." << std::endl;
   for (j = 0; j < N[1]; j++){  //x = 0
     for (k = 0; k < N[2]; k++){
       rho[i*N[1]*N[2]+j*N[2]+k] = Vx0;
+      V[i*N[1]*N[2]+j*N[2]+k] = Vx0;
     }
   }
   i = N[0]-1;  //x = Lx
@@ -178,7 +173,6 @@ void Solver::write( std::vector<double> &vals, std::string filename ){
   }
   std::cout << "Ending." << std::endl;
 }
-
 //write 2D data to file
 void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   std::ofstream outfile;
@@ -213,7 +207,7 @@ void Solver::write_2D( double* vals, std::string filename ){
 //get new values for a, needed when permittivity changes locally.
 void Solver::get_a( double* a, double* eps, int ind){
   a[0] = (eps[ind]+eps[ind-1]+eps[ind-N[2]]+eps[ind-N[2]-1]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1]+
-         eps[ind-N[1]*N[2]-N[2]]+eps[ind-N[1]*N[2]-N[2]-1])/8;
+         eps[ind-N[1]*N[2]-N[2]]+eps[ind-N[1]*N[2]-N[2]-1])/8; //quotient factor
   a[1] = (eps[ind]+eps[ind-1]+eps[ind-N[2]]+eps[ind-N[2]-1])/4;//i
   a[2] = (eps[ind]+eps[ind-1]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-1])/4;//j
   a[3] = (eps[ind]+eps[ind-N[2]]+eps[ind-N[1]*N[2]]+eps[ind-N[1]*N[2]-N[2]])/4;//k
@@ -319,8 +313,7 @@ void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  double * overrelax = set_val(1.85/6, -0.85);
-//  double * a = new double[7];
+  double overrelax[2] = {1.85/6, -0.85};
   double **a = new double*[N[0]*N[1]*N[2]]; //array of pointers to doubles.
   bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
@@ -386,7 +379,6 @@ void Solver::poisson3DSOR_gen( void ){
   }while( currError > MAXERROR );
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
-  delete[] overrelax;
   delete[] isExterior;
   delete[] isBesideElec;
   delete[] isChangingeps;
