@@ -13,6 +13,7 @@
 #include <ctime>
 #include <fstream>
 #include <cmath>
+#include <stdlib.h>
 
 Solver::Solver(){
   N = new int[3];
@@ -88,7 +89,8 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        eps[i*N[1]*N[2]+j*N[2]+k] = 10*sin(x*2*PI/L[0])*sin(y*2*PI/L[1]) + 15;
+        eps[i*N[1]*N[2]+j*N[2]+k] = 1;
+
       }
     }
   }
@@ -313,7 +315,9 @@ void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  double overrelax[2] = {1.85/6, -0.85};
+//  double overrelax[2] = {1.85/6, -0.85};
+//http://userpages.umbc.edu/~gobbert/papers/YangGobbert2007SOR.pdf shows theoretical optimal parameter
+  double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
   double **a = new double*[N[0]*N[1]*N[2]]; //array of pointers to doubles.
   bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
@@ -322,15 +326,18 @@ void Solver::poisson3DSOR_gen( void ){
   check_exterior( isExterior );
   check_elec( isBesideElec );
   create_a( a );
-  std::cout << "DOING SOR_GEN" << std::endl;
+  std::cout << "DOING SOR_GEN with omega = " << omega[1]*6 << std::endl;
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
   do{
       currError = 0;  //reset error for every run
-      for ( int i = 0; i < N[0]; i++){ //for all x points except endpoints
+//all even lattice points depend on odd lattice point values, and vice versa.
+//split into even and odd phase, now information propagates in both directions
+//EVEN
+      for ( int i = 0; i < N[0]; i++){
         for ( int j = 0; j < N[1]; j++){
-          for (int k = 0; k < N[2]; k++){
+          for (int k =(i+j)%2; k < N[2]; k+=2){
             ind = i*N[1]*N[2] + j*N[2] + k;
             //directly on face, do boundary first.
             if ((boundarytype == NEUMANN)&&(isExterior[ind]==true)){
@@ -359,11 +366,13 @@ void Solver::poisson3DSOR_gen( void ){
                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
                              V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
                              V[ind-1*N[2]] + V[ind+1*N[2]] +
-                             V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]); //calculate new potential
+                             V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
                   }
                 }
-                if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
-                    currError = fabs((V[ind] - Vold)/V[ind]);
+                if (cycleCount%25 == 0){
+                  if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
+                      currError = fabs((V[ind] - Vold)/V[ind]);
+                  }
                 }
               } else { //current cell IS electrode, set V[ind] = electrode voltage
                 V[ind] = electrodemap[ind].second;
@@ -372,17 +381,66 @@ void Solver::poisson3DSOR_gen( void ){
           }
         }
       }
-      cycleCount++;
+//ODD
+      for ( int i = 0; i < N[0]; i++){
+        for ( int j = 0; j < N[1]; j++){
+          for (int k =((i+j)%2)+1; k < N[2]; k+=2){
+            ind = i*N[1]*N[2] + j*N[2] + k;
+            //directly on face, do boundary first.
+            if ((boundarytype == NEUMANN)&&(isExterior[ind]==true)){
+                calc_Neumann(i, j, k); //Dirichlet boundary handled by set_BCs() in main
+            } else if (isExterior[ind] == false){ //interior point, do normal.
+              if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
+                Vold = V[ind]; //Save for error comparison
+                if(isBesideElec[ind] == true){
+                //Current cell is NEXT TO an electrode, ignore other effects and use workfunction ohmic contact calculation
+                //Rectangular electrodes, only one side of bulk can interface with electrode.
+                //Work function and electrode voltage = 0 for non-electrode sites. Add all sides, since only one of them
+                //is non-zero
+                  V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
+                           electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
+                           electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
+                           ((electrodemap[ind+1].first + electrodemap[ind-1].first +
+                           electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
+                           electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
+                } else { //not directly beside an electrode, perform normal calculation.
+                  if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
+                    V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                             a[ind][4]*V[ind-N[1]*N[2]] + a[ind][1]*V[ind+N[1]*N[2]] +
+                             a[ind][5]*V[ind-N[2]] + a[ind][2]*V[ind+N[2]] +
+                             a[ind][6]*V[ind-1] + a[ind][3]*V[ind+1] + rho[ind]*h2/EPS0)/a[ind][0]; //calculate new potential
+                  } else { //no difference in permittivity, do not calculate new a values
+                    V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                             V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
+                             V[ind-1*N[2]] + V[ind+1*N[2]] +
+                             V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
+                  }
+                }
+                if (cycleCount%25 == 0){
+                  if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
+                      currError = fabs((V[ind] - Vold)/V[ind]);
+                  }
+                }
+              } else { //current cell IS electrode, set V[ind] = electrode voltage
+                V[ind] = electrodemap[ind].second;
+              }
+            }
+          }
+        }
+      }
+
+
       if (cycleCount%50 == 0){
         std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
       }
-  }while( currError > MAXERROR );
+      cycleCount++;
+  }while( currError > MAXERROR || currError == 0);
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   delete[] isExterior;
   delete[] isBesideElec;
   delete[] isChangingeps;
-  for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
+  for ( int i = 1; i < N[0]-1; i++){ //for all points except endpoints
     for ( int j = 1; j < N[1]-1; j++){
       for (int k = 1; k < N[2]-1; k++){
         ind = i*N[1]*N[2] + j*N[2] + k;

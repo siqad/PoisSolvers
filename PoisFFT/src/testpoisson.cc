@@ -20,7 +20,7 @@ The executable will appear as ../bin/gcc/cc_testpoisson
 #include <iomanip>
 #include <fstream>
 
-const double pi = 3.14159265358979323846;
+//const double pi = 3.14159265358979323846;
 
 #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 #define FILENAME "outfile.txt"

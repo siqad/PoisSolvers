@@ -79,6 +79,8 @@ fstream
 -
 cmath
 -
+stdlib.h
+-
 
 /home/nathan/git/PoisSolvers/poissonsolver/src/solver.h
 vector

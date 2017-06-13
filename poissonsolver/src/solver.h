@@ -31,6 +31,7 @@
 #define WF_COPPER 4.7 //workfunction for copper in eV
 #define WF_ZINC 4.3 //workfunction for zinc in eV
 #define WF_CESIUM 2.1 //workfunction for cesium in eV
+#define WF_NICKEL 5.01
 //from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
 #define CHI_SI 4.05//electron affinity for silicon in eV
 
@@ -79,8 +80,7 @@ public:
     void del( double* );
     void del( std::pair<double, double>* );
     void create_a( double** );
-
-    void check_exterior( bool* );
+   void check_exterior( bool* );
     void check_elec( bool* );
     double ohmic_contact( unsigned long int );
     double normal_eps( unsigned long int, double*, double*);
