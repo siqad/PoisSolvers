@@ -99,12 +99,12 @@ void Solver::init_eps( void ){
 //calls the appropriate poisson solver.
 void Solver::solve( void ){
   switch ( solvemethod ) {
-    case SOR:           poisson3DSOR();
-                        break;
-    case JACOBI:        poisson3DJacobi();
-                        break;
-    case GAUSS_SEIDEL:  poisson3DGaussSeidel();
-                        break;
+    // case SOR:           poisson3DSOR();
+    //                     break;
+    // case JACOBI:        poisson3DJacobi();
+    //                     break;
+    // case GAUSS_SEIDEL:  poisson3DGaussSeidel();
+    //                     break;
     case SOR_GEN:       poisson3DSOR_gen();
   }
 }

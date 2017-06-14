@@ -18,3 +18,7 @@ int main( void )
 }
 
 //compiles with: g++ -o test test_cblas_dgemm.cpp -I/usr/include/ -L/usr/lib -lopenblas -lpthread -lgfortran -llapack
+
+// 
+// g++ test_cblas_dgemm.cpp -I/usr/include -L/usr/lib -lopenblas -lpthread -lgfortran -llapack
+// g++ test_cblas_dgemm.cpp -I/usr/include -L/usr/lib -lopenblas -lpthread -lgfortran -llapack

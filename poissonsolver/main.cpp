@@ -6,7 +6,7 @@ extern "C" {
 #include "./src/electrodes.h"
 
 
-void test( void );
+extern "C" void test( void );
 
 void test( void ){
   int i=0;
