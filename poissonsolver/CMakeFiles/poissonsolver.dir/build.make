@@ -60,15 +60,15 @@ include CMakeFiles/poissonsolver.dir/flags.make
 CMakeFiles/poissonsolver.dir/src/solver.cpp.o: CMakeFiles/poissonsolver.dir/flags.make
 CMakeFiles/poissonsolver.dir/src/solver.cpp.o: src/solver.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nathan/git/PoisSolvers/poissonsolver/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/poissonsolver.dir/src/solver.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/poissonsolver.dir/src/solver.cpp.o -c /home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/poissonsolver.dir/src/solver.cpp.o -c /home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp
 
 CMakeFiles/poissonsolver.dir/src/solver.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/poissonsolver.dir/src/solver.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp > CMakeFiles/poissonsolver.dir/src/solver.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp > CMakeFiles/poissonsolver.dir/src/solver.cpp.i
 
 CMakeFiles/poissonsolver.dir/src/solver.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/poissonsolver.dir/src/solver.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp -o CMakeFiles/poissonsolver.dir/src/solver.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp -o CMakeFiles/poissonsolver.dir/src/solver.cpp.s
 
 CMakeFiles/poissonsolver.dir/src/solver.cpp.o.requires:
 
@@ -84,15 +84,15 @@ CMakeFiles/poissonsolver.dir/src/solver.cpp.o.provides.build: CMakeFiles/poisson
 CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o: CMakeFiles/poissonsolver.dir/flags.make
 CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o: src/electrodes.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nathan/git/PoisSolvers/poissonsolver/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o -c /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o -c /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp
 
 CMakeFiles/poissonsolver.dir/src/electrodes.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/poissonsolver.dir/src/electrodes.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp > CMakeFiles/poissonsolver.dir/src/electrodes.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp > CMakeFiles/poissonsolver.dir/src/electrodes.cpp.i
 
 CMakeFiles/poissonsolver.dir/src/electrodes.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/poissonsolver.dir/src/electrodes.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp -o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp -o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.s
 
 CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o.requires:
 
@@ -108,15 +108,15 @@ CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o.provides.build: CMakeFiles/poi
 CMakeFiles/poissonsolver.dir/main.cpp.o: CMakeFiles/poissonsolver.dir/flags.make
 CMakeFiles/poissonsolver.dir/main.cpp.o: main.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nathan/git/PoisSolvers/poissonsolver/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/poissonsolver.dir/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/poissonsolver.dir/main.cpp.o -c /home/nathan/git/PoisSolvers/poissonsolver/main.cpp
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/poissonsolver.dir/main.cpp.o -c /home/nathan/git/PoisSolvers/poissonsolver/main.cpp
 
 CMakeFiles/poissonsolver.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/poissonsolver.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nathan/git/PoisSolvers/poissonsolver/main.cpp > CMakeFiles/poissonsolver.dir/main.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nathan/git/PoisSolvers/poissonsolver/main.cpp > CMakeFiles/poissonsolver.dir/main.cpp.i
 
 CMakeFiles/poissonsolver.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/poissonsolver.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nathan/git/PoisSolvers/poissonsolver/main.cpp -o CMakeFiles/poissonsolver.dir/main.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nathan/git/PoisSolvers/poissonsolver/main.cpp -o CMakeFiles/poissonsolver.dir/main.cpp.s
 
 CMakeFiles/poissonsolver.dir/main.cpp.o.requires:
 

@@ -1,6 +1,24 @@
- #include <iostream>
+extern "C" {
+  #include <cblas.h>
+}
+#include <iostream>
 #include "./src/solver.h"
 #include "./src/electrodes.h"
+
+
+void test( void );
+
+void test( void ){
+  int i=0;
+  double A[6] = {1.0,2.0,1.0,-3.0,4.0,-1.0};
+  double B[6] = {1.0,2.0,1.0,-3.0,4.0,-1.0};
+  double C[9] = {.5,.5,.5,.5,.5,.5,.5,.5,.5};
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,3,3,2,1,A, 3, B, 3,2,C,3);
+
+  for(i=0; i<9; i++)
+    printf("%lf ", C[i]);
+  printf("\n");
+}
 
 int main() {
 //Parameters
@@ -14,6 +32,10 @@ int main() {
     Solver sol;
     Solver * s = &sol;
     std::vector<Electrodes> elec(numelectrodes);
+
+    test();
+
+
     s->set_val(Nx, Ny, Nz, s->N);
     s->set_val(Lx, Ly, Lz, s->L);
     s->h2 = Lx*Lx/Nx/Nx;
@@ -32,11 +54,11 @@ int main() {
 //4 total electrodes, arranged in a square
     elec[0].centre = {Nx/4, Ny/4, Nz/2};
     elec[0].dims = {Nx/8, Ny/8, Nz/8};
-    elec[0].potential = 1e-3;
+    elec[0].potential = 1.5;
     elec[0].workfunction = WF_NICKEL;
     elec[1].centre = {3*Nx/4, 3*Ny/4, Nz/2};
     elec[1].dims = {Nx/8, Ny/8, Nz/8};
-    elec[1].potential = 1e-3;
+    elec[1].potential = 1.5;
     elec[1].workfunction = WF_COPPER;
     elec[2].centre = {3*Nx/4, Ny/4, Nz/2};
     elec[2].dims = {Nx/8, Ny/8, Nz/8};

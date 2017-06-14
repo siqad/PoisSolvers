@@ -80,7 +80,7 @@ public:
     void del( double* );
     void del( std::pair<double, double>* );
     void create_a( double** );
-   void check_exterior( bool* );
+    void check_exterior( bool* );
     void check_elec( bool* );
     double ohmic_contact( unsigned long int );
     double normal_eps( unsigned long int, double*, double*);

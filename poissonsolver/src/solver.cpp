@@ -89,7 +89,7 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        eps[i*N[1]*N[2]+j*N[2]+k] = 1;
+        eps[i*N[1]*N[2]+j*N[2]+k] = x+y+z+1;
 
       }
     }
@@ -315,6 +315,7 @@ void Solver::poisson3DSOR_gen( void ){
   double Vold; //needed to calculate error between new and old values
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
+  unsigned int cycleCheck = 25;
 //  double overrelax[2] = {1.85/6, -0.85};
 //http://userpages.umbc.edu/~gobbert/papers/YangGobbert2007SOR.pdf shows theoretical optimal parameter
   double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
@@ -326,7 +327,7 @@ void Solver::poisson3DSOR_gen( void ){
   check_exterior( isExterior );
   check_elec( isBesideElec );
   create_a( a );
-  std::cout << "DOING SOR_GEN with omega = " << omega[1]*6 << std::endl;
+  std::cout << "DOING SOR_GEN with omega = " << overrelax[0]*6 << std::endl;
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
@@ -369,7 +370,7 @@ void Solver::poisson3DSOR_gen( void ){
                              V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
                   }
                 }
-                if (cycleCount%25 == 0){
+                if (cycleCount%cycleCheck == 0){
                   if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                       currError = fabs((V[ind] - Vold)/V[ind]);
                   }
@@ -416,7 +417,7 @@ void Solver::poisson3DSOR_gen( void ){
                              V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
                   }
                 }
-                if (cycleCount%25 == 0){
+                if (cycleCount%cycleCheck == 0){
                   if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
                       currError = fabs((V[ind] - Vold)/V[ind]);
                   }
