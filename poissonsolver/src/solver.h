@@ -12,6 +12,7 @@
 #define GAUSS_SEIDEL 2
 #define SOR 3
 #define SOR_GEN 4
+#define SOR_BLAS 5
 #define EPS0 8.85418782e-12
 #define Q_E 1.6e-19
 #define LATTICECONSTANT 1e-3
@@ -66,6 +67,7 @@ public:
     void init_rho(void);
     void init_eps(void);
     void solve(void);
+    // void poisson3DSOR_BLAS(void);
     void poisson3DSOR_gen(void);
     void poisson3DSOR(void);
     void poisson3DJacobi(void);

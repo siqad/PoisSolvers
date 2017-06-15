@@ -9,7 +9,5 @@ set(SOURCE_FILES
         src/electrodes.cpp
         src/electrodes.h
         main.cpp)
-LINK_DIRECTORIES(/usr/local/lib)
-
+LINK_DIRECTORIES(/usr/local/lib/boost)
 add_executable(poissonsolver ${SOURCE_FILES})
-TARGET_LINK_LIBRARIES(poissonsolver openblas)

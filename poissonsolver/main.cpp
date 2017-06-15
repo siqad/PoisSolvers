@@ -1,23 +1,16 @@
-extern "C" {
-  #include <cblas.h>
-}
 #include <iostream>
 #include "./src/solver.h"
 #include "./src/electrodes.h"
+#include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/vector_sparse.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
 
-
-extern "C" void test( void );
-
-void test( void ){
-  int i=0;
-  double A[6] = {1.0,2.0,1.0,-3.0,4.0,-1.0};
-  double B[6] = {1.0,2.0,1.0,-3.0,4.0,-1.0};
-  double C[9] = {.5,.5,.5,.5,.5,.5,.5,.5,.5};
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,3,3,2,1,A, 3, B, 3,2,C,3);
-
-  for(i=0; i<9; i++)
-    printf("%lf ", C[i]);
-  printf("\n");
+void show_array(const boost::numeric::ublas::unbounded_array<double>& a)
+{
+    for(size_t i=0; i<a.size(); ++i)
+      std::cout << a[i] << ' ';
+    std::cout << '\n';
 }
 
 int main() {
@@ -33,7 +26,25 @@ int main() {
     Solver * s = &sol;
     std::vector<Electrodes> elec(numelectrodes);
 
-    test();
+    boost::numeric::ublas::compressed_matrix<double> m (3, 3, 1);
+    show_array(m.value_data());
+    for (unsigned i = 0; i < m.size1 (); ++ i){
+      for (unsigned j = 0; j < m.size2 () - 1; ++ j){
+        m(i, j) = m.size1() * i + j;
+        show_array(m.value_data());
+      }
+    }
+    std::cout << m << std::endl;
+    std::cout << sizeof(m) << std::endl;
+    show_array(m.value_data());
+    boost::numeric::ublas::vector<double> v (3, 1);
+    boost::numeric::ublas::vector<double> p (3, 1);
+    for (unsigned i = 0; i < v.size (); ++ i){
+      v (i) = i;
+    }
+    std::cout << v << std::endl;
+    p = prod(m, v);
+    std::cout << p << std::endl;
 
 
     s->set_val(Nx, Ny, Nz, s->N);

@@ -23,14 +23,20 @@ string
 -
 
 /home/nathan/git/PoisSolvers/poissonsolver/main.cpp
-cblas.h
--
 iostream
 -
 ./src/solver.h
 /home/nathan/git/PoisSolvers/poissonsolver/./src/solver.h
 ./src/electrodes.h
 /home/nathan/git/PoisSolvers/poissonsolver/./src/electrodes.h
+boost/numeric/ublas/matrix_sparse.hpp
+-
+boost/numeric/ublas/io.hpp
+-
+boost/numeric/ublas/vector_sparse.hpp
+-
+boost/numeric/ublas/matrix.hpp
+-
 
 /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp
 electrodes.h
