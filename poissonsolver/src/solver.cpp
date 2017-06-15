@@ -14,6 +14,12 @@
 #include <fstream>
 #include <cmath>
 #include <stdlib.h>
+#include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/vector_sparse.hpp>
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+
 
 Solver::Solver(){
   N = new int[3];
@@ -106,8 +112,8 @@ void Solver::solve( void ){
     case GAUSS_SEIDEL:  poisson3DGaussSeidel();
                         break;
     case SOR_GEN:       poisson3DSOR_gen();
-                        // break;
-    // case SOR_BLAS:      poisson3DSOR_BLAS();
+                        break;
+    case SOR_BLAS:      poisson3DSOR_BLAS();
   }
 }
 
@@ -311,137 +317,69 @@ void Solver::create_a( double** a){
   }
 }
 
-// void Solver::create_M( double** a){
-//   unsigned long int ind;
-//   std::cout << "Initialising a[0.." << N[0]*N[1]*N[2] << "][0..7]" << std::endl;
-//   for (int i = 0; i < N[0]*N[1]*N[2]; ++i){
-//     a[i] = new double[7]; //7 a values per point.
-//   }
-//   for ( int i = 1; i < N[0]-1; i++){ //for all x points except endpoints
-//     for ( int j = 1; j < N[1]-1; j++){
-//       for (int k = 1; k < N[2]-1; k++){
-//         ind = i*N[1]*N[2] + j*N[2] + k;
-//         get_a(a[ind], eps, ind);
-//       }
-//     }
-//   }
-// }
+void show_arr( boost::numeric::ublas::compressed_matrix<double> m )
+{
+  for(int i=0; i<m.size1(); ++i){
+    for(int j=0; j<m.size2(); ++j){
+      std::cout << std::setprecision(2) << m(i, j) << ' ';
+    }
+    std::cout << std::endl;
+  }
+}
 
-// //uses Generalised Successive Over Relaxation method to solve poisson's equation.
-// //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
-// void Solver::poisson3DSOR_BLAS( void ){
-//   double Vold; //needed to calculate error between new and old values
-//   double currError; //largest error on current loop
-//   unsigned int cycleCount = 0; //iteration count, for reporting
-//   unsigned int cycleCheck = 25;
-// //  double overrelax[2] = {1.85/6, -0.85};
-// //http://userpages.umbc.edu/~gobbert/papers/YangGobbert2007SOR.pdf shows theoretical optimal parameter
-//   double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
-//   double* M = new double*[N[0]*N[1]*N[2]*N[0]*N[1]*N[2]]
-//   double** a = new double*[N[0]*N[1]*N[2]]; //array of pointers to doubles.
-//   double* B = new double[N[0]*N[1]*N[2]];
-//   bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
-//   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
-//   bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
-//   check_eps( eps, isChangingeps );
-//   check_exterior( isExterior );
-//   check_elec( isBesideElec );
-//   create_a( a );
-//   std::cout << "DOING SOR_GEN with omega = " << overrelax[0]*6 << std::endl;
-//   std::cout << "Iterating..." << std::endl;
-//   const std::clock_t begin_time = std::clock();
-//   unsigned long int ind;
-//
-// //Setup matrix
-//   for ( int i = 0; i < N[0]; i++){
-//     for ( int j = 0; j < N[1]; j++){
-//       for (int k =0; k < N[2]; k++){
-//         ind = i*N[1]*N[2] + j*N[2] + k;
-//         if (isExerior[ind] == true){
-//           M[ind] = 0;
-//           B[ind] = V[ind];
-//         } else { //interior point
-//           M[ind]
-//         }
-//
-//
-//       }
-//     }
-//   }
-//
-//
-//
-//
-//   do{
-//       currError = 0;  //reset error for every run
-// //all even lattice points depend on odd lattice point values, and vice versa.
-// //split into even and odd phase, now information propagates in both directions
-//       for ( int i = 0; i < N[0]; i++){
-//         for ( int j = 0; j < N[1]; j++){
-//           for (int k =0; k < N[2]; k++){
-//             ind = i*N[1]*N[2] + j*N[2] + k;
-//             //directly on face, do boundary first.
-//             if ((boundarytype == NEUMANN)&&(isExterior[ind]==true)){
-//                 calc_Neumann(i, j, k); //Dirichlet boundary handled by set_BCs() in main
-//             } else if (isExterior[ind] == false){ //interior point, do normal.
-//               if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
-//                 Vold = V[ind]; //Save for error comparison
-//                 if(isBesideElec[ind] == true){
-//                 //Current cell is NEXT TO an electrode, ignore other effects and use workfunction ohmic contact calculation
-//                 //Rectangular electrodes, only one side of bulk can interface with electrode.
-//                 //Work function and electrode voltage = 0 for non-electrode sites. Add all sides, since only one of them
-//                 //is non-zero
-//                   V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
-//                            electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
-//                            electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
-//                            ((electrodemap[ind+1].first + electrodemap[ind-1].first +
-//                            electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
-//                            electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
-//                 } else { //not directly beside an electrode, perform normal calculation.
-//                   if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
-//                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-//                              a[ind][4]*V[ind-N[1]*N[2]] + a[ind][1]*V[ind+N[1]*N[2]] +
-//                              a[ind][5]*V[ind-N[2]] + a[ind][2]*V[ind+N[2]] +
-//                              a[ind][6]*V[ind-1] + a[ind][3]*V[ind+1] + rho[ind]*h2/EPS0)/a[ind][0]; //calculate new potential
-//                   } else { //no difference in permittivity, do not calculate new a values
-//                     V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-//                              V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
-//                              V[ind-1*N[2]] + V[ind+1*N[2]] +
-//                              V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
-//                   }
-//                 }
-//                 if (cycleCount%cycleCheck == 0){
-//                   if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
-//                       currError = fabs((V[ind] - Vold)/V[ind]);
-//                   }
-//                 }
-//               } else { //current cell IS electrode, set V[ind] = electrode voltage
-//                 V[ind] = electrodemap[ind].second;
-//               }
-//             }
-//           }
-//         }
-//       }
-//       if (cycleCount%50 == 0){
-//         std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
-//       }
-//       cycleCount++;
-//   }while( currError > MAXERROR || currError == 0);
-//   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
-//   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
-//   delete[] isExterior;
-//   delete[] isBesideElec;
-//   delete[] isChangingeps;
-//   for ( int i = 1; i < N[0]-1; i++){ //for all points except endpoints
-//     for ( int j = 1; j < N[1]-1; j++){
-//       for (int k = 1; k < N[2]-1; k++){
-//         ind = i*N[1]*N[2] + j*N[2] + k;
-//         delete[] a[ind];
-//       }
-//     }
-//   }
-//   delete[] a;
-// }
+//uses Generalised Successive Over Relaxation method to solve poisson's equation.
+//based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
+void Solver::poisson3DSOR_BLAS( void ){
+
+  std::cout << "BEGIN BLAS" << std::endl;
+  double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
+  unsigned int ind;
+  boost::numeric::ublas::compressed_matrix<double> m (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  boost::numeric::ublas::vector<double> v (N[0]*N[1]*N[2]);
+  boost::numeric::ublas::vector<double> b (N[0]*N[1]*N[2]);
+  boost::numeric::ublas::vector<double> d (N[0]*N[1]*N[2]);
+  boost::numeric::ublas::vector<double> product (N[0]*N[1]*N[2]);
+
+  for (int i = 0; i < N[0]; i++){ //matrix setup
+    for (int j = 0; j < N[1]; j++){
+      for (int k = 0; k < N[2]; k++){
+        if(i != 0 && j != 0 && k != 0 && i != N[0]-1 && j != N[1]-1 && k != N[2]-1){
+          ind = i*N[1]*N[2] + j*N[2] + k;
+          std::cout << ind << std::endl;
+          m(ind, ind) = overrelax[1];
+          m(ind, ind+1) = overrelax[0];
+          m(ind, ind-1) = overrelax[0];
+          m(ind, ind+N[2]) = overrelax[0];
+          m(ind, ind-N[2]) = overrelax[0];
+          m(ind, ind+N[1]*N[2]) = overrelax[0];
+          m(ind, ind-N[1]*N[2]) = overrelax[0];
+          b(ind) = Q_E*h2/EPS0*overrelax[0];
+          show_arr(m);
+        } else{
+        }
+      }
+    }
+  }
+//  std::cout << std::endl << std::endl << b << std::endl << std::endl;
+
+std::cout << std::endl << std::endl;
+  std::cout << v.size() << std::endl;
+  std::cout << b.size() << std::endl;
+  std::cout << d.size() << std::endl;
+  std::cout << product.size() << std::endl;
+std::cout << std::endl << std::endl;
+
+
+  do{
+    product = prec_prod(m, v) + b; //p has new potentials
+    d = boost::numeric::ublas::element_div(v-product, product); //replace error
+    std::cout << std::fixed << d << std::endl;
+    std::cout << "current error: " << norm_inf(d)*100 << "%" << std::endl;
+    v = product;
+  } while (norm_inf(d) > MAXERROR);
+
+  d = v - product;
+}
 
 
 //uses Generalised Successive Over Relaxation method to solve poisson's equation.

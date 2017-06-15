@@ -15,9 +15,9 @@ void show_array(const boost::numeric::ublas::unbounded_array<double>& a)
 
 int main() {
 //Parameters
-    int Nx = 100;
-    int Ny = 100;
-    int Nz = 100;
+    int Nx = 4;
+    int Ny = 4;
+    int Nz = 4;
     double Lx = 1.0;
     double Ly = 1.0;
     double Lz = 1.0;
@@ -26,25 +26,25 @@ int main() {
     Solver * s = &sol;
     std::vector<Electrodes> elec(numelectrodes);
 
-    boost::numeric::ublas::compressed_matrix<double> m (3, 3, 1);
-    show_array(m.value_data());
-    for (unsigned i = 0; i < m.size1 (); ++ i){
-      for (unsigned j = 0; j < m.size2 () - 1; ++ j){
-        m(i, j) = m.size1() * i + j;
-        show_array(m.value_data());
-      }
-    }
-    std::cout << m << std::endl;
-    std::cout << sizeof(m) << std::endl;
-    show_array(m.value_data());
-    boost::numeric::ublas::vector<double> v (3, 1);
-    boost::numeric::ublas::vector<double> p (3, 1);
-    for (unsigned i = 0; i < v.size (); ++ i){
-      v (i) = i;
-    }
-    std::cout << v << std::endl;
-    p = prod(m, v);
-    std::cout << p << std::endl;
+    // boost::numeric::ublas::compressed_matrix<double> m (3, 3, 1);
+    // show_array(m.value_data());
+    // for (unsigned i = 0; i < m.size1 (); ++ i){
+    //   for (unsigned j = 0; j < m.size2 () - 1; ++ j){
+    //     m(i, j) = m.size1() * i + j;
+    //     show_array(m.value_data());
+    //   }
+    // }
+    // std::cout << m << std::endl;
+    // std::cout << sizeof(m) << std::endl;
+    // show_array(m.value_data());
+    // boost::numeric::ublas::vector<double> v (3, 1);
+    // boost::numeric::ublas::vector<double> p (3, 1);
+    // for (unsigned i = 0; i < v.size (); ++ i){
+    //   v (i) = i;
+    // }
+    // std::cout << v << std::endl;
+    // p = prod(m, v);
+    // std::cout << p << std::endl;
 
 
     s->set_val(Nx, Ny, Nz, s->N);
@@ -90,7 +90,7 @@ int main() {
     s->init_eps( );
     s->set_BCs(0, 0, 0, 0, 0, 0); //boundary conditions
 //reset solution vector and call for SOR_GEN
-    s->solvemethod = SOR_GEN;
+    s->solvemethod = SOR_BLAS;
     s->solve();
     s->write_2D(s->V, FILENAMESOR_GEN);
     s->write_2D(s->rho, FILENAMERHO);

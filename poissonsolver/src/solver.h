@@ -39,6 +39,7 @@
 void poisson1DJacobi(void);
 void poisson1DGaussSeidel(void);
 void poisson1DSOR(void);
+
 class Solver {
 public:
     //variables
@@ -67,7 +68,7 @@ public:
     void init_rho(void);
     void init_eps(void);
     void solve(void);
-    // void poisson3DSOR_BLAS(void);
+    void poisson3DSOR_BLAS(void);
     void poisson3DSOR_gen(void);
     void poisson3DSOR(void);
     void poisson3DJacobi(void);
