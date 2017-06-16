@@ -327,58 +327,57 @@ void show_arr( boost::numeric::ublas::compressed_matrix<double> m )
   }
 }
 
-//uses Generalised Successive Over Relaxation method to solve poisson's equation.
+//uses SOR method built on Jacobi
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_BLAS( void ){
 
   std::cout << "BEGIN BLAS" << std::endl;
-  double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
+  // double overrelax[2] = {2/(1+PI/N[0]), 1-(2/(1+PI/N[0]))};
+  double overrelax[2] = {1, 0};
+  // double overrelax[2] = {1.5, -0.5};
   unsigned int ind;
+  unsigned int cyclenum = 0;
   boost::numeric::ublas::compressed_matrix<double> m (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> v (N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> b (N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> d (N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> product (N[0]*N[1]*N[2]);
 
+  std::cout << "omega = " << overrelax[0] << std::endl;
+  std::cout << "1-omega = " << overrelax[1] << std::endl;
   for (int i = 0; i < N[0]; i++){ //matrix setup
     for (int j = 0; j < N[1]; j++){
       for (int k = 0; k < N[2]; k++){
-        if(i != 0 && j != 0 && k != 0 && i != N[0]-1 && j != N[1]-1 && k != N[2]-1){
-          ind = i*N[1]*N[2] + j*N[2] + k;
-          std::cout << ind << std::endl;
+        ind = i*N[1]*N[2] + j*N[2] + k;
+        if((i != 0) && (j != 0) && (k != 0) && (i != N[0]-1) && (j != N[1]-1) && (k != N[2]-1)){
           m(ind, ind) = overrelax[1];
-          m(ind, ind+1) = overrelax[0];
-          m(ind, ind-1) = overrelax[0];
-          m(ind, ind+N[2]) = overrelax[0];
-          m(ind, ind-N[2]) = overrelax[0];
-          m(ind, ind+N[1]*N[2]) = overrelax[0];
-          m(ind, ind-N[1]*N[2]) = overrelax[0];
-          b(ind) = Q_E*h2/EPS0*overrelax[0];
-          show_arr(m);
-        } else{
+          m(ind, ind+1) = overrelax[0]/6;
+          m(ind, ind-1) = overrelax[0]/6;
+          m(ind, ind+N[2]) = overrelax[0]/6;
+          m(ind, ind-N[2]) = overrelax[0]/6;
+          m(ind, ind+N[1]*N[2]) = overrelax[0]/6;
+          m(ind, ind-N[1]*N[2]) = overrelax[0]/6;
+          b(ind) = Q_E*h2*overrelax[0]/6;
+        } else {
+          m(ind, ind) = 1;
         }
       }
     }
   }
-//  std::cout << std::endl << std::endl << b << std::endl << std::endl;
 
-std::cout << std::endl << std::endl;
-  std::cout << v.size() << std::endl;
-  std::cout << b.size() << std::endl;
-  std::cout << d.size() << std::endl;
-  std::cout << product.size() << std::endl;
-std::cout << std::endl << std::endl;
-
+// show_arr(m);
 
   do{
+    cyclenum++;
     product = prec_prod(m, v) + b; //p has new potentials
-    d = boost::numeric::ublas::element_div(v-product, product); //replace error
-    std::cout << std::fixed << d << std::endl;
+    d = boost::numeric::ublas::element_div(product-v, v); //replace error
     std::cout << "current error: " << norm_inf(d)*100 << "%" << std::endl;
     v = product;
   } while (norm_inf(d) > MAXERROR);
 
-  d = v - product;
+  std::cout << "Converged in " << cyclenum << " cycles." << std::endl;
+  std::cout << std::scientific << std::setprecision(7) << v << std::endl;
+
 }
 
 

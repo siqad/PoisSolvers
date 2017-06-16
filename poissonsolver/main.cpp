@@ -15,9 +15,9 @@ void show_array(const boost::numeric::ublas::unbounded_array<double>& a)
 
 int main() {
 //Parameters
-    int Nx = 4;
-    int Ny = 4;
-    int Nz = 4;
+    int Nx = 8;
+    int Ny = 8;
+    int Nz = 8;
     double Lx = 1.0;
     double Ly = 1.0;
     double Lz = 1.0;
