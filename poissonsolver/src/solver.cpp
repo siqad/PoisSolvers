@@ -19,7 +19,8 @@
 #include <boost/numeric/ublas/vector_sparse.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
-
+#include <boost/numeric/ublas/lu.hpp>
+#include "invert_matrix.hpp"
 
 Solver::Solver(){
   N = new int[3];
@@ -327,6 +328,32 @@ void show_arr( boost::numeric::ublas::compressed_matrix<double> m )
   }
 }
 
+void Solver::check_diag( boost::numeric::ublas::compressed_matrix<double> m )
+{
+  unsigned int ind;
+  for (int i = 0; i < N[0]; ++i){ //matrix setup
+    for (int j = 0; j < N[1]; ++j){
+      for (int k = 0; k < N[2]; ++k){
+        ind = i*N[1]*N[2] + j*N[2] + k;
+        if( m(ind, ind) == 0 ){
+          std::cout << "Zero on diagonal" << std::endl;
+        }
+      }
+    }
+  }
+}
+
+void print_system( boost::numeric::ublas::compressed_matrix<double> m, boost::numeric::ublas::vector<double> rhs){
+  std::ofstream outfile;
+  outfile.open("m_matrix", std::ios_base::out | std::ios_base::trunc );
+  for(int i=0; i<m.size1(); ++i){
+    for(int j=0; j<m.size2(); ++j){
+      outfile << std::scientific << std::setprecision(3) << m(i, j) << ' ';
+    }
+    outfile << "    " << rhs(i)<< std::endl;
+  }
+}
+
 //uses SOR method built on Jacobi
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_BLAS( void ){
@@ -335,48 +362,72 @@ void Solver::poisson3DSOR_BLAS( void ){
   // double overrelax[2] = {2/(1+PI/N[0]), 1-(2/(1+PI/N[0]))};
   double overrelax[2] = {1, 0};
   // double overrelax[2] = {1.5, -0.5};
+  // double overrelax[2] = {1.85, -0.85};
   unsigned int ind;
   unsigned int cyclenum = 0;
   boost::numeric::ublas::compressed_matrix<double> m (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
-  boost::numeric::ublas::vector<double> v (N[0]*N[1]*N[2]);
+  boost::numeric::ublas::compressed_matrix<double> n (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  boost::numeric::ublas::compressed_matrix<double> minv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  boost::numeric::ublas::vector<double> voltage (N[0]*N[1]*N[2]);
+  boost::numeric::ublas::vector<double> voltage_old (N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> b (N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> d (N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> product (N[0]*N[1]*N[2]);
 
+//Jacobi method in matrix form: x[iter+1] = minv*n*x[iter]+minv*b
   std::cout << "omega = " << overrelax[0] << std::endl;
   std::cout << "1-omega = " << overrelax[1] << std::endl;
-  for (int i = 0; i < N[0]; i++){ //matrix setup
-    for (int j = 0; j < N[1]; j++){
-      for (int k = 0; k < N[2]; k++){
+  for (int i = 0; i < N[0]; ++i){ //matrix setup
+    for (int j = 0; j < N[1]; ++j){
+      for (int k = 0; k < N[2]; ++k){
         ind = i*N[1]*N[2] + j*N[2] + k;
         if((i != 0) && (j != 0) && (k != 0) && (i != N[0]-1) && (j != N[1]-1) && (k != N[2]-1)){
-          m(ind, ind) = overrelax[1];
-          m(ind, ind+1) = overrelax[0]/6;
-          m(ind, ind-1) = overrelax[0]/6;
-          m(ind, ind+N[2]) = overrelax[0]/6;
-          m(ind, ind-N[2]) = overrelax[0]/6;
-          m(ind, ind+N[1]*N[2]) = overrelax[0]/6;
-          m(ind, ind-N[1]*N[2]) = overrelax[0]/6;
-          b(ind) = Q_E*h2*overrelax[0]/6;
-        } else {
+          //interior
+          // m(ind, ind) = overrelax[1];
+          // m(ind, ind+1) = overrelax[0]/6;
+          // m(ind, ind-1) = overrelax[0]/6;
+          // m(ind, ind+N[2]) = overrelax[0]/6;
+          // m(ind, ind-N[2]) = overrelax[0]/6;
+          // m(ind, ind+N[1]*N[2]) = overrelax[0]/6;
+          // m(ind, ind-N[1]*N[2]) = overrelax[0]/6;
+          // b(ind) = -Q_E*h2*overrelax[0]/6;
+          m(ind, ind) = 6;
+          n(ind, ind+1) = -1;
+          n(ind, ind-1) = -1;
+          n(ind, ind+N[2]) = -1;
+          n(ind, ind-N[2]) = -1;
+          n(ind, ind+N[1]*N[2]) = -1;
+          n(ind, ind-N[1]*N[2]) = -1;
+          b(ind) = -Q_E*h2;
+        } else { //exterior
           m(ind, ind) = 1;
+          if(i == 0){
+            b(ind) = 5; //non-zero boundary condition
+          }
         }
       }
     }
   }
-
+  std::cout << "Getting inverse" << std::endl;
+  InvertMatrix(m, minv);
+  // voltage = rhs;
 // show_arr(m);
+// print_system(m, rhs);
 
+std::cout << "Starting Loop" << std::endl;
   do{
     cyclenum++;
-    product = prec_prod(m, v) + b; //p has new potentials
-    d = boost::numeric::ublas::element_div(product-v, v); //replace error
+    voltage_old = voltage;
+    product = prec_prod(n, voltage_old);
+    product = prec_prod(minv, product);
+    product += prec_prod(minv, b); //p has new potentials
+    voltage = product;
+    d = boost::numeric::ublas::element_div(voltage-voltage_old, voltage_old); //replace error
     std::cout << "current error: " << norm_inf(d)*100 << "%" << std::endl;
-    v = product;
   } while (norm_inf(d) > MAXERROR);
 
   std::cout << "Converged in " << cyclenum << " cycles." << std::endl;
-  std::cout << std::scientific << std::setprecision(7) << v << std::endl;
+  std::cout << std::scientific << std::setprecision(7) << voltage << std::endl;
 
 }
 

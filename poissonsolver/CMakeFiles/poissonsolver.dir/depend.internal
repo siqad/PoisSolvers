@@ -11,5 +11,6 @@ CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o
  /home/nathan/git/PoisSolvers/poissonsolver/src/solver.h
 CMakeFiles/poissonsolver.dir/src/solver.cpp.o
  /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.h
+ /home/nathan/git/PoisSolvers/poissonsolver/src/invert_matrix.hpp
  /home/nathan/git/PoisSolvers/poissonsolver/src/solver.cpp
  /home/nathan/git/PoisSolvers/poissonsolver/src/solver.h

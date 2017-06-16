@@ -10,6 +10,7 @@ CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o: src/electrodes.h
 CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o: src/solver.h
 
 CMakeFiles/poissonsolver.dir/src/solver.cpp.o: src/electrodes.h
+CMakeFiles/poissonsolver.dir/src/solver.cpp.o: src/invert_matrix.hpp
 CMakeFiles/poissonsolver.dir/src/solver.cpp.o: src/solver.cpp
 CMakeFiles/poissonsolver.dir/src/solver.cpp.o: src/solver.h
 

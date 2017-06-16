@@ -7,6 +7,11 @@
 #include <vector>
 #include "electrodes.h"
 #include <string>
+#include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/ublas/vector_sparse.hpp>
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
 
 #define JACOBI 1
 #define GAUSS_SEIDEL 2
@@ -88,6 +93,7 @@ public:
     double ohmic_contact( unsigned long int );
     double normal_eps( unsigned long int, double*, double*);
     double normal( unsigned long int, double*);
+    void check_diag( boost::numeric::ublas::compressed_matrix<double> );
 
 
 };
