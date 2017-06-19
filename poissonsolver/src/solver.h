@@ -28,6 +28,7 @@
 #define FILENAMERHO "outfileRHO.txt"
 #define FILENAMEEPS "outfileEPS.txt"
 #define FILENAMEELEC "outfileELEC.txt"
+#define FILENAMEBLAS "outfileBLAS.txt"
 #define MAXERROR 1e-2
 #define PI 3.14159265358979323846
 #define DIRICHLET 0
@@ -94,6 +95,7 @@ public:
     double normal_eps( unsigned long int, double*, double*);
     double normal( unsigned long int, double*);
     void check_diag( boost::numeric::ublas::compressed_matrix<double> );
+    void save_voltage( boost::numeric::ublas::vector<double> );
 
 
 };
