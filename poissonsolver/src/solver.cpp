@@ -343,21 +343,29 @@ void Solver::check_diag( boost::numeric::ublas::compressed_matrix<double> m )
   }
 }
 
-void print_system( boost::numeric::ublas::compressed_matrix<double> m, boost::numeric::ublas::vector<double> rhs){
+void Solver::save_voltage( boost::numeric::ublas::vector<double> v ){
   std::ofstream outfile;
-  outfile.open("m_matrix", std::ios_base::out | std::ios_base::trunc );
-  for(int i=0; i<m.size1(); ++i){
-    for(int j=0; j<m.size2(); ++j){
-      outfile << std::scientific << std::setprecision(3) << m(i, j) << ' ';
+  double x, y, z;
+  unsigned int ind;
+  outfile.open(FILENAMEBLAS, std::ios_base::out | std::ios_base::trunc );
+  for(int i=0; i<N[0]; ++i){
+    x = h*i;
+    for(int j=0; j<N[1]; ++j){
+      y = h*j;
+      for(int k=0; k<N[2]; ++k){
+        z = h*(N[2]/2);
+        ind = i*N[1]*N[2] + j*N[2] + k;
+        outfile << std::scientific << std::setprecision(5) << x << " " << y << " " << v(ind) << std::endl;
+      }
     }
-    outfile << "    " << rhs(i)<< std::endl;
+    outfile << std::endl;
   }
 }
 
 //uses SOR method built on Jacobi
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf
 void Solver::poisson3DSOR_BLAS( void ){
-
+//http://www.math.tamu.edu/~Joe.Pasciak/classes/639/l2.pdf
   std::cout << "BEGIN BLAS" << std::endl;
   // double overrelax[2] = {2/(1+PI/N[0]), 1-(2/(1+PI/N[0]))};
   double overrelax[2] = {1, 0};
@@ -365,7 +373,7 @@ void Solver::poisson3DSOR_BLAS( void ){
   // double overrelax[2] = {1.85, -0.85};
   unsigned int ind;
   unsigned int cyclenum = 0;
-  boost::numeric::ublas::compressed_matrix<double> m (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+//  boost::numeric::ublas::compressed_matrix<double> m (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
   boost::numeric::ublas::compressed_matrix<double> n (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
   boost::numeric::ublas::compressed_matrix<double> minv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> voltage (N[0]*N[1]*N[2]);
@@ -391,43 +399,54 @@ void Solver::poisson3DSOR_BLAS( void ){
           // m(ind, ind+N[1]*N[2]) = overrelax[0]/6;
           // m(ind, ind-N[1]*N[2]) = overrelax[0]/6;
           // b(ind) = -Q_E*h2*overrelax[0]/6;
-          m(ind, ind) = 6;
-          n(ind, ind+1) = -1;
-          n(ind, ind-1) = -1;
-          n(ind, ind+N[2]) = -1;
-          n(ind, ind-N[2]) = -1;
-          n(ind, ind+N[1]*N[2]) = -1;
-          n(ind, ind-N[1]*N[2]) = -1;
-          b(ind) = -Q_E*h2;
+//          m(ind, ind) = 6;
+          minv(ind, ind) = 1/6.0;
+          n(ind, ind+1) = 1;
+          n(ind, ind-1) = 1;
+          n(ind, ind+N[2]) = 1;
+          n(ind, ind-N[2]) = 1;
+          n(ind, ind+N[1]*N[2]) = 1;
+          n(ind, ind-N[1]*N[2]) = 1;
+          b(ind) = Q_E*h2;
         } else { //exterior
-          m(ind, ind) = 1;
-          if(i == 0){
-            b(ind) = 5; //non-zero boundary condition
-          }
+//          m(ind, ind) = 1;
+          minv(ind, ind) = 1;
         }
       }
     }
   }
   std::cout << "Getting inverse" << std::endl;
-  InvertMatrix(m, minv);
+  // show_arr(minv);
+//  InvertMatrix(m, minv);
   // voltage = rhs;
 // show_arr(m);
 // print_system(m, rhs);
 
+std::cout << "h2 = " << h2 << std::endl;
 std::cout << "Starting Loop" << std::endl;
   do{
     cyclenum++;
     voltage_old = voltage;
     product = prec_prod(n, voltage_old);
+    // std::cout << "1" << std::endl;
+    // std::cout << "voltage" << voltage << std::endl;
+    // std::cout << "voltage_old" << voltage_old << std::endl;
+    // std::cout << "product" << product << std::endl;
     product = prec_prod(minv, product);
+    // std::cout << "2" << std::endl;
+    // std::cout << "voltage" << voltage << std::endl;
+    // std::cout << "voltage_old" << voltage_old << std::endl;
+    // std::cout << "product" << product << std::endl;
     product += prec_prod(minv, b); //p has new potentials
     voltage = product;
-    d = boost::numeric::ublas::element_div(voltage-voltage_old, voltage_old); //replace error
+    d = boost::numeric::ublas::element_div(voltage-voltage_old, voltage); //replace error
     std::cout << "current error: " << norm_inf(d)*100 << "%" << std::endl;
   } while (norm_inf(d) > MAXERROR);
 
   std::cout << "Converged in " << cyclenum << " cycles." << std::endl;
-  std::cout << std::scientific << std::setprecision(7) << voltage << std::endl;
+  // std::cout << std::scientific << std::setprecision(7) << voltage << std::endl;
+  std::cout << "Saving to file" << std::endl;
+  save_voltage(voltage);
 
 }
 
