@@ -71,8 +71,13 @@ int main() {
 //reset solution vector and call for SOR_GEN
     s->solvemethod = SOR_BLAS;
     s->solve();
+<<<<<<< HEAD
     // s->write_2D(s->rho, FILENAMERHO);
     // s->write_2D(s->V, FILENAMESOR_GEN);
+=======
+    // s->write_2D(s->V, FILENAMESOR_GEN);
+    // s->write_2D(s->rho, FILENAMERHO);
+>>>>>>> 653e3a565f4fb230ba85409ea44bd1c251747cdf
 //destructors take care of deleting.
     return 0;
 }
