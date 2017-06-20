@@ -15,9 +15,9 @@ void show_array(const boost::numeric::ublas::unbounded_array<double>& a)
 
 int main() {
 //Parameters
-    int Nx = 100;
-    int Ny = 100;
-    int Nz = 100;
+    int Nx = 20;
+    int Ny = 20;
+    int Nz = 20;
     double Lx = 1.0;
     double Ly = 1.0;
     double Lz = 1.0;
@@ -71,13 +71,10 @@ int main() {
 //reset solution vector and call for SOR_GEN
     s->solvemethod = SOR_BLAS;
     s->solve();
-<<<<<<< HEAD
-    // s->write_2D(s->rho, FILENAMERHO);
-    // s->write_2D(s->V, FILENAMESOR_GEN);
-=======
+
     // s->write_2D(s->V, FILENAMESOR_GEN);
     // s->write_2D(s->rho, FILENAMERHO);
->>>>>>> 653e3a565f4fb230ba85409ea44bd1c251747cdf
+
 //destructors take care of deleting.
     return 0;
 }

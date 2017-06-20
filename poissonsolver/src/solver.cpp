@@ -368,7 +368,8 @@ void Solver::poisson3DSOR_BLAS( void ){
 //https://www.ibiblio.org/e-notes/webgl/gpu/mg/poisson_mg.html
 //http://www.math.iit.edu/~fass/477577_Chapter_13.pdf
   std::cout << "BEGIN BLAS" << std::endl;
-  double overrelax = 2/(1+PI/N[0]);
+  double overrelax = 2.0/(1.0+PI/N[0]);
+  // double overrelax = 1;
   // double overrelax[2] = {2/(1+PI/N[0]), 1-(2/(1+PI/N[0]))};
   // double overrelax[2] = {1, 0};
   // double overrelax[2] = {1.5, -0.5};
@@ -376,8 +377,11 @@ void Solver::poisson3DSOR_BLAS( void ){
   unsigned int ind;
   unsigned int cyclenum = 0;
   boost::numeric::ublas::compressed_matrix<double> A (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
-  // boost::numeric::ublas::compressed_matrix<double> Dinv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
-  boost::numeric::ublas::vector<double> Dinv (N[0]*N[1]*N[2]);
+  boost::numeric::ublas::compressed_matrix<double> L (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  boost::numeric::ublas::compressed_matrix<double> U (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  boost::numeric::ublas::compressed_matrix<double> D (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  boost::numeric::ublas::compressed_matrix<double> Dinv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  // boost::numeric::ublas::vector<double> Dinv (N[0]*N[1]*N[2]);
   // boost::numeric::ublas::compressed_matrix<double> minv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> voltage (N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> voltage_old (N[0]*N[1]*N[2]);
@@ -394,18 +398,18 @@ void Solver::poisson3DSOR_BLAS( void ){
       for (int k = 0; k < N[2]; ++k){
         ind = i*N[1]*N[2] + j*N[2] + k;
         if((i != 0) && (j != 0) && (k != 0) && (i != N[0]-1) && (j != N[1]-1) && (k != N[2]-1)){
-          A(ind, ind) = 6.0;
-          Dinv(ind)= 1/6.0;
-          A(ind, ind+1) = -1;
-          A(ind, ind-1) = -1;
-          A(ind, ind+N[2]) = -1;
-          A(ind, ind-N[2]) = -1;
-          A(ind, ind+N[1]*N[2]) = -1;
-          A(ind, ind-N[1]*N[2]) = -1;
+          D(ind, ind) = 6.0;
+          Dinv(ind, ind)= 1/6.0;
+          U(ind, ind+1) = -1;
+          U(ind, ind+N[2]) = -1;
+          U(ind, ind+N[1]*N[2]) = -1;
+          L(ind, ind-1) = -1;
+          L(ind, ind-N[2]) = -1;
+          L(ind, ind-N[1]*N[2]) = -1;
           b(ind) = Q_E*h2;
         } else { //exterior
-          A(ind, ind) = 1;
-          Dinv(ind)= 1/6.0;
+          D(ind, ind) = 1;
+          Dinv(ind, ind)= 1;
           if (i == 0){
             // b(ind) = 5;
           }
@@ -413,7 +417,14 @@ void Solver::poisson3DSOR_BLAS( void ){
       }
     }
   }
-// std::cout << "Getting inverse" << std::endl;
+// A += D;
+A += L;
+A += U;
+// show_arr(D);
+// show_arr(L);
+// show_arr(U);
+// show_arr(A);
+
 std::cout << "h2 = " << h2 << std::endl;
 std::cout << "Starting Loop" << std::endl;
   const std::clock_t begin_time = std::clock();
@@ -422,8 +433,11 @@ std::cout << "Starting Loop" << std::endl;
     voltage_old = voltage;
     product = prec_prod(A, voltage_old);
     product = b - product;
-    product = element_prod(Dinv, product);
-    voltage = voltage_old + product;
+    product = prec_prod(Dinv, product);
+    // product *= overrelax;
+    voltage = product;
+    // product = voltage_old + product;
+    // voltage = product;
     d = boost::numeric::ublas::element_div(voltage-voltage_old, voltage); //replace error
     std::cout << "current error: " << norm_inf(d)*100 << "%" << std::endl;
   } while (norm_inf(d) > MAXERROR);
