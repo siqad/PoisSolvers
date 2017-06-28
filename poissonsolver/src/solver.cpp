@@ -78,9 +78,9 @@ void Solver::init_rho( void ){
     x = i*L[0]/N[0];
     for(int j = 0; j < N[1]; j++){
       y = j*L[1]/N[1];
-      for(int k = 0; k < N[2]; k++){
+      for(int k = 0; k < N[2]/2; k++){
         z = k*L[2]/N[2]; //set rho with plane wave in x direction (one full wave)
-          rho[i*N[1]*N[2]+j*N[2]+k] = 1e10*Q_E*sin(x*2*PI/L[0]);
+          rho[i*N[1]*N[2]+j*N[2]+k] = 1.5e10*Q_E;
       }
     }
   }
@@ -96,7 +96,11 @@ void Solver::init_eps( void ){
       y = j*L[1]/N[1];
       for( int k = 0; k < N[2]; k++){
         z = k*L[2]/N[2];
-        eps[i*N[1]*N[2]+j*N[2]+k] = x+y+z+1;
+        if (k<N[2]/2){
+          eps[i*N[1]*N[2]+j*N[2]+k] = 11.7;
+        } else{
+          eps[i*N[1]*N[2]+j*N[2]+k] = 1;
+        }
 
       }
     }
@@ -190,9 +194,9 @@ void Solver::write_2D( std::vector<double> &vals, std::string filename ){
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping data to " << filename << std::endl;
   static const std::vector<double> incSpacing = {L[0]/N[0], L[1]/N[1], L[2]/N[2]};
-  static const int k = N[2]/2;
+  static const int j = N[1]/2;
   for (int i = 0; i < N[0]; i++){
-    for (int j = 0; j < N[1]; j++){
+    for (int k = 0; k < N[2]; k++){
         outfile << std::setprecision(5) << std::scientific << i * incSpacing[0] << " " << j * incSpacing[1] <<
                 " " << vals[i*N[1]*N[2] + j*N[2] + k] << std::endl;
     }
@@ -204,10 +208,10 @@ void Solver::write_2D( double* vals, std::string filename ){
   std::ofstream outfile;
   outfile.open(filename, std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping data to " << filename << std::endl;
-  static const int k = N[2]/2;
+  static const int j = N[1]/2;
   for (int i = 0; i < N[0]; i++){
-    for (int j = 0; j < N[1]; j++){
-        outfile << std::setprecision(5) << std::scientific << i*L[0]/N[0] << " " << j*L[1]/N[1] <<
+    for (int k = 0; k < N[2]; k++){
+        outfile << std::setprecision(5) << std::scientific << i*L[0]/N[0] << " " << k*L[2]/N[2] <<
                 " " << vals[i*N[1]*N[2]+j*N[2]+k] << std::endl;
     }
     outfile << std::endl;
@@ -367,6 +371,7 @@ void Solver::poisson3DSOR_BLAS( void ){
 //http://www.math.tamu.edu/~Joe.Pasciak/classes/639/l2.pdf
 //https://www.ibiblio.org/e-notes/webgl/gpu/mg/poisson_mg.html
 //http://www.math.iit.edu/~fass/477577_Chapter_13.pdf
+//https://www.math.ust.hk/~mawang/teaching/math532/mgtut.pdf
   std::cout << "BEGIN BLAS" << std::endl;
   double overrelax = 2.0/(1.0+PI/N[0]);
   // double overrelax = 1;
@@ -406,12 +411,12 @@ void Solver::poisson3DSOR_BLAS( void ){
           L(ind, ind-1) = -1;
           L(ind, ind-N[2]) = -1;
           L(ind, ind-N[1]*N[2]) = -1;
-          b(ind) = Q_E*h2;
+          b(ind) = 1e20*Q_E*h2;
         } else { //exterior
           D(ind, ind) = 1;
           Dinv(ind, ind)= 1;
           if (i == 0){
-            // b(ind) = 5;
+            b(ind) = 5;
           }
         }
       }
@@ -442,7 +447,7 @@ std::cout << "Starting Loop" << std::endl;
     std::cout << "current error: " << norm_inf(d)*100 << "%" << std::endl;
   } while (norm_inf(d) > MAXERROR);
   std::cout << "Converged in " << cyclenum << " cycles." << std::endl;
-  // std::cout << std::scientific << std::setprecision(7) << voltage << std::endl;
+  std::cout << std::scientific << std::setprecision(7) << voltage << std::endl;
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Saving to file" << std::endl;
   save_voltage(voltage);

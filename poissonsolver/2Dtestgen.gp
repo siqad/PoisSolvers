@@ -20,6 +20,18 @@ set output "eps.png"
 set title "Permittivity - piece wise"
 splot "outfileEPS.txt" u 1:2:3 with lines
 
+#Save as .svgs
+set terminal svg
+set output "rho.svg"
+set title "RHO - sin(2*pi*x/Lx)"
+splot "outfileRHO.txt" u 1:2:3 with lines
+set output "V.svg"
+set title "V (slice at z = Lz/2), obtained by SOR"
+splot "outfileSOR_GEN.txt" u 1:2:3 with lines
+set output "eps.svg"
+set title "Permittivity - piece wise"
+splot "outfileEPS.txt" u 1:2:3 with lines
+
 #show both in gnuplot terminal simultaneously
 set term x11 0
 set title "Permittivity - piece wise"

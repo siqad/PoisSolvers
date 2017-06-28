@@ -33,6 +33,7 @@ void Electrodes::draw( Solver * s ){
       for( int k = pcentre[2] - pdims[2]/2; k < pcentre[2] + pdims[2]/2; k++){
         s->electrodemap[i*s->N[1]*s->N[2] + j*s->N[2] + k].first = workfunction; //set electrode work function
         s->electrodemap[i*s->N[1]*s->N[2] + j*s->N[2] + k].second = potential; //set electrode potential
+        s->rho[i*s->N[1]*s->N[2] + j*s->N[2] + k] = 0; //no volumetric charge in metal
       }
     }
   }
