@@ -13,11 +13,14 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
+#define EVEN 0
+#define ODD 1
 #define JACOBI 1
 #define GAUSS_SEIDEL 2
 #define SOR 3
 #define SOR_GEN 4
 #define SOR_BLAS 5
+#define MG 6
 #define EPS0 8.85418782e-12
 #define Q_E 1.6e-19
 #define LATTICECONSTANT 1e-3
@@ -29,6 +32,7 @@
 #define FILENAMEEPS "outfileEPS.txt"
 #define FILENAMEELEC "outfileELEC.txt"
 #define FILENAMEBLAS "outfileBLAS.txt"
+#define FILENAMEMG "outfileMG.txt"
 #define MAXERROR 1e-3
 #define PI 3.14159265358979323846
 #define DIRICHLET 0
@@ -63,6 +67,7 @@ public:
     std::pair<double, double>* electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
 
     //functions
+    void relax( int, bool*, double*, bool*, bool*, double*, double**, int, int, double*);
     void calc_Neumann(int, int, int);
     void set_N(int, int, int);
     void set_L(double, double, double);
@@ -76,6 +81,7 @@ public:
     void solve(void);
     void poisson3DSOR_BLAS(void);
     void poisson3DSOR_gen(void);
+    void poisson3Dmultigrid(void);
     void poisson3DSOR(void);
     void poisson3DJacobi(void);
     void poisson3DGaussSeidel(void);

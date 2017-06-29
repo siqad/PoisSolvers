@@ -42,7 +42,7 @@
 	</g>
 	<g id="gnuplot_plot_2" ><title>gnuplot_plot_2</title>
 	<g transform="translate(445.0,135.8)" style="stroke:none; fill:black; font-family:Arial; font-size:12.00pt; text-anchor:end">
-		<text>"outfileSOR_GEN.txt" u 1:2:3</text>
+		<text>"outfileMG.txt" u 1:2:3</text>
 	</g>
 <g style="fill:none; color:red; stroke:currentColor; stroke-width:1.00; stroke-linecap:butt; stroke-linejoin:miter">
 	<g style = 'stroke:none; shape-rendering:crispEdges'>

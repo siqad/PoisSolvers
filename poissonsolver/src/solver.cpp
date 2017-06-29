@@ -119,6 +119,8 @@ void Solver::solve( void ){
     case SOR_GEN:       poisson3DSOR_gen();
                         break;
     case SOR_BLAS:      poisson3DSOR_BLAS();
+                        break;
+    case MG:            poisson3Dmultigrid();
   }
 }
 
@@ -454,6 +456,108 @@ std::cout << "Starting Loop" << std::endl;
 
 }
 
+void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideElec, bool* isChangingeps, double* overrelax, double** a, int cycleCount, int cycleCheck, double* pcurrError ){
+  unsigned int ind;
+  for ( int i = 0; i < N[0]; i++){
+    for ( int j = 0; j < N[1]; j++){
+      for (int k =(i+j)%2 + isOdd; k < N[2]; k+=2){
+        ind = i*N[1]*N[2] + j*N[2] + k;
+        //directly on face, do boundary first.
+        if ((boundarytype == NEUMANN)&&(isExterior[ind]==true)){
+            calc_Neumann(i, j, k); //Dirichlet boundary handled by set_BCs() in main
+        } else if (isExterior[ind] == false){ //interior point, do normal.
+          if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
+            *pVold = V[ind]; //Save for error comparison
+            if(isBesideElec[ind] == true){
+            //Current cell is NEXT TO an electrode, ignore other effects and use workfunction ohmic contact calculation
+            //Rectangular electrodes, only one side of bulk can interface with electrode.
+            //Work function and electrode voltage = 0 for non-electrode sites. Add all sides, since only one of them
+            //is non-zero
+              V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
+                       electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
+                       electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
+                       ((electrodemap[ind+1].first + electrodemap[ind-1].first +
+                       electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
+                       electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
+            } else { //not directly beside an electrode, perform normal calculation.
+              if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
+                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                         a[ind][4]*V[ind-N[1]*N[2]] + a[ind][1]*V[ind+N[1]*N[2]] +
+                         a[ind][5]*V[ind-N[2]] + a[ind][2]*V[ind+N[2]] +
+                         a[ind][6]*V[ind-1] + a[ind][3]*V[ind+1] + rho[ind]*h2/EPS0)/a[ind][0]; //calculate new potential
+              } else { //no difference in permittivity, do not calculate new a values
+                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+                         V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
+                         V[ind-1*N[2]] + V[ind+1*N[2]] +
+                         V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
+              }
+            }
+            if (cycleCount%cycleCheck == 0){
+              if ( fabs((V[ind] - *pVold)/ V[ind]) > *pcurrError){ //capture worst case error
+                  *pcurrError = fabs((V[ind] - *pVold)/V[ind]);
+              }
+            }
+          } else { //current cell IS electrode, set V[ind] = electrode voltage
+            V[ind] = electrodemap[ind].second;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+//uses multigrid method to solve poisson's equation.
+void Solver::poisson3Dmultigrid( void ){
+  double Vold; //needed to calculate error between new and old values
+  double* pVold = &Vold;
+  double currError; //largest error on current loop
+  double* pcurrError = &currError;
+  unsigned int cycleCount = 0; //iteration count, for reporting
+  unsigned int cycleCheck = 25;
+//  double overrelax[2] = {1.85/6, -0.85};
+//http://userpages.umbc.edu/~gobbert/papers/YangGobbert2007SOR.pdf shows theoretical optimal parameter
+  double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
+  double **a = new double*[N[0]*N[1]*N[2]]; //array of pointers to doubles.
+  bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
+  bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
+  bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
+  check_eps( eps, isChangingeps );
+  check_exterior( isExterior );
+  check_elec( isBesideElec );
+  create_a( a );
+  std::cout << "DOING multigrid with omega = " << overrelax[0]*6 << std::endl;
+  std::cout << "Iterating..." << std::endl;
+  const std::clock_t begin_time = std::clock();
+  unsigned long int ind;
+  do{
+      currError = 0;  //reset error for every run
+//all even lattice points depend on odd lattice point values, and vice versa.
+//split into even and odd phase, now information propagates in both directions
+//EVEN
+      relax(EVEN, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError);
+//ODD
+      relax(ODD, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError);
+      if (cycleCount%50 == 0){
+        std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
+      }
+      cycleCount++;
+  }while( currError > MAXERROR || currError == 0);
+  std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
+  std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
+  delete[] isExterior;
+  delete[] isBesideElec;
+  delete[] isChangingeps;
+  for ( int i = 1; i < N[0]-1; i++){ //for all points except endpoints
+    for ( int j = 1; j < N[1]-1; j++){
+      for (int k = 1; k < N[2]-1; k++){
+        ind = i*N[1]*N[2] + j*N[2] + k;
+        delete[] a[ind];
+      }
+    }
+  }
+  delete[] a;
+}
 
 //uses Generalised Successive Over Relaxation method to solve poisson's equation.
 //based on http://www.eng.utah.edu/~cfurse/ece6340/LECTURE/FDFD/Numerical%20Poisson.pdf

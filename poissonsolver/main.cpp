@@ -76,10 +76,10 @@ int main() {
 //eps and rho are already pointers. To use existing rho and eps, initialize and set with:
     s->set_BCs(0, 0, 0, 0, 0, 0); //boundary conditions
 //reset solution vector and call for SOR_GEN
-    s->solvemethod = SOR_GEN;
+    s->solvemethod = MG;
     s->solve();
 
-    s->write_2D(s->V, FILENAMESOR_GEN);
+    s->write_2D(s->V, FILENAMEMG);
     s->write_2D(s->rho, FILENAMERHO);
     s->write_2D(s->eps, FILENAMEEPS);
 
