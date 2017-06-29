@@ -532,12 +532,12 @@ void Solver::poisson3Dmultigrid( void ){
   unsigned long int ind;
   do{
       currError = 0;  //reset error for every run
-//all even lattice points depend on odd lattice point values, and vice versa.
-//split into even and odd phase, now information propagates in both directions
+//First relaxation
 //EVEN
       relax(EVEN, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError);
 //ODD
       relax(ODD, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError);
+
       if (cycleCount%50 == 0){
         std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
       }
