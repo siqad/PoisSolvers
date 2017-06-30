@@ -8,14 +8,14 @@ const int POISFFT_DIRICHLET_STAG = 3;
 const int POISFFT_NEUMANN_STAG = 4;
 const int POISFFT_SPECTRAL = 0;
 const int POISFFT_FINITE_DIFFERENCE_2 = 2;
- 
+
 typedef struct{int dims; void *D;} poisfft_solver;
 
 typedef struct{int dims; void *D;} poisfft_solver_f;
 
 poisfft_solver poisfft_solver_new(const int dims,
                          const int *nxyz, const double *Lxyz,
-                         const int *BCs, const int approximation, 
+                         const int *BCs, const int approximation,
                          const int *gnxyz, const int *offs,
                          const void *mpi_comm, int nthreads);
 void poisfft_solver_execute( poisfft_solver S, double *Phi, const double *RHS,
@@ -53,7 +53,7 @@ namespace PoisFFT{
       void execute(real *Phi, const real *RHS,
                    const int *ngPhi=0, const int *ngRHS=0);
   };
-  
+
   template <unsigned int dims>  class Solver<dims, double>{
     private:
       poisfft_solver c_solver;
@@ -62,7 +62,7 @@ namespace PoisFFT{
                      const int *BCs, const int approximation=0,
                      const int *gnxyz=0, const int *offs=0,
                      const void *mpi_comm=0, int nthreads=1){
-        c_solver = poisfft_solver_new(dims, nxyz, Lxyz, BCs, approximation, 
+        c_solver = poisfft_solver_new(dims, nxyz, Lxyz, BCs, approximation,
                                       gnxyz, offs, mpi_comm, nthreads);
       };
       ~Solver(){
@@ -73,7 +73,7 @@ namespace PoisFFT{
         poisfft_solver_execute(c_solver, Phi, RHS, ngPhi, ngRHS);
       };
   };
-  
+
   template <unsigned int dims>  class Solver<dims, float>{
     private:
       poisfft_solver_f c_solver;

@@ -11,6 +11,7 @@ MODIFICATIONS (as required by GPL)
 
 To build, after installing dependencies (fftw, pfft), go to /src/ and do: sudo scons test
 The executable will appear as ../bin/gcc/cc_testpoisson
+https://arxiv.org/pdf/1208.0901.pdf
 */
 
 #include <cmath>
@@ -20,12 +21,12 @@ The executable will appear as ../bin/gcc/cc_testpoisson
 #include <iomanip>
 #include <fstream>
 
-//const double pi = 3.14159265358979323846;
+const double pi = 3.14159265358979323846;
 
 #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 #define FILENAME "outfile.txt"
 
-void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a){
+void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a){ //source term
   int i,j,k;
   std::cout << "Initialising RHS" << std::endl;
   for (i=0;i<ns[0];i++){
@@ -36,7 +37,10 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a
         double z = ds[2]*(k+0.5);
         //piece wise RHS
         //a[IND(i,j,k)] = sin(3*pi*x/Ls[0]) * sin(5*pi*y/Ls[1]) *sin(7*pi*z/Ls[2]);
-        a[IND(i,j,k)] = -1.6e-19*sin(x*2*pi/Ls[0])/8.85418782e-12;
+        // a[IND(i,j,k)] = -1.6e-19*sin(x*2*pi/Ls[0])/8.85418782e-12;
+        if ( (x > Ls[0]/3.0 && x < Ls[0]*2.0/3.0) && (y > Ls[1]/3.0 && y < Ls[1]*2.0/3.0) && (z > Ls[2]/3.0 && z < Ls[2]*2.0/3.0) ){
+          a[IND(i,j,k)] = -1.6e-19/8.85418782e-12;
+        }
         // if (k < ns[2]/2){
         // a[IND(i,j,k)] = x/Ls[0] * y/Ls[1] * z/Ls[2];;
         // }
@@ -120,8 +124,9 @@ int main(){
   // create solver object, 3 dimensions, double precision
   PoisFFT::Solver<3, double> S(ns, Ls, BCs);
 
-  //run the solver, can be run many times for different right-hand sides
+  //run the solver, can be run many times for different right-hand side
   S.execute(arr, RHS);
+  //solution is in arr
 
   // check correctness (compares with known, exact solution)
   //check_solution(ns, ds, Ls, arr);
