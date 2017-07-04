@@ -506,7 +506,11 @@ void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideEl
   }
 }
 
-
+void Solver::mgrestriction( void ){
+  //can only restrict if dimensions are odd-numbered. if even numbered, add a point to the ends of the data set.
+  //This changes dimensions by +1. Need to push back data elements.
+  
+}
 //uses multigrid method to solve poisson's equation.
 void Solver::poisson3Dmultigrid( void ){
   double Vold; //needed to calculate error between new and old values
