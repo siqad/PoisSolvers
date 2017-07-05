@@ -13,13 +13,13 @@ set palette defined
 set terminal png
 set output "rho.png"
 set title "RHO"
-splot "outfileRHO.txt" u 1:2:3 with lines
+splot "outfileRHO.txt" u 1:2:3 with pm3d
 set output "V.png"
 set title "V (slice at y = Ly/2), obtained by SOR"
-splot "outfileMG.txt" u 1:2:3 with lines
+splot "outfileMG.txt" u 1:2:3 with pm3d
 set output "eps.png"
 set title "Permittivity"
-splot "outfileEPS.txt" u 1:2:3 with lines
+splot "outfileEPS.txt" u 1:2:3 with pm3d
 
 #Save as .svgs
 set terminal svg

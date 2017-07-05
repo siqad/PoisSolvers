@@ -14,8 +14,6 @@ Electrodes::Electrodes( void ) {
   centre.resize(3);
 }
 Electrodes::~Electrodes( void ) {
-  delete[] pdims;
-  delete[] pcentre;
 }
 
 //initialize sizes

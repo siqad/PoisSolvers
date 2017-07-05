@@ -47,6 +47,10 @@ boost/numeric/ublas/vector_sparse.hpp
 -
 boost/numeric/ublas/matrix.hpp
 -
+string
+-
+cmath
+-
 
 /home/nathan/git/PoisSolvers/poissonsolver/src/electrodes.cpp
 electrodes.h

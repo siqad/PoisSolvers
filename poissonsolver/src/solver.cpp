@@ -28,11 +28,17 @@ Solver::Solver(){
 }
 Solver::~Solver(){
   delete[] V;
+  std::cout << "0" << std::endl;
   delete[] L;
+  std::cout << "1" << std::endl;
   delete[] N;
+  std::cout << "2" << std::endl;
   delete[] rho;
+  std::cout << "3" << std::endl;
   delete[] electrodemap;
+  std::cout << "4" << std::endl;
   delete[] eps;
+  std::cout << "5" << std::endl;
 }
 
 //set_val, used to assign values to class attributes.
@@ -274,9 +280,9 @@ void Solver::check_exterior( bool* isExterior ){
 //check whether branch should do normal or ohmic calculation
 void Solver::check_elec( bool* isBesideElec ){
   std::cout << "Checking electrodes..." << std::endl;
-  for (int i = 0; i < N[0]; i++){
-    for (int j = 0; j < N[1]; j++){
-      for (int k = 0; k < N[2]; k++){
+  for (int i = 1; i < N[0]-1; i++){
+    for (int j = 1; j < N[1]-1; j++){
+      for (int k = 1; k < N[2]-1; k++){
         int ind = i*N[1]*N[2] + j*N[2] + k;
         if( electrodemap[ind+1].first!=0 || electrodemap[ind-1].first!=0 ||
             electrodemap[ind+N[2]].first!=0 || electrodemap[ind-N[2]].first!=0 ||
@@ -506,11 +512,12 @@ void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideEl
   }
 }
 
-void Solver::mgrestriction( void ){
-  //can only restrict if dimensions are odd-numbered. if even numbered, add a point to the ends of the data set.
-  //This changes dimensions by +1. Need to push back data elements.
-  
-}
+// void Solver::mgrestriction( void ){
+//   //can only restrict if dimensions are odd-numbered. if even numbered, add a point to the ends of the data set.
+//   //This changes dimensions by +1. Need to push back data elements.
+//
+//
+// }
 //uses multigrid method to solve poisson's equation.
 void Solver::poisson3Dmultigrid( void ){
   double Vold; //needed to calculate error between new and old values
@@ -523,12 +530,15 @@ void Solver::poisson3Dmultigrid( void ){
 //http://userpages.umbc.edu/~gobbert/papers/YangGobbert2007SOR.pdf shows theoretical optimal parameter
   double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
   double **a = new double*[N[0]*N[1]*N[2]]; //array of pointers to doubles.
-  bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
+  // bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
+  bool isBesideElec[N[0]*N[1]*N[2]];
+  bool* pisBesideElec = isBesideElec;
+
   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
   bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
   check_eps( eps, isChangingeps );
   check_exterior( isExterior );
-  check_elec( isBesideElec );
+  check_elec( pisBesideElec );
   create_a( a );
   std::cout << "DOING multigrid with omega = " << overrelax[0]*6 << std::endl;
   std::cout << "Iterating..." << std::endl;
@@ -549,17 +559,21 @@ void Solver::poisson3Dmultigrid( void ){
   }while( currError > MAXERROR || currError == 0);
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
+  std::cout << "Deleting isExterior" << std::endl;
   delete[] isExterior;
-  delete[] isBesideElec;
+  // std::cout << "Deleting isBesideElec" << std::endl;
+  // delete[] isBesideElec;
+  std::cout << "Deleting isChangingeps" << std::endl;
   delete[] isChangingeps;
-  for ( int i = 1; i < N[0]-1; i++){ //for all points except endpoints
-    for ( int j = 1; j < N[1]-1; j++){
-      for (int k = 1; k < N[2]-1; k++){
-        ind = i*N[1]*N[2] + j*N[2] + k;
-        delete[] a[ind];
-      }
-    }
-  }
+  // for ( int i = 1; i < N[0]-1; i++){ //for all points except endpoints
+  //   for ( int j = 1; j < N[1]-1; j++){
+  //     for (int k = 1; k < N[2]-1; k++){
+  //       ind = i*N[1]*N[2] + j*N[2] + k;
+  //       delete a[ind];
+  //     }
+  //   }
+  // }
+  std::cout << "Deleting a" << std::endl;
   delete[] a;
 }
 
