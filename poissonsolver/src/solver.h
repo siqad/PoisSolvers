@@ -88,7 +88,7 @@ public:
     void set_BCs(double, double, double, double, double, double);
     void write(std::vector<double>&, std::string );
     void write_2D(std::vector<double>&, std::string);
-    void write_2D( double* vals, std::string filename );
+    void write_2D( double* vals, std::string filename);
     void get_a(double *, double *, int);
     void check_eps(double *, bool*);
     void del( int* );
@@ -103,8 +103,7 @@ public:
     void check_diag( boost::numeric::ublas::compressed_matrix<double> );
     void save_voltage( boost::numeric::ublas::vector<double> );
     void mgrestriction( double*, double* );
-
-
+    void mgprolongation( double*, double* );
 };
 
 #endif //POISSONSOLVER_SOLVER_H

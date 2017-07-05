@@ -529,6 +529,29 @@ int indfine;
   }
 }
 
+void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
+int indcoarse = 0;
+int indfine;
+  for (int i = 1; i < N[0]; i = i + 2){
+    for (int j = 1; j < N[1]; j = j + 2){
+      for (int k = 1; k < N[2]; k = k + 2){
+        indfine = i*N[1]*N[2] + j*N[2] + k;
+        Vcoarse[indcoarse] = Vfine[indfine-N[1]*N[2]-N[2]-1] + 2*Vfine[indfine-N[1]*N[2]-N[2]] + Vfine[indfine-N[1]*N[2]-N[2]+1]
+                           + 2*Vfine[indfine-N[1]*N[2]-1]    + 4*Vfine[indfine-N[1]*N[2]]      + 2*Vfine[indfine-N[1]*N[2]+1]
+                           + Vfine[indfine-N[1]*N[2]+N[2]-1] + 2*Vfine[indfine-N[1]*N[2]+N[2]] + Vfine[indfine-N[1]*N[2]+N[2]+1]
+                           + 2*Vfine[indfine-N[2]-1]         + 4*Vfine[indfine-N[2]]           + 2*Vfine[indfine-N[2]+1]
+                           + 4*Vfine[indfine-1]              + 8*Vfine[indfine]                + 4*Vfine[indfine+1]
+                           + 2*Vfine[indfine+N[2]-1]         + 4*Vfine[indfine+N[2]]           + 2*Vfine[indfine+N[2]+1]
+                           + Vfine[indfine+N[1]*N[2]-N[2]-1] + 2*Vfine[indfine+N[1]*N[2]-N[2]] + Vfine[indfine+N[1]*N[2]-N[2]+1]
+                           + 2*Vfine[indfine+N[1]*N[2]-1]    + 4*Vfine[indfine+N[1]*N[2]]      + 2*Vfine[indfine+N[1]*N[2]+1]
+                           + Vfine[indfine+N[1]*N[2]+N[2]-1] + 2*Vfine[indfine+N[1]*N[2]+N[2]] + Vfine[indfine+N[1]*N[2]+N[2]+1];
+        Vcoarse[indcoarse] = Vcoarse[indcoarse]/64.0;
+        indcoarse++;
+      }
+    }
+  }
+}
+
 //uses multigrid method to solve poisson's equation.
 void Solver::poisson3Dmultigrid( void ){
   double Vold; //needed to calculate error between new and old values
