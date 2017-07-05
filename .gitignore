@@ -4,15 +4,10 @@ PoisFFT/lib
 
 #in-house poisson solver at https://github.com/NathanChiu/poissonsolver
 poissonsolver/outfile*.txt
-poissonsolver/outfileGAU.txt
-poissonsolver/outfileJAC.txt
-poissonsolver/outfileSOR.txt
-poissonsolver/outfileSOR_GEN.txt
-poissonsolver/outfileRHO.txt
-poissonsolver/outfileEPS.txt
-poissonsolver/outfileSORreference.txt
 poissonsolver/perf*
 poissonsolver/profres*
+poissonsolver/*.tar.gz
+poissonsolver/*.svg
 
 
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/

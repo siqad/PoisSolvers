@@ -28,17 +28,11 @@ Solver::Solver(){
 }
 Solver::~Solver(){
   delete[] V;
-  std::cout << "0" << std::endl;
   delete[] L;
-  std::cout << "1" << std::endl;
   delete[] N;
-  std::cout << "2" << std::endl;
   delete[] rho;
-  std::cout << "3" << std::endl;
   delete[] electrodemap;
-  std::cout << "4" << std::endl;
   delete[] eps;
-  std::cout << "5" << std::endl;
 }
 
 //set_val, used to assign values to class attributes.
@@ -512,25 +506,41 @@ void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideEl
   }
 }
 
-// void Solver::mgrestriction( void ){
-//   //can only restrict if dimensions are odd-numbered. if even numbered, add a point to the ends of the data set.
-//   //This changes dimensions by +1. Need to push back data elements.
-//
-//
-// }
+void Solver::mgrestriction( double* Vfine, double* Vcoarse ){
+int indcoarse = 0;
+int indfine;
+  for (int i = 1; i < N[0]; i = i + 2){
+    for (int j = 1; j < N[1]; j = j + 2){
+      for (int k = 1; k < N[2]; k = k + 2){
+        indfine = i*N[1]*N[2] + j*N[2] + k;
+        Vcoarse[indcoarse] = Vfine[indfine-N[1]*N[2]-N[2]-1] + 2*Vfine[indfine-N[1]*N[2]-N[2]] + Vfine[indfine-N[1]*N[2]-N[2]+1]
+                           + 2*Vfine[indfine-N[1]*N[2]-1]    + 4*Vfine[indfine-N[1]*N[2]]      + 2*Vfine[indfine-N[1]*N[2]+1]
+                           + Vfine[indfine-N[1]*N[2]+N[2]-1] + 2*Vfine[indfine-N[1]*N[2]+N[2]] + Vfine[indfine-N[1]*N[2]+N[2]+1]
+                           + 2*Vfine[indfine-N[2]-1]         + 4*Vfine[indfine-N[2]]           + 2*Vfine[indfine-N[2]+1]
+                           + 4*Vfine[indfine-1]              + 8*Vfine[indfine]                + 4*Vfine[indfine+1]
+                           + 2*Vfine[indfine+N[2]-1]         + 4*Vfine[indfine+N[2]]           + 2*Vfine[indfine+N[2]+1]
+                           + Vfine[indfine+N[1]*N[2]-N[2]-1] + 2*Vfine[indfine+N[1]*N[2]-N[2]] + Vfine[indfine+N[1]*N[2]-N[2]+1]
+                           + 2*Vfine[indfine+N[1]*N[2]-1]    + 4*Vfine[indfine+N[1]*N[2]]      + 2*Vfine[indfine+N[1]*N[2]+1]
+                           + Vfine[indfine+N[1]*N[2]+N[2]-1] + 2*Vfine[indfine+N[1]*N[2]+N[2]] + Vfine[indfine+N[1]*N[2]+N[2]+1];
+        Vcoarse[indcoarse] = Vcoarse[indcoarse]/64.0;
+        indcoarse++;
+      }
+    }
+  }
+}
+
 //uses multigrid method to solve poisson's equation.
 void Solver::poisson3Dmultigrid( void ){
   double Vold; //needed to calculate error between new and old values
   double* pVold = &Vold;
+  double* Vcoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
   double currError; //largest error on current loop
   double* pcurrError = &currError;
   unsigned int cycleCount = 0; //iteration count, for reporting
   unsigned int cycleCheck = 25;
-//  double overrelax[2] = {1.85/6, -0.85};
 //http://userpages.umbc.edu/~gobbert/papers/YangGobbert2007SOR.pdf shows theoretical optimal parameter
   double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
   double **a = new double*[N[0]*N[1]*N[2]]; //array of pointers to doubles.
-  // bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
   bool isBesideElec[N[0]*N[1]*N[2]];
   bool* pisBesideElec = isBesideElec;
 
@@ -544,6 +554,22 @@ void Solver::poisson3Dmultigrid( void ){
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
+
+  std::cout << "V" << std::endl;
+  for( int i = 0; i < N[0]*N[1]*N[2]; i++){
+    V[i] = (double) i;
+    std::cout << V[i] << std::endl;
+  }
+  std::cout << "Vcoarse (start)" << std::endl;
+  for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+    std::cout << Vcoarse[i] << std::endl;
+  }
+  mgrestriction(V, Vcoarse);
+  std::cout << "Vcoarse (after restriction)" << std::endl;
+  for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+    std::cout << Vcoarse[i] << std::endl;
+  }
+
   do{
       currError = 0;  //reset error for every run
 //First relaxation
@@ -561,20 +587,11 @@ void Solver::poisson3Dmultigrid( void ){
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Deleting isExterior" << std::endl;
   delete[] isExterior;
-  // std::cout << "Deleting isBesideElec" << std::endl;
-  // delete[] isBesideElec;
   std::cout << "Deleting isChangingeps" << std::endl;
   delete[] isChangingeps;
-  // for ( int i = 1; i < N[0]-1; i++){ //for all points except endpoints
-  //   for ( int j = 1; j < N[1]-1; j++){
-  //     for (int k = 1; k < N[2]-1; k++){
-  //       ind = i*N[1]*N[2] + j*N[2] + k;
-  //       delete a[ind];
-  //     }
-  //   }
-  // }
   std::cout << "Deleting a" << std::endl;
   delete[] a;
+  delete[] Vcoarse;
 }
 
 //uses Generalised Successive Over Relaxation method to solve poisson's equation.

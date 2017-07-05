@@ -24,15 +24,15 @@
 #define EPS0 8.85418782e-12
 #define Q_E 1.6e-19
 #define LATTICECONSTANT 1e-3
-#define FILENAMESOR_GEN "outfileSOR_GEN.txt"
-#define FILENAMESOR "outfileSOR.txt"
-#define FILENAMEJAC "outfileJAC.txt"
-#define FILENAMEGAU "outfileGAU.txt"
+#define FILENAMESOR_GEN "outfileSOR_GEN"
+#define FILENAMESOR "outfileSOR"
+#define FILENAMEJAC "outfileJAC"
+#define FILENAMEGAU "outfileGAU"
 #define FILENAMERHO "outfileRHO.txt"
 #define FILENAMEEPS "outfileEPS.txt"
 #define FILENAMEELEC "outfileELEC.txt"
-#define FILENAMEBLAS "outfileBLAS.txt"
-#define FILENAMEMG "outfileMG.txt"
+#define FILENAMEBLAS "outfileBLAS"
+#define FILENAMEMG "outfileMG"
 #define MAXERROR 1e-3
 #define PI 3.14159265358979323846
 #define DIRICHLET 0
@@ -102,6 +102,7 @@ public:
     double normal( unsigned long int, double*);
     void check_diag( boost::numeric::ublas::compressed_matrix<double> );
     void save_voltage( boost::numeric::ublas::vector<double> );
+    void mgrestriction( double*, double* );
 
 
 };
