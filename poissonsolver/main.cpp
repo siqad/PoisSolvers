@@ -56,22 +56,22 @@ void workingcall( double t ){
       elec[1].centre = {Nx*25/100, Ny/2, Nz/4};
       elec[1].dims = {Nx/10, Ny/2, Nz/11};
       // elec[1].potential = -10;
-      elec[1].potential = 10*sin(-(2*PI*t+2*PI/3));
+      elec[1].potential = 10*sin(-(2*PI*t+PI/2));
       elec[1].workfunction = WF_GOLD;
       elec[2].centre = {Nx*50/100, Ny/2, Nz/4};
       elec[2].dims = {Nx/10, Ny/2, Nz/11};
       // elec[2].potential = 10;
-      elec[2].potential = 10*sin(-(2*PI*t+4*PI/3));
+      elec[2].potential = 10*sin(-(2*PI*t+PI));
       elec[2].workfunction = WF_GOLD;
       elec[3].centre = {Nx*75/100, Ny/2, Nz/4};
       elec[3].dims = {Nx/10, Ny/2, Nz/11};
       // elec[3].potential = -10;
-      elec[3].potential = 10*sin(-(2*PI*t));
+      elec[3].potential = 10*sin(-(2*PI*t+3*PI/2));
       elec[3].workfunction = WF_GOLD;
       elec[4].centre = {Nx*98/100, Ny/2, Nz/4};
       elec[4].dims = {Nx*4/100, Ny/2, Nz/11};
       // elec[4].potential = 10;
-      elec[4].potential = 10*sin(-(2*PI*t+2*PI/3));
+      elec[4].potential = 10*sin(-(2*PI*t));
       elec[4].workfunction = WF_GOLD;
       elec[5].centre = {Nx/2, Ny/2, 9.5*Nz/10};
       elec[5].dims = {Nx, Ny, Nz/10};
@@ -99,7 +99,7 @@ void workingcall( double t ){
 
 int main() {
     // for (int i = 0; i < 64; i++){
-      // workingcall( (double) i );
+    //   workingcall( (double) i );
     // }
     workingcall(0);
     return 0;

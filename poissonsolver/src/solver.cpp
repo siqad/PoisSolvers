@@ -532,25 +532,48 @@ int indfine;
 void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
 int indcoarse = 0;
 int indfine;
+
+  for (int i = 0; i < N[0]*N[1]*N[2]; i++){
+    Vfine[i] = 0;
+  }
+
   for (int i = 1; i < N[0]; i = i + 2){
     for (int j = 1; j < N[1]; j = j + 2){
       for (int k = 1; k < N[2]; k = k + 2){
         indfine = i*N[1]*N[2] + j*N[2] + k;
-        Vcoarse[indcoarse] = Vfine[indfine-N[1]*N[2]-N[2]-1] + 2*Vfine[indfine-N[1]*N[2]-N[2]] + Vfine[indfine-N[1]*N[2]-N[2]+1]
-                           + 2*Vfine[indfine-N[1]*N[2]-1]    + 4*Vfine[indfine-N[1]*N[2]]      + 2*Vfine[indfine-N[1]*N[2]+1]
-                           + Vfine[indfine-N[1]*N[2]+N[2]-1] + 2*Vfine[indfine-N[1]*N[2]+N[2]] + Vfine[indfine-N[1]*N[2]+N[2]+1]
-                           + 2*Vfine[indfine-N[2]-1]         + 4*Vfine[indfine-N[2]]           + 2*Vfine[indfine-N[2]+1]
-                           + 4*Vfine[indfine-1]              + 8*Vfine[indfine]                + 4*Vfine[indfine+1]
-                           + 2*Vfine[indfine+N[2]-1]         + 4*Vfine[indfine+N[2]]           + 2*Vfine[indfine+N[2]+1]
-                           + Vfine[indfine+N[1]*N[2]-N[2]-1] + 2*Vfine[indfine+N[1]*N[2]-N[2]] + Vfine[indfine+N[1]*N[2]-N[2]+1]
-                           + 2*Vfine[indfine+N[1]*N[2]-1]    + 4*Vfine[indfine+N[1]*N[2]]      + 2*Vfine[indfine+N[1]*N[2]+1]
-                           + Vfine[indfine+N[1]*N[2]+N[2]-1] + 2*Vfine[indfine+N[1]*N[2]+N[2]] + Vfine[indfine+N[1]*N[2]+N[2]+1];
-        Vcoarse[indcoarse] = Vcoarse[indcoarse]/64.0;
+        Vfine[indfine-N[1]*N[2]-N[2]-1] += Vcoarse[indcoarse]/8; //corners have 8 potential updaters
+        Vfine[indfine-N[1]*N[2]-N[2]+1] += Vcoarse[indcoarse]/8;
+        Vfine[indfine-N[1]*N[2]+N[2]-1] += Vcoarse[indcoarse]/8;
+        Vfine[indfine-N[1]*N[2]+N[2]+1] += Vcoarse[indcoarse]/8;
+        Vfine[indfine+N[1]*N[2]-N[2]-1] += Vcoarse[indcoarse]/8;
+        Vfine[indfine+N[1]*N[2]-N[2]+1] += Vcoarse[indcoarse]/8;
+        Vfine[indfine+N[1]*N[2]+N[2]-1] += Vcoarse[indcoarse]/8;
+        Vfine[indfine+N[1]*N[2]+N[2]+1] += Vcoarse[indcoarse]/8;
+        Vfine[indfine-N[1]*N[2]-N[2]]   += Vcoarse[indcoarse]/4; //edges have 4 potential updaters
+        Vfine[indfine-N[1]*N[2]-1]      += Vcoarse[indcoarse]/4;
+        Vfine[indfine-N[1]*N[2]+1]      += Vcoarse[indcoarse]/4;
+        Vfine[indfine-N[1]*N[2]+N[2]]   += Vcoarse[indcoarse]/4;
+        Vfine[indfine-N[2]-1]           += Vcoarse[indcoarse]/4;
+        Vfine[indfine-N[2]+1]           += Vcoarse[indcoarse]/4;
+        Vfine[indfine+N[2]-1]           += Vcoarse[indcoarse]/4;
+        Vfine[indfine+N[2]+1]           += Vcoarse[indcoarse]/4;
+        Vfine[indfine+N[1]*N[2]-N[2]]   += Vcoarse[indcoarse]/4;
+        Vfine[indfine+N[1]*N[2]-1]      += Vcoarse[indcoarse]/4;
+        Vfine[indfine+N[1]*N[2]+1]      += Vcoarse[indcoarse]/4;
+        Vfine[indfine+N[1]*N[2]+N[2]]   += Vcoarse[indcoarse]/4;
+        Vfine[indfine-N[1]*N[2]]        += Vcoarse[indcoarse]/2; //face centres have 2 potential updaters
+        Vfine[indfine-N[2]]             += Vcoarse[indcoarse]/2;
+        Vfine[indfine-1]                += Vcoarse[indcoarse]/2;
+        Vfine[indfine+1]                += Vcoarse[indcoarse]/2;
+        Vfine[indfine+N[2]]             += Vcoarse[indcoarse]/2;
+        Vfine[indfine+N[1]*N[2]]        += Vcoarse[indcoarse]/2;
+        Vfine[indfine]                  += Vcoarse[indcoarse];   //overlapping point, only one possible update.
         indcoarse++;
       }
     }
   }
 }
+
 
 //uses multigrid method to solve poisson's equation.
 void Solver::poisson3Dmultigrid( void ){
@@ -578,20 +601,25 @@ void Solver::poisson3Dmultigrid( void ){
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
 
-  std::cout << "V" << std::endl;
-  for( int i = 0; i < N[0]*N[1]*N[2]; i++){
-    V[i] = (double) i;
-    std::cout << V[i] << std::endl;
-  }
-  std::cout << "Vcoarse (start)" << std::endl;
-  for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-    std::cout << Vcoarse[i] << std::endl;
-  }
-  mgrestriction(V, Vcoarse);
-  std::cout << "Vcoarse (after restriction)" << std::endl;
-  for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-    std::cout << Vcoarse[i] << std::endl;
-  }
+      std::cout << "V (start)" << std::endl;
+      for( int i = 0; i < N[0]*N[1]*N[2]; i++){
+        V[i] = (double) i;
+        std::cout << V[i] << std::endl;
+      }
+      std::cout << "Vcoarse (start)" << std::endl;
+      for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+        std::cout << Vcoarse[i] << std::endl;
+      }
+      mgrestriction(V, Vcoarse);
+      std::cout << "Vcoarse (after restriction)" << std::endl;
+      for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+        std::cout << Vcoarse[i] << std::endl;
+      }
+      mgprolongation(V,Vcoarse);
+      std::cout << "V (after prolongation)" << std::endl;
+      for( int i = 0; i < N[0]*N[1]*N[2]; i++ ){
+        std::cout << V[i] << std::endl;
+      }
 
   do{
       currError = 0;  //reset error for every run
