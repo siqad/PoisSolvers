@@ -17,9 +17,9 @@ void show_array(const boost::numeric::ublas::unbounded_array<double>& a)
 
 void workingcall( double t ){
 //Parameters
-  int Nx = 100;
-  int Ny = 10;
-  int Nz = 100;
+  int Nx = 5;
+  int Ny = 5;
+  int Nz = 5;
   double Lx = 1.0;
   double Ly = 1.0;
   double Lz = 1.0;
@@ -98,9 +98,9 @@ void workingcall( double t ){
 }
 
 int main() {
-    for (int i = 0; i < 64; i++){
-      workingcall( (double) i );
-    }
-    // workingcall(0);
+    // for (int i = 0; i < 64; i++){
+    //   workingcall( (double) i );
+    // }
+    workingcall(0);
     return 0;
 }

@@ -606,28 +606,23 @@ void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
     }
   }
 
-//NORMALIZATION
-  // for (int k = 0; k < N[2]; k++){
-  //   if ( (k==0) || (k==N[2]-1) ){ //z ends
-  //     for (int i = 0; i < N[0]; i++){
-  //       for (int j = 0; i < N[1]; j++){
-  //         indfine = i*N[1]*N[2] + j*N[2] + k;
-  //         if ( (i==0) || (i==N[0]-1) ){ //x ends
-  //           if( (j==0) || (j==N[1]-1) ){ //y ends
-  //             Vfine[indfine] = 8*Vfine[indfine];
-  //           } else {      //edge of cube
-  //
-  //           }
-  //         }
-  //       }
-  //     }
-  //     Vfine[indfine]
-  //
-  //   }
-  // }
-
-
-
+//NORMALIZATION  ...multiply by 2 for every side the cell is missing a neighbour.
+  for (int i = 0; i < N[0]; i++){
+    for (int j = 0; j < N[1]; j++){
+      for (int k = 0; k < N[2]; k++){
+        indfine = i*N[1]*N[2] + j*N[2] + k;
+        if ( (i==0) || (i==N[0]-1) ){
+          Vfine[indfine] = 2*Vfine[indfine];
+        }
+        if ( (j==0) || (j==N[1]-1) ){
+          Vfine[indfine] = 2*Vfine[indfine];
+        }
+        if ( (k==0) || (k==N[2]-1) ){
+          Vfine[indfine] = 2*Vfine[indfine];
+        }
+      }
+    }
+  }
 }
 
 
@@ -657,25 +652,25 @@ void Solver::poisson3Dmultigrid( void ){
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
 
-      // std::cout << "V (start)" << std::endl;
-      // for( int i = 0; i < N[0]*N[1]*N[2]; i++){
-      //   V[i] = (double) i;
-      //   std::cout << V[i] << std::endl;
-      // }
-      // std::cout << "Vcoarse (start)" << std::endl;
-      // for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-      //   std::cout << Vcoarse[i] << std::endl;
-      // }
-      // mgrestriction(V, Vcoarse);
-      // std::cout << "Vcoarse (after restriction)" << std::endl;
-      // for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-      //   std::cout << Vcoarse[i] << std::endl;
-      // }
-      // mgprolongation(V,Vcoarse);
-      // std::cout << "V (after prolongation)" << std::endl;
-      // for( int i = 0; i < N[0]*N[1]*N[2]; i++ ){
-      //   std::cout << V[i] << std::endl;
-      // }
+      std::cout << "V (start)" << std::endl;
+      for( int i = 0; i < N[0]*N[1]*N[2]; i++){
+        V[i] = (double) i;
+        std::cout << V[i] << std::endl;
+      }
+      std::cout << "Vcoarse (start)" << std::endl;
+      for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+        std::cout << Vcoarse[i] << std::endl;
+      }
+      mgrestriction(V, Vcoarse);
+      std::cout << "Vcoarse (after restriction)" << std::endl;
+      for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+        std::cout << Vcoarse[i] << std::endl;
+      }
+      mgprolongation(V, Vcoarse);
+      std::cout << "V (after prolongation)" << std::endl;
+      for( int i = 0; i < N[0]*N[1]*N[2]; i++ ){
+        std::cout << V[i] << std::endl;
+      }
 
   do{
       currError = 0;  //reset error for every run
