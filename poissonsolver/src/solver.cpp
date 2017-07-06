@@ -487,12 +487,14 @@ std::cout << "Starting Loop" << std::endl;
 
 }
 
-void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideElec, bool* isChangingeps, double* overrelax, double** a, int cycleCount, int cycleCheck, double* pcurrError ){
+void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideElec, bool* isChangingeps, double* overrelax, double** a,
+  int cycleCount, int cycleCheck, double* pcurrError, int N0, int N1, int N2 ){
+
   unsigned int ind;
-  for ( int i = 0; i < N[0]; i++){
-    for ( int j = 0; j < N[1]; j++){
-      for (int k =(i+j)%2 + isOdd; k < N[2]; k+=2){
-        ind = i*N[1]*N[2] + j*N[2] + k;
+  for ( int i = 0; i < N0; i++){
+    for ( int j = 0; j < N1; j++){
+      for (int k =(i+j)%2 + isOdd; k < N2; k+=2){
+        ind = i*N1*N2 + j*N2 + k;
         //directly on face, do boundary first.
         if (isExterior[ind]==true){
           if (boundarytype == NEUMANN){
@@ -509,21 +511,21 @@ void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideEl
             //Work function and electrode voltage = 0 for non-electrode sites. Add all sides, since only one of them
             //is non-zero
               V[ind] = (electrodemap[ind+1].second + electrodemap[ind-1].second +
-                       electrodemap[ind+N[2]].second + electrodemap[ind-N[2]].second +
-                       electrodemap[ind+N[1]*N[2]].second + electrodemap[ind-N[1]*N[2]].second) -
+                       electrodemap[ind+N2].second + electrodemap[ind-N2].second +
+                       electrodemap[ind+N1*N2].second + electrodemap[ind-N1*N2].second) -
                        ((electrodemap[ind+1].first + electrodemap[ind-1].first +
-                       electrodemap[ind+N[2]].first + electrodemap[ind-N[2]].first +
-                       electrodemap[ind+N[1]*N[2]].first + electrodemap[ind-N[1]*N[2]].first) - CHI_SI);
+                       electrodemap[ind+N2].first + electrodemap[ind-N2].first +
+                       electrodemap[ind+N1*N2].first + electrodemap[ind-N1*N2].first) - CHI_SI);
             } else { //not directly beside an electrode, perform normal calculation.
               if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
                 V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                         a[ind][4]*V[ind-N[1]*N[2]] + a[ind][1]*V[ind+N[1]*N[2]] +
-                         a[ind][5]*V[ind-N[2]] + a[ind][2]*V[ind+N[2]] +
+                         a[ind][4]*V[ind-N1*N2] + a[ind][1]*V[ind+N1*N2] +
+                         a[ind][5]*V[ind-N2] + a[ind][2]*V[ind+N2] +
                          a[ind][6]*V[ind-1] + a[ind][3]*V[ind+1] + rho[ind]*h2/EPS0)/a[ind][0]; //calculate new potential
               } else { //no difference in permittivity, do not calculate new a values
                 V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                         V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]] +
-                         V[ind-1*N[2]] + V[ind+1*N[2]] +
+                         V[ind-1*N1*N2] + V[ind+1*N1*N2] +
+                         V[ind-1*N2] + V[ind+1*N2] +
                          V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0/eps[ind]);
               }
             }
@@ -676,9 +678,9 @@ void Solver::poisson3Dmultigrid( void ){
       currError = 0;  //reset error for every run
 //First relaxation
 //EVEN
-      relax(EVEN, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError);
+      relax(EVEN, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, N[0], N[1], N[2]);
 //ODD
-      relax(ODD, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError);
+      relax(ODD, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, N[0], N[1], N[2]);
 
       if (cycleCount%50 == 0){
         std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
