@@ -37,6 +37,7 @@
 #define PI 3.14159265358979323846
 #define DIRICHLET 0
 #define NEUMANN 1
+#define PERIODIC 2
 //from http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/photoelec.html
 #define WF_GOLD 5.1 //workfunction for gold in eV
 #define WF_COPPER 4.7 //workfunction for copper in eV
@@ -69,6 +70,7 @@ public:
     //functions
     void relax( int, bool*, double*, bool*, bool*, double*, double**, int, int, double*);
     void calc_Neumann(int, int, int);
+    void calc_Periodic(int, int, int, double*);
     void set_N(int, int, int);
     void set_L(double, double, double);
     void set_val(int, int, int, int* );

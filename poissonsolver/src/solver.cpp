@@ -293,17 +293,17 @@ void Solver::check_elec( bool* isBesideElec ){
 //get value at boundary based on Neumann boundary condition
 void Solver::calc_Neumann( int i, int j, int k){
   //For Neumann Boundary Conditions
-    if( i == 0 ){ //x == 0;
+    if( i == 0 ){ //x == 0; Work on ZY plane
       V[j*N[2] + k] = V[N[1]*N[2] + j*N[2] + k] - rho[j*N[2] + k]*h;
-    } else if ( i == N[0]-1 ){ //x == Lx;
+    } else if ( i == N[0]-1 ){ //x == Lx; Work on ZY plane
       V[(N[0]-1)*N[1]*N[2] + j*N[2] + k] = V[((N[0]-1)-1)*N[1]*N[2] + j*N[2] + k] - rho[(N[0]-1)*N[1]*N[2] + j*N[2] + k]*h;
-    } else if ( j == 0 ) { //y == 0;
+    } else if ( j == 0 ) { //y == 0; Work on XZ plane
       V[i*N[1]*N[2] + k] = V[i*N[1]*N[2] + N[2] + k] - rho[i*N[1]*N[2] + k]*h;
-    } else if ( j == N[1]-1 ){ //y == Ly;
+    } else if ( j == N[1]-1 ){ //y == Ly; Work on XZ plane
       V[i*N[1]*N[2] + (N[1]-1)*N[2] + k] = V[i*N[1]*N[2] + ((N[1]-1)-1)*N[2] + k] - rho[i*N[1]*N[2] + (N[1]-1)*N[2] + k]*h;
-    } else if ( k == 0) { //z == 0;
+    } else if ( k == 0) { //z == 0; Work on XY plane
       V[i*N[1]*N[2] + j*N[2]] = V[i*N[1]*N[2] + j*N[2] + 1] - rho[i*N[1]*N[2] + j*N[2]]*h;
-    } else { //z == Lz;
+    } else { //z == Lz; Work on XY plane
       V[i*N[1]*N[2] + j*N[2] + (N[2]-1)] = V[i*N[1]*N[2] + j*N[2] + ((N[2]-1)-1)] - rho[i*N[1]*N[2] + j*N[2] + (N[2]-1)]*h;
     }
 }
@@ -332,6 +332,37 @@ void show_arr( boost::numeric::ublas::compressed_matrix<double> m )
     }
     std::cout << std::endl;
   }
+}
+
+//get value at boundary based on Periodic boundary condition
+void Solver::calc_Periodic( int i, int j, int k, double* overrelax){
+  //For Periodic Boundary Conditions
+  int ind = i*N[1]*N[2] + j*N[2] + k;
+  double Vold = V[ind];
+  V[ind] = 0;
+  if (i == 0){
+    V[ind] += V[ind+(N[0]-1)*N[1]*N[2]] + V[ind+1*N[1]*N[2]];
+  } else if (i == N[0]-1){
+    V[ind] += V[ind-(N[0]-1)*N[1]*N[2]] + V[ind-1*N[1]*N[2]];
+  } else {
+    V[ind] += V[ind-1*N[1]*N[2]] + V[ind+1*N[1]*N[2]];
+  }
+  if (j == 0){
+    V[ind] += V[ind+(N[1]-1)*N[2]] + V[ind+1*N[2]];
+  } else if (j == N[1]-1){
+    V[ind] += V[ind-(N[1]-1)*N[2]] + V[ind-1*N[2]];
+  } else {
+    V[ind] += V[ind-1*N[2]] + V[ind+1*N[2]];
+  }
+  if (k == 0){
+    V[ind] += V[ind+(N[2]-1)] + V[ind+1];
+  } else if (k == N[0]-1){
+    V[ind] += V[ind-(N[2]-1)] + V[ind-1];
+  } else {
+    V[ind] += V[ind-1] + V[ind+1];
+  }
+
+  V[ind] = overrelax[1]*Vold + overrelax[0]*(V[ind] + rho[ind]*h2/EPS0/eps[ind]);
 }
 
 void Solver::check_diag( boost::numeric::ublas::compressed_matrix<double> m )
@@ -463,8 +494,12 @@ void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideEl
       for (int k =(i+j)%2 + isOdd; k < N[2]; k+=2){
         ind = i*N[1]*N[2] + j*N[2] + k;
         //directly on face, do boundary first.
-        if ((boundarytype == NEUMANN)&&(isExterior[ind]==true)){
+        if (isExterior[ind]==true){
+          if (boundarytype == NEUMANN){
             calc_Neumann(i, j, k); //Dirichlet boundary handled by set_BCs() in main
+          } else if (boundarytype == PERIODIC){
+            calc_Periodic(i, j, k, overrelax);
+          }
         } else if (isExterior[ind] == false){ //interior point, do normal.
           if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
             *pVold = V[ind]; //Save for error comparison
@@ -530,13 +565,11 @@ int indfine;
 }
 
 void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
-int indcoarse = 0;
-int indfine;
-
+  int indcoarse = 0;
+  int indfine;
   for (int i = 0; i < N[0]*N[1]*N[2]; i++){
     Vfine[i] = 0;
   }
-
   for (int i = 1; i < N[0]; i = i + 2){
     for (int j = 1; j < N[1]; j = j + 2){
       for (int k = 1; k < N[2]; k = k + 2){
@@ -572,6 +605,29 @@ int indfine;
       }
     }
   }
+
+//NORMALIZATION
+  // for (int k = 0; k < N[2]; k++){
+  //   if ( (k==0) || (k==N[2]-1) ){ //z ends
+  //     for (int i = 0; i < N[0]; i++){
+  //       for (int j = 0; i < N[1]; j++){
+  //         indfine = i*N[1]*N[2] + j*N[2] + k;
+  //         if ( (i==0) || (i==N[0]-1) ){ //x ends
+  //           if( (j==0) || (j==N[1]-1) ){ //y ends
+  //             Vfine[indfine] = 8*Vfine[indfine];
+  //           } else {      //edge of cube
+  //
+  //           }
+  //         }
+  //       }
+  //     }
+  //     Vfine[indfine]
+  //
+  //   }
+  // }
+
+
+
 }
 
 
@@ -601,25 +657,25 @@ void Solver::poisson3Dmultigrid( void ){
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
 
-      std::cout << "V (start)" << std::endl;
-      for( int i = 0; i < N[0]*N[1]*N[2]; i++){
-        V[i] = (double) i;
-        std::cout << V[i] << std::endl;
-      }
-      std::cout << "Vcoarse (start)" << std::endl;
-      for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-        std::cout << Vcoarse[i] << std::endl;
-      }
-      mgrestriction(V, Vcoarse);
-      std::cout << "Vcoarse (after restriction)" << std::endl;
-      for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-        std::cout << Vcoarse[i] << std::endl;
-      }
-      mgprolongation(V,Vcoarse);
-      std::cout << "V (after prolongation)" << std::endl;
-      for( int i = 0; i < N[0]*N[1]*N[2]; i++ ){
-        std::cout << V[i] << std::endl;
-      }
+      // std::cout << "V (start)" << std::endl;
+      // for( int i = 0; i < N[0]*N[1]*N[2]; i++){
+      //   V[i] = (double) i;
+      //   std::cout << V[i] << std::endl;
+      // }
+      // std::cout << "Vcoarse (start)" << std::endl;
+      // for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+      //   std::cout << Vcoarse[i] << std::endl;
+      // }
+      // mgrestriction(V, Vcoarse);
+      // std::cout << "Vcoarse (after restriction)" << std::endl;
+      // for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
+      //   std::cout << Vcoarse[i] << std::endl;
+      // }
+      // mgprolongation(V,Vcoarse);
+      // std::cout << "V (after prolongation)" << std::endl;
+      // for( int i = 0; i < N[0]*N[1]*N[2]; i++ ){
+      //   std::cout << V[i] << std::endl;
+      // }
 
   do{
       currError = 0;  //reset error for every run

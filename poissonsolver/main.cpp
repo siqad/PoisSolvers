@@ -17,9 +17,9 @@ void show_array(const boost::numeric::ublas::unbounded_array<double>& a)
 
 void workingcall( double t ){
 //Parameters
-  int Nx = 5;
-  int Ny = 5;
-  int Nz = 5;
+  int Nx = 100;
+  int Ny = 10;
+  int Nz = 100;
   double Lx = 1.0;
   double Ly = 1.0;
   double Lz = 1.0;
@@ -35,7 +35,7 @@ void workingcall( double t ){
       s->set_val(Lx, Ly, Lz, s->L);
       s->h2 = Lx*Lx/Nx/Nx;
       s->h = Lx/Nx;
-      s->boundarytype = NEUMANN;
+      s->boundarytype = PERIODIC;
   //can allocate space for rho, eps, and V now that number of lattice points is known.
       s->rho = s->init_val( 0, s->rho);
       s->V = s->init_val( 0, s->V );
@@ -98,9 +98,9 @@ void workingcall( double t ){
 }
 
 int main() {
-    // for (int i = 0; i < 64; i++){
-    //   workingcall( (double) i );
-    // }
-    workingcall(0);
+    for (int i = 0; i < 64; i++){
+      workingcall( (double) i );
+    }
+    // workingcall(0);
     return 0;
 }
