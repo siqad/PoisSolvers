@@ -60,15 +60,15 @@ public:
     int solvemethod; //1 for Jacobi, 2 for Gauss-Seidel, 3 for SOR
     int boundarytype; //0 for Dirichlet and 1 for Neumann.
     double* V;
-    double*  rho; //Volume charge density
-    double*  L; //Physical lengths for each dimension
+    double* rho; //Volume charge density
+    double* L; //Physical lengths for each dimension
     double* eps;
     double h2;
     double h;
     std::pair<double, double>* electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
 
     //functions
-    void relax( int, bool*, double*, bool*, bool*, double*, double**, int, int, double*, int, int, int );
+    void relax( int, bool*, double*, bool*, bool*, double*, double**, int, int, double*, double*, int, int, int );
     void calc_Neumann(int, int, int);
     void calc_Periodic(int, int, int, double*);
     void set_N(int, int, int);
@@ -97,7 +97,7 @@ public:
     void del( double* );
     void del( std::pair<double, double>* );
     void create_a( double** );
-    void check_exterior( bool* );
+    void check_exterior( bool*, int, int, int );
     void check_elec( bool* );
     double ohmic_contact( unsigned long int );
     double normal_eps( unsigned long int, double*, double*);

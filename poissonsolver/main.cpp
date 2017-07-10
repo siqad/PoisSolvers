@@ -30,12 +30,11 @@ void workingcall( double t ){
   std::cout << "torig =" << torig << std::endl;
   t = t/64;
   std::cout << "timestep:" << t << std::endl;
-
       s->set_val(Nx, Ny, Nz, s->N);
       s->set_val(Lx, Ly, Lz, s->L);
       s->h2 = Lx*Lx/Nx/Nx;
       s->h = Lx/Nx;
-      s->boundarytype = PERIODIC;
+      s->boundarytype = NEUMANN;
   //can allocate space for rho, eps, and V now that number of lattice points is known.
       s->rho = s->init_val( 0, s->rho);
       s->V = s->init_val( 0, s->V );
@@ -73,7 +72,7 @@ void workingcall( double t ){
       // elec[4].potential = 10;
       elec[4].potential = 10*sin(-(2*PI*t));
       elec[4].workfunction = WF_GOLD;
-      elec[5].centre = {Nx/2, Ny/2, 9.5*Nz/10};
+      elec[5].centre = {Nx/2, Ny/2, (int) 9.5*Nz/10};
       elec[5].dims = {Nx, Ny, Nz/10};
       // elec[5].potential = 0;
       elec[5].potential = 0;
