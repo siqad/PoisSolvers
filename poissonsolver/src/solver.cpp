@@ -627,12 +627,12 @@ void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
   }
 }
 
-void relaxSOR( double* V, int N0, int N1, int N2, double L0, double L1, double L2, double* rho ){
+void Solver::relaxSOR( double* V,  double* rho, int N0, int N1, int N2){
   double Vold;
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  double h2 = L0*L0/N0/N0;
-  double h = L0/N0;
+  double h2 = L[0]*L[0]/N0/N0;
+  double h = L[0]/N0;
   double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
   std::cout << "DOING SOR" << std::endl;
   std::cout << "Iterating..." << std::endl;
@@ -674,6 +674,7 @@ void Solver::poisson3Dmultigrid( void ){
   bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
 
   double* Vcoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
+  double* rhocoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
 
   check_eps( eps, isChangingeps );
   check_exterior( isExterior, N[0], N[1], N[2] );
@@ -704,6 +705,8 @@ void Solver::poisson3Dmultigrid( void ){
       // for( int i = 0; i < N[0]*N[1]*N[2]; i++ ){
       //   std::cout << V[i] << std::endl;
       // }
+  mgrestriction(V, Vcoarse);
+  mgrestriction(rho, rhocoarse);
 
   do{
       currError = 0;  //reset error for every run
@@ -711,6 +714,9 @@ void Solver::poisson3Dmultigrid( void ){
       relaxmg(EVEN, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
       //ODD
       relaxmg(ODD, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
+      //
+      relaxSOR( Vcoarse,  rho, (int) std::floor(N[0]/2), (int) std::floor(N[0]/2), (int) std::floor(N[0]/2));
+
 
       if (cycleCount%50 == 0){
         std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
