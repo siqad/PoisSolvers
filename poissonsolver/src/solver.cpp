@@ -487,9 +487,9 @@ std::cout << "Starting Loop" << std::endl;
 
 }
 
-void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideElec, bool* isChangingeps, double* overrelax, double** a,
+void Solver::relaxmg( int isOdd, bool* isExterior, bool* isBesideElec, bool* isChangingeps, double* overrelax, double** a,
   int cycleCount, int cycleCheck, double* pcurrError, double* rhs, int N0, int N1, int N2 ){
-
+  double Vold;
   unsigned int ind;
   for ( int i = 0; i < N0; i++){
     for ( int j = 0; j < N1; j++){
@@ -504,7 +504,7 @@ void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideEl
           }
         } else if (isExterior[ind] == false){ //interior point, do normal.
           if( electrodemap[ind].first == 0){ //current cell is NOT electrode, perform calculation
-            *pVold = V[ind]; //Save for error comparison
+            Vold = V[ind]; //Save for error comparison
             if(isBesideElec[ind] == true){
             //Current cell is NEXT TO an electrode, ignore other effects and use workfunction ohmic contact calculation
             //Rectangular electrodes, only one side of bulk can interface with electrode.
@@ -530,8 +530,8 @@ void Solver::relax( int isOdd, bool* isExterior, double* pVold, bool* isBesideEl
               }
             }
             if (cycleCount%cycleCheck == 0){
-              if ( fabs((V[ind] - *pVold)/ V[ind]) > *pcurrError){ //capture worst case error
-                  *pcurrError = fabs((V[ind] - *pVold)/V[ind]);
+              if ( fabs((V[ind] - Vold)/ V[ind]) > *pcurrError){ //capture worst case error
+                  *pcurrError = fabs((V[ind] - Vold)/V[ind]);
               }
             }
           } else { //current cell IS electrode, set V[ind] = electrode voltage
@@ -627,12 +627,41 @@ void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
   }
 }
 
+void relaxSOR( double* V, int N0, int N1, int N2, double L0, double L1, double L2, double* rho ){
+  double Vold;
+  double currError; //largest error on current loop
+  unsigned int cycleCount = 0; //iteration count, for reporting
+  double h2 = L0*L0/N0/N0;
+  double h = L0/N0;
+  double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
+  std::cout << "DOING SOR" << std::endl;
+  std::cout << "Iterating..." << std::endl;
+  unsigned int ind;
+  do{
+      currError = 0;  //reset error for every run
+      for ( int i = 1; i < N0-1; i++){ //for all x points except endpoints
+        for ( int j = 1; j < N1-1; j++){
+          for (int k = 1; k < N2-1; k++){
+            ind = i*N1*N2 + j*N2 + k;
+            Vold = V[ind];
+            V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
+            V[ind-1*N1*N2] + V[ind+1*N1*N2] +
+            V[ind-1*N2] + V[ind+1*N2] +
+            V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0); //calculate new potential
+            if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
+                currError = fabs((V[ind] - Vold)/V[ind]);
+            }
+          }
+        }
+      }
+      cycleCount++;
+  }while( currError > MAXERROR );
+}
 
 //uses multigrid method to solve poisson's equation.
 void Solver::poisson3Dmultigrid( void ){
   // double Vold; //needed to calculate error between new and old values
   // double* pVold = &Vold;
-  double* pVold = new double;
   double currError; //largest error on current loop
   double* pcurrError = &currError;
   unsigned int cycleCount = 0; //iteration count, for reporting
@@ -640,31 +669,21 @@ void Solver::poisson3Dmultigrid( void ){
 //http://userpages.umbc.edu/~gobbert/papers/YangGobbert2007SOR.pdf shows theoretical optimal parameter
   double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
   double **a = new double*[N[0]*N[1]*N[2]]; //array of pointers to doubles.
-  bool isBesideElec[N[0]*N[1]*N[2]];
-  bool* pisBesideElec = isBesideElec;
+  bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
   bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
 
   double* Vcoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
-  double* epscoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
-  double* rhocoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
-  bool* isExteriorcoarse = new bool[(int) pow(std::floor(N[0]/2), 3)];
 
-// relax(EVEN, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
   check_eps( eps, isChangingeps );
   check_exterior( isExterior, N[0], N[1], N[2] );
-  check_elec( pisBesideElec );
+  check_elec( isBesideElec );
   create_a( a );
-  check_exterior( isExteriorcoarse, std::floor(N[0]/2), std::floor(N[0]/2), std::floor(N[0]/2) );
+
   std::cout << "DOING multigrid with omega = " << overrelax[0]*6 << std::endl;
   std::cout << "Iterating..." << std::endl;
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
-
-  std::cout << "isExteriorcoarse" << std::endl;
-  for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3) ; i++){
-    std::cout << isExteriorcoarse[i] << std::endl;
-  }
 
       // std::cout << "V (start)" << std::endl;
       // for( int i = 0; i < N[0]*N[1]*N[2]; i++){
@@ -688,11 +707,10 @@ void Solver::poisson3Dmultigrid( void ){
 
   do{
       currError = 0;  //reset error for every run
-//First relaxation
-//EVEN
-      relax(EVEN, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
-//ODD
-      relax(ODD, isExterior, pVold, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
+      //EVEN
+      relaxmg(EVEN, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
+      //ODD
+      relaxmg(ODD, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
 
       if (cycleCount%50 == 0){
         std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
@@ -701,13 +719,8 @@ void Solver::poisson3Dmultigrid( void ){
   }while( currError > MAXERROR || currError == 0);
   std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
-  std::cout << "Deleting pVold" << std::endl;
-  delete pVold;
-  std::cout << "Deleting isExterior" << std::endl;
   delete[] isExterior;
-  std::cout << "Deleting isChangingeps" << std::endl;
   delete[] isChangingeps;
-  std::cout << "Deleting a" << std::endl;
   delete[] a;
   delete[] Vcoarse;
 }
