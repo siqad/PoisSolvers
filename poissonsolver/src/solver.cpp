@@ -658,6 +658,20 @@ void Solver::relaxSOR( double* V,  double* rho, int N0, int N1, int N2){
   }while( currError > MAXERROR );
 }
 
+void create_residual( double* V, double* rho, double* residual, int N0, int N1, int N2 ){
+  unsigned int ind;
+  for ( int i = 1; i < N0-1; i++){ //for all x points except endpoints
+    for ( int j = 1; j < N1-1; j++){
+      for (int k = 1; k < N2-1; k++){
+        ind = i*N1*N2 + j*N2 + k;
+
+
+      }
+    }
+  }
+
+}
+
 //uses multigrid method to solve poisson's equation.
 void Solver::poisson3Dmultigrid( void ){
   // double Vold; //needed to calculate error between new and old values
@@ -672,6 +686,7 @@ void Solver::poisson3Dmultigrid( void ){
   bool* isBesideElec = new bool[N[0]*N[1]*N[2]];
   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
   bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
+  double* residual = new double[N[0]*N[1]*N[2]];
 
   double* Vcoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
   double* rhocoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
@@ -714,7 +729,8 @@ void Solver::poisson3Dmultigrid( void ){
       relaxmg(EVEN, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
       //ODD
       relaxmg(ODD, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
-      //
+      //create the residual on fine grid
+      create_residual(V, rho, residual, N[0], N[1], N[2]);
       relaxSOR( Vcoarse,  rho, (int) std::floor(N[0]/2), (int) std::floor(N[0]/2), (int) std::floor(N[0]/2));
 
 
