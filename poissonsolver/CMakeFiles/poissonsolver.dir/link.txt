@@ -1,1 +1,1 @@
-/usr/bin/g++  -DNDEBUG -DBOOST_UBLAS_NDEBUG   CMakeFiles/poissonsolver.dir/src/solver.cpp.o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o CMakeFiles/poissonsolver.dir/main.cpp.o  -o poissonsolver  -L/usr/local/lib/boost 
+/usr/bin/g++  -pg   CMakeFiles/poissonsolver.dir/src/solver.cpp.o CMakeFiles/poissonsolver.dir/src/electrodes.cpp.o CMakeFiles/poissonsolver.dir/main.cpp.o  -o poissonsolver  -L/usr/local/lib/boost 

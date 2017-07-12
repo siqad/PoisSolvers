@@ -17,9 +17,9 @@ void show_array(const boost::numeric::ublas::unbounded_array<double>& a)
 
 void workingcall( double t ){
 //Parameters
-  int Nx = 5;
-  int Ny = 5;
-  int Nz = 5;
+  int Nx = 10;
+  int Ny = 10;
+  int Nz = 10;
   double Lx = 1.0;
   double Ly = 1.0;
   double Lz = 1.0;
@@ -86,10 +86,10 @@ void workingcall( double t ){
   //eps and rho are already pointers. To use existing rho and eps, initialize and set with:
       s->set_BCs(0, 0, 0, 0, 0, 0); //boundary conditions
   //reset solution vector and call for SOR_GEN
-      s->solvemethod = MG;
+      s->solvemethod = SOR_BLAS;
       s->solve();
 
-      s->write_2D(s->V, FILENAMEMG + std::to_string( (int) torig ) + ".txt");
+      s->write_2D(s->V, FILENAMEBLAS + std::to_string( (int) torig ) + ".txt");
       s->write_2D(s->rho, FILENAMERHO);
       s->write_2D(s->eps, FILENAMEEPS);
   delete s;

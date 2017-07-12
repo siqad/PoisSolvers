@@ -68,8 +68,7 @@ public:
     std::pair<double, double>* electrodemap; //electrode mapping - 0 for bulk material, X for electrode at with X voltage.
 
     //functions
-    void relaxSOR( double*,  double*, int, int, int);
-    void relaxmg( int, bool*, bool*, bool*, double*, double**, int, int, double*, double*, int, int, int );
+    void relaxmg( int, bool*, bool*, bool*, double*, double**, int, int, double*, double*, int, int, int, double* );
     void calc_Neumann(int, int, int);
     void calc_Periodic(int, int, int, double*);
     void set_N(int, int, int);

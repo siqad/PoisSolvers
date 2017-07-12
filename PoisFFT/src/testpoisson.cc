@@ -24,33 +24,65 @@ https://arxiv.org/pdf/1208.0901.pdf
 const double pi = 3.14159265358979323846;
 
 #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
-#define FILENAME "outfile.txt"
+#define FILENAME ((char*)"outfile.txt")
+#define RHOFILE ((char*) "outrho.txt")
 
-void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a){ //source term
-  int i,j,k;
-  std::cout << "Initialising RHS" << std::endl;
-  for (i=0;i<ns[0];i++){
-    for (j=0;j<ns[1];j++){
-      for (k=0;k<ns[2];k++){
-        double x = ds[0]*(i+0.5);
-        double y = ds[1]*(j+0.5);
-        double z = ds[2]*(k+0.5);
-        //piece wise RHS
-        //a[IND(i,j,k)] = sin(3*pi*x/Ls[0]) * sin(5*pi*y/Ls[1]) *sin(7*pi*z/Ls[2]);
-        // a[IND(i,j,k)] = -1.6e-19*sin(x*2*pi/Ls[0])/8.85418782e-12;
-        if ( (x > Ls[0]/3.0 && x < Ls[0]*2.0/3.0) && (y > Ls[1]/3.0 && y < Ls[1]*2.0/3.0) && (z > Ls[2]/3.0 && z < Ls[2]*2.0/3.0) ){
-          a[IND(i,j,k)] = -1.6e-19/8.85418782e-12;
-        }
-        // if (k < ns[2]/2){
-        // a[IND(i,j,k)] = x/Ls[0] * y/Ls[1] * z/Ls[2];;
-        // }
-        // else{
-        //   a[IND(i,j,k)] = 0;
-        // }
-      }
-    }
+void save_file2D(const int[], const double[], const double[], double*, char[]);
+void check_solution(const int[], const double[], const double[], double*);
+void init_rhs(const int[], const double[], const double[], double*);
+
+int main(){
+  std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty." <<
+    "See LICENCE.GPL for licence info." << std::endl;
+  // domain dimensions
+  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z
+  // gridpoint numbers
+  const int ns[3] = {9, 9, 9}; //x, y, z
+  // distances between gridpoints
+  double ds[3];
+  //boundary conditions
+
+  const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
+                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
+                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET};
+  int i;
+  // set the grid, depends on the boundary conditions
+  for (i = 0; i<3; i++){
+    ds[i] = Ls[i] / ns[i];
   }
-  std::cout << "Finished initialisation" << std::endl;
+  // allocate the arrays contiguously, you can use any other class
+  // from which you can get a pointer to contiguous buffer
+  double *arr = new double[ns[0]*ns[1]*ns[2]];
+  double *RHS = new double[ns[0]*ns[1]*ns[2]];
+  // set the right-hand side
+  init_rhs(ns, ds, Ls, RHS);
+  // create solver object, 3 dimensions, double precision
+  PoisFFT::Solver<3, double> S(ns, Ls, BCs);
+  //run the solver, can be run many times for different right-hand side
+  S.execute(arr, RHS);
+  //solution is in arr
+  save_file2D(ns, ds, Ls, arr, FILENAME);
+  // check correctness (compares with known, exact solution)
+  //check_solution(ns, ds, Ls, arr);
+  std::cout << "Ending, deleting variables" << std::endl;
+  delete[] RHS;
+  delete[] arr;
+}
+
+void save_file2D( const int ns[3], const double ds[3], const double Ls[3], double* arr, char fname[]){
+  // testing file (csv)
+  std::ofstream outfile;
+  outfile.open(fname, std::ios_base::out | std::ios_base::trunc );
+  //Dump to file.
+  std::cout << "Dumping to " << fname << std::endl;
+  const int k = ns[2]/2;
+  for (int i = 0; i < ns[0]; i++){
+    for (int j = 0; j < ns[1]; j++){
+        outfile << std::setprecision(5) << std::scientific << i*ds[0] <<
+        " " << j*ds[1] << " " << arr[i*ns[1]*ns[2]+j*ns[2]+k] << std::endl;
+    }
+    outfile << std::endl;
+  }
 }
 
 void check_solution(const int ns[3], const double ds[3], const double Ls[3], double* a){
@@ -65,13 +97,8 @@ void check_solution(const int ns[3], const double ds[3], const double Ls[3], dou
         double y = ds[1]*(j+0.5);
         double z = ds[2]*(k+0.5);
         sum += pow(a[IND(i,j,k)] -
-                   (- 1.0 / ( pow(3*pi/Ls[0], 2.0) +
-                              pow(5*pi/Ls[1], 2.0) +
-                              pow(7*pi/Ls[2], 2.0) ) *
-                    sin(3*pi*x/Ls[0]) *
-                    sin(5*pi*y/Ls[1]) *
-                    sin(7*pi*z/Ls[2]))
-                , 2.0);
+            (-1.0/(pow(3*pi/Ls[0],2.0) + pow(5*pi/Ls[1],2.0) + pow(7*pi/Ls[2],2.0)) *
+            sin(3*pi*x/Ls[0])*sin(5*pi*y/Ls[1])*sin(7*pi*z/Ls[2])),2.0);
       }
     }
   }
@@ -83,73 +110,27 @@ void check_solution(const int ns[3], const double ds[3], const double Ls[3], dou
   }
 }
 
-int main(){
-  std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty." <<
-    "See LICENCE.GPL for licence info." << std::endl;
-  // testing file (csv)
-  std::ofstream outfile;
-  outfile.open("outfile.txt", std::ios_base::out | std::ios_base::trunc );
-  // domain dimensions
-  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z
-
-  // gridpoint numbers
-  const int ns[3] = {100, 100, 100}; //x, y, z
-
-  // distances between gridpoints
-  double ds[3];
-
-  //boundary conditions
-/*
-  const int BCs[6] = {PoisFFT::NEUMANN_STAG, PoisFFT::NEUMANN_STAG,
-                      PoisFFT::NEUMANN_STAG, PoisFFT::NEUMANN_STAG,
-                      PoisFFT::NEUMANN_STAG, PoisFFT::NEUMANN_STAG};
-*/
-  const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
-                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
-                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET};
-  int i;
-  // set the grid, depends on the boundary conditions
-  for (i = 0; i<3; i++){
-    ds[i] = Ls[i] / ns[i];
-  }
-
-  // allocate the arrays contiguously, you can use any other class
-  // from which you can get a pointer to contiguous buffer
-  double *arr = new double[ns[0]*ns[1]*ns[2]];
-  double *RHS = new double[ns[0]*ns[1]*ns[2]];
-
-  // set the right-hand side
-  init_rhs(ns, ds, Ls, RHS);
-
-  // create solver object, 3 dimensions, double precision
-  PoisFFT::Solver<3, double> S(ns, Ls, BCs);
-
-  //run the solver, can be run many times for different right-hand side
-  S.execute(arr, RHS);
-  //solution is in arr
-
-  // check correctness (compares with known, exact solution)
-  //check_solution(ns, ds, Ls, arr);
-
-  //Dump to file. Maybe consider adding as a class method?
-  std::cout << "Dumping to " << FILENAME << std::endl;
-  std::cout << "ds[0]:" << ds[0] << std::endl;
-  const int k = ns[2]/2;
-  for (int i = 0; i < ns[0]; i++){
-    for (int j = 0; j < ns[1]; j++){
-//      for (int k = 0; k < ns[2]; k++) {
-        //std::cout << arr[ j*ns[1]*ns[2] + k*ns[2] + l ] << "," << std::endl;
-        //save data as x y z V
-//        outfile << std::setprecision(5) << std::fixed << i * ds[0] << " " << j * ds[1] <<
-//                " " << k * ds[2] << " " << arr[i * ns[1] * ns[2] + j * ns[2] + k] << std::endl;
-        outfile << std::setprecision(5) << std::scientific << i * ds[0] << " " << j * ds[1] <<
-                " " << arr[i * ns[1] * ns[2] + j * ns[2] + k] << std::endl;
-//      }
+void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a){
+  int i,j,k;
+  std::cout << "Initialising RHS" << std::endl;
+  for (i=0;i<ns[0];i++){
+    double x = ds[0]*(i+0.5);
+    for (j=0;j<ns[1];j++){
+      double y = ds[1]*(j+0.5);
+      for (k=0;k<ns[2];k++){
+        double z = ds[2]*(k+0.5);
+        if( (x <= Ls[0]/3.0 || x >= Ls[0]*2.0/3.0) || (y <= Ls[1]/3.0 || y >= Ls[1]*2.0/3.0) || (z <= Ls[2]/3.0 || z >= Ls[2]*2.0/3.0) ){
+          a[IND(i,j,k)] = 5; //Set for the material outside of the electrodes
+        }
+        // if( (fabs(x-Ls[0]/3.0) <= ds[0]/2) || (fabs(x-2*Ls[0]/3.0) <= ds[0]/2) ||
+        //     (fabs(y-Ls[1]/3.0) <= ds[1]/2) || (fabs(y-2*Ls[1]/3.0) <= ds[1]/2) ||
+        //     (fabs(z-Ls[2]/3.0) <= ds[2]/2) || (fabs(z-2*Ls[2]/3.0) <= ds[2]/2) ){
+        //   // a[IND(i,j,k)] += 1e5*(-1.6e-19/8.85418782e-12);
+        //   a[IND(i,j,k)] = 10;
+        // }
+      }
     }
-    outfile << std::endl;
   }
-  std::cout << "Ending, deleting variables" << std::endl;
-
-  delete[] RHS;
-  delete[] arr;
+  save_file2D(ns, ds, Ls, a, RHOFILE);
+  std::cout << "Finished initialisation" << std::endl;
 }

@@ -414,11 +414,11 @@ void Solver::poisson3DSOR_BLAS( void ){
   // double overrelax[2] = {1.85, -0.85};
   unsigned int ind;
   unsigned int cyclenum = 0;
-  boost::numeric::ublas::compressed_matrix<double> A (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
-  boost::numeric::ublas::compressed_matrix<double> L (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
-  boost::numeric::ublas::compressed_matrix<double> U (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
-  boost::numeric::ublas::compressed_matrix<double> D (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
-  boost::numeric::ublas::compressed_matrix<double> Dinv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
+  boost::numeric::ublas::mapped_matrix<double> A (N[0]*N[1]*N[2], N[0]*N[1]*N[2], N[0]*N[1]*N[2]);
+  boost::numeric::ublas::mapped_matrix<double> L (N[0]*N[1]*N[2], N[0]*N[1]*N[2], N[0]*N[1]*N[2]);
+  boost::numeric::ublas::mapped_matrix<double> U (N[0]*N[1]*N[2], N[0]*N[1]*N[2], N[0]*N[1]*N[2]);
+  boost::numeric::ublas::mapped_matrix<double> D (N[0]*N[1]*N[2], N[0]*N[1]*N[2], N[0]*N[1]*N[2]);
+  boost::numeric::ublas::mapped_matrix<double> Dinv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], N[0]*N[1]*N[2]);
   // boost::numeric::ublas::vector<double> Dinv (N[0]*N[1]*N[2]);
   // boost::numeric::ublas::compressed_matrix<double> minv (N[0]*N[1]*N[2], N[0]*N[1]*N[2], 3*N[0]*N[1]*N[2]);
   boost::numeric::ublas::vector<double> voltage (N[0]*N[1]*N[2]);
@@ -455,9 +455,12 @@ void Solver::poisson3DSOR_BLAS( void ){
       }
     }
   }
+
 // A += D;
-A += L;
-A += U;
+// A = L;
+//
+// A += U;
+A = L+U;
 // show_arr(D);
 // show_arr(L);
 // show_arr(U);
@@ -488,7 +491,7 @@ std::cout << "Starting Loop" << std::endl;
 }
 
 void Solver::relaxmg( int isOdd, bool* isExterior, bool* isBesideElec, bool* isChangingeps, double* overrelax, double** a,
-  int cycleCount, int cycleCheck, double* pcurrError, double* rhs, int N0, int N1, int N2 ){
+  int cycleCount, int cycleCheck, double* pcurrError, double* rhs, int N0, int N1, int N2, double* residual ){
   double Vold;
   unsigned int ind;
   for ( int i = 0; i < N0; i++){
@@ -518,15 +521,17 @@ void Solver::relaxmg( int isOdd, bool* isExterior, bool* isBesideElec, bool* isC
                        electrodemap[ind+N1*N2].first + electrodemap[ind-N1*N2].first) - CHI_SI);
             } else { //not directly beside an electrode, perform normal calculation.
               if( isChangingeps[ind] == true ){ //check if at a permittivity boundary
-                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                         a[ind][4]*V[ind-N1*N2] + a[ind][1]*V[ind+N1*N2] +
-                         a[ind][5]*V[ind-N2] + a[ind][2]*V[ind+N2] +
-                         a[ind][6]*V[ind-1] + a[ind][3]*V[ind+1] + rhs[ind]*h2/EPS0)/a[ind][0]; //calculate new potential
+                residual[ind] =  (a[ind][4]*V[ind-N1*N2] + a[ind][1]*V[ind+N1*N2] +
+                                  a[ind][5]*V[ind-N2] + a[ind][2]*V[ind+N2] +
+                                  a[ind][6]*V[ind-1] + a[ind][3]*V[ind+1] + rhs[ind]*h2/EPS0)/a[ind][0];
+                V[ind] = overrelax[1]*V[ind] + overrelax[0]*residual[ind]; //calculate new potential
+                residual[ind] = (residual[ind] - 6*V[ind])/h2; //save residual
               } else { //no difference in permittivity, do not calculate new a values
-                V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-                         V[ind-1*N1*N2] + V[ind+1*N1*N2] +
-                         V[ind-1*N2] + V[ind+1*N2] +
-                         V[ind-1] + V[ind+1] + rhs[ind]*h2/EPS0/eps[ind]);
+                residual[ind] = V[ind-1*N1*N2] + V[ind+1*N1*N2] +
+                                V[ind-1*N2] + V[ind+1*N2] +
+                                V[ind-1] + V[ind+1] + rhs[ind]*h2/EPS0/eps[ind];
+                V[ind] = overrelax[1]*V[ind] + overrelax[0]*residual[ind];
+                residual[ind] = (residual[ind] - 6*V[ind])/h2;
               }
             }
             if (cycleCount%cycleCheck == 0){
@@ -607,7 +612,6 @@ void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
       }
     }
   }
-
 //NORMALIZATION  ...multiply by 2 for every side the cell is missing a neighbour.
   for (int i = 0; i < N[0]; i++){
     for (int j = 0; j < N[1]; j++){
@@ -627,15 +631,13 @@ void Solver::mgprolongation( double* Vfine, double* Vcoarse ){
   }
 }
 
-void Solver::relaxSOR( double* V,  double* rho, int N0, int N1, int N2){
-  double Vold;
+void relaxSOR( double* correctionerror,  double* residual, int N0, int N1, int N2, double L0, double L1, double L2){
+  double correctionerrorold;
   double currError; //largest error on current loop
   unsigned int cycleCount = 0; //iteration count, for reporting
-  double h2 = L[0]*L[0]/N0/N0;
-  double h = L[0]/N0;
+  double h2 = (double) L0*L0/N0/N0;
+  double h = (double) L0/N0;
   double overrelax[2] = {2/(1+sin(PI*h))/6, 1-(2/(1+sin(PI*h)))};
-  std::cout << "DOING SOR" << std::endl;
-  std::cout << "Iterating..." << std::endl;
   unsigned int ind;
   do{
       currError = 0;  //reset error for every run
@@ -643,33 +645,39 @@ void Solver::relaxSOR( double* V,  double* rho, int N0, int N1, int N2){
         for ( int j = 1; j < N1-1; j++){
           for (int k = 1; k < N2-1; k++){
             ind = i*N1*N2 + j*N2 + k;
-            Vold = V[ind];
-            V[ind] = overrelax[1]*V[ind] + overrelax[0]*(
-            V[ind-1*N1*N2] + V[ind+1*N1*N2] +
-            V[ind-1*N2] + V[ind+1*N2] +
-            V[ind-1] + V[ind+1] + rho[ind]*h2/EPS0); //calculate new potential
-            if ( fabs((V[ind] - Vold)/ V[ind]) > currError){ //capture worst case error
-                currError = fabs((V[ind] - Vold)/V[ind]);
+            correctionerrorold = correctionerror[ind];
+            correctionerror[ind] = overrelax[1]*correctionerror[ind] + overrelax[0]*(
+            correctionerror[ind-1*N1*N2] + correctionerror[ind+1*N1*N2] +
+            correctionerror[ind-1*N2] + correctionerror[ind+1*N2] +
+            correctionerror[ind-1] + correctionerror[ind+1] + residual[ind]*h2); //calculate new potential
+            if ( fabs((correctionerror[ind] - correctionerrorold)/ correctionerror[ind]) > currError){ //capture worst case error
+                currError = fabs((correctionerror[ind] - correctionerrorold)/correctionerror[ind]);
             }
           }
         }
       }
       cycleCount++;
   }while( currError > MAXERROR );
+  // std::cout << "CORRECTIONERROR" << std::endl;
+  // for( int i = 0; i < N0*N1*N2; i++){
+  //   std::cout << correctionerror[i] << std::endl;
+  // }
+  // std::cout << "RESIDUAL" << std::endl;
+  // for( int i = 0; i < N0*N1*N2; i++){
+  //   std::cout << residual[i] << std::endl;
+  // }
 }
 
-void create_residual( double* V, double* rho, double* residual, int N0, int N1, int N2 ){
+void applyCorrection( double* V, double* correctionerror, int N0, int N1, int N2){
   unsigned int ind;
   for ( int i = 1; i < N0-1; i++){ //for all x points except endpoints
     for ( int j = 1; j < N1-1; j++){
       for (int k = 1; k < N2-1; k++){
         ind = i*N1*N2 + j*N2 + k;
-
-
+        V[ind] += correctionerror[ind];
       }
     }
   }
-
 }
 
 //uses multigrid method to solve poisson's equation.
@@ -687,9 +695,12 @@ void Solver::poisson3Dmultigrid( void ){
   bool* isExterior = new bool[N[0]*N[1]*N[2]]; //precompute whether or not exterior point.
   bool* isChangingeps = new bool[N[0]*N[1]*N[2]];
   double* residual = new double[N[0]*N[1]*N[2]];
+  double* correctionerror = new double[N[0]*N[1]*N[2]];;
 
   double* Vcoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
   double* rhocoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
+  double* residualcoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
+  double* correctionerrorcoarse = new double[(int) pow(std::floor(N[0]/2), 3)];
 
   check_eps( eps, isChangingeps );
   check_exterior( isExterior, N[0], N[1], N[2] );
@@ -701,45 +712,41 @@ void Solver::poisson3Dmultigrid( void ){
   const std::clock_t begin_time = std::clock();
   unsigned long int ind;
 
-      // std::cout << "V (start)" << std::endl;
-      // for( int i = 0; i < N[0]*N[1]*N[2]; i++){
-      //   V[i] = (double) i;
-      //   std::cout << V[i] << std::endl;
-      // }
-      // std::cout << "Vcoarse (start)" << std::endl;
-      // for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-      //   std::cout << Vcoarse[i] << std::endl;
-      // }
-      // mgrestriction(V, Vcoarse);
-      // std::cout << "Vcoarse (after restriction)" << std::endl;
-      // for( int i = 0; i < (int) pow(std::floor(N[0]/2), 3); i++ ){
-      //   std::cout << Vcoarse[i] << std::endl;
-      // }
-      // mgprolongation(V, Vcoarse);
-      // std::cout << "V (after prolongation)" << std::endl;
-      // for( int i = 0; i < N[0]*N[1]*N[2]; i++ ){
-      //   std::cout << V[i] << std::endl;
-      // }
-  mgrestriction(V, Vcoarse);
-  mgrestriction(rho, rhocoarse);
+  // mgrestriction(V, Vcoarse);
+  // mgrestriction(rho, rhocoarse);
+  // relaxSOR( Vcoarse, rhocoarse, (int) std::floor(N[0]/2), (int) std::floor(N[1]/2), (int) std::floor(N[2]/2), L[0], L[1], L[2] );
+  // mgprolongation(V, Vcoarse);
 
   do{
       currError = 0;  //reset error for every run
       //EVEN
-      relaxmg(EVEN, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
+      relaxmg(EVEN, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2], residual);
       //ODD
-      relaxmg(ODD, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2]);
-      //create the residual on fine grid
-      create_residual(V, rho, residual, N[0], N[1], N[2]);
-      relaxSOR( Vcoarse,  rho, (int) std::floor(N[0]/2), (int) std::floor(N[0]/2), (int) std::floor(N[0]/2));
+      relaxmg(ODD, isExterior, isBesideElec, isChangingeps, overrelax, a, cycleCount, cycleCheck, pcurrError, rho, N[0], N[1], N[2], residual);
+      if( currError <= MAXERROR && currError != 0){
+        break;
+      }
+      //residual created in relaxmg()
+      mgrestriction(residual, residualcoarse);
+      relaxSOR( correctionerrorcoarse, residualcoarse, (int) std::floor(N[0]/2), (int) std::floor(N[1]/2), (int) std::floor(N[2]/2), L[0], L[1], L[2] );
+      mgprolongation(correctionerror, correctionerrorcoarse); //correction error now available for use.
+      // applyCorrection( V, correctionerror, N[0], N[1], N[2]);
 
-
+      // std::cout << "@@@@@@@@@@@@@@@@@@@@@@V@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
+      // for (int i = 0; i < N[0]; i++){
+      //   for (int j = 0; j < N[1]; j++){
+      //     for (int k = 0; k < N[2]; k++){
+      //       ind = i*N[1]*N[2] + j*N[2] + k;
+      //       std::cout << V[ind] << std::endl;
+      //     }
+      //   }
+      // }
       if (cycleCount%50 == 0){
         std::cout << "On iteration " << cycleCount << " with " << currError*100 << "% error." << std::endl;
       }
       cycleCount++;
-  }while( currError > MAXERROR || currError == 0);
-  std::cout << "Finished in " << cycleCount << " iterations." << std::endl;
+      }while( currError > MAXERROR || currError == 0 );
+  std::cout << "Finished in " << cycleCount << " iterations with error " << currError*100 << "%." << std::endl;
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   delete[] isExterior;
   delete[] isChangingeps;
