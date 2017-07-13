@@ -3,8 +3,6 @@
 
 #include <utility>
 
-class Solver;
-
 class Electrodes{
   public:
     Electrodes(); //default constructor
@@ -15,7 +13,6 @@ class Electrodes{
     double z[2]; //zmin and zmax
     double potential;   //pointer after conversion of vector
     void draw(const int[3], const double[3], const double[3], double*, std::pair<bool,double>*);
-
 };
 
 #endif //ELECTRODES_H

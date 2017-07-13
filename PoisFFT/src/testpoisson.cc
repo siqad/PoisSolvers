@@ -7,8 +7,7 @@ MODIFICATIONS (as required by GPL)
   -Added file output to main()
   -Added std::cout statements to check program flow.
   -Added notice to GNU GPL file, as required in section 2c.
-  -Changed boundary conditions to DIRICHLET
-
+  -Added Electrode class and drawing functionality
 To build, after installing dependencies (fftw, pfft), go to /src/ and do: sudo scons test
 The executable will appear as ../bin/gcc/cc_testpoisson
 https://arxiv.org/pdf/1208.0901.pdf
@@ -30,6 +29,7 @@ const double pi = 3.14159265358979323846;
 #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 #define FILENAME ((char*)"outfile.txt")
 #define RHOFILE ((char*) "outrho.txt")
+#define CORRECTIONFILE ((char*) "outcorr.txt")
 
 //@@@@@@@@@@@@@@@@ ELECTRODE CLASS DEFINITION
 
@@ -105,20 +105,23 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
 void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*);
-void check_error(const int[], double*, double*, std::pair<bool,double>*);
+double check_error(const int[], const double[], double*, double*, std::pair<bool,double>*);
+void apply_correction(const int[], const double[], double*, double*, std::pair<bool,double>*);
 
 int main(void){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {10, 10, 10}; //x, y, z gridpoint numbers
+  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
-  const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,  //boundary conditions
-                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
-                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET};
+  double cycleErr;
+  const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
+                      PoisFFT::PERIODIC, PoisFFT::PERIODIC,
+                      PoisFFT::PERIODIC, PoisFFT::PERIODIC};
   int i;
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
     ds[i] = Ls[i] / ns[i];
   }
+  int count;
   double *arr = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
   double *RHS = new double[ns[0]*ns[1]*ns[2]]; // from which you can get a pointer to contiguous buffer
   double *correction = new double[ns[0]*ns[1]*ns[2]]; // correction used to update RHS
@@ -127,9 +130,17 @@ int main(void){
   Electrodes elec1(3.0, 6.0, 3.0, 6.0, 3.0, 6.0, 10);
   elec1.draw(ns, ds, Ls, RHS, electrodemap);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); // create solver object, 3 dimensions, double precision
-  S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-  check_error(ns, arr, correction, electrodemap);
+  do{
+    S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
+    cycleErr = check_error(ns, ds, arr, correction, electrodemap);
+    std::cout << cycleErr << std::endl;
+    apply_correction(ns, ds, RHS, correction, electrodemap);
+    count++;
+  }while(cycleErr > MAXERROR);
+  // }while(count < 5);
+  std::cout << "Finished!" << std::endl;
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
+  save_file2D(ns, ds, Ls, arr, CORRECTIONFILE);
   save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
   //check_solution(ns, ds, Ls, arr); // check correctness (compares with known, exact solution)
   std::cout << "Ending, deleting variables" << std::endl;
@@ -139,12 +150,21 @@ int main(void){
   delete[] correction;
 }
 
-double check_error(const int ns[3], double *arr, double *correction, std::pair<bool,double> *electrodemap){
-  double err = 1.1*MAXERROR;
+void apply_correction(const int ns[3], const double ds[3], double *RHS, double *correction, std::pair<bool,double> *electrodemap){
+  for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
+    if(electrodemap[i].first == true){ //only correct error at electrod surfaces.
+      RHS[i] -= correction[i];
+    }
+  }
+}
+
+double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<bool,double> *electrodemap){
+  double err = 0;
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
-      correction[i] = (electrodemap[i].second-arr[i])/electrodemap[i].second; //intended potential - found potential.
-      err = std::max(err, correction[i]); //get largest error value.
+      correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
+      correction[i] = 10*correction[i];
+      err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
     }
   }
   return err;
