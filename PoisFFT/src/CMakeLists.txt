@@ -8,6 +8,8 @@ set(SOURCE_FILES
         f_mpi_comm_c2f.c
         missing_pfft.c
         poisfft.h
+        electrodes.h
+        electrodes.cpp
         testpoisson.c
         testpoisson.cc)
 

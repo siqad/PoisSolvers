@@ -14,7 +14,7 @@ def from_env(s):
     env.Append(ENV = {s : os.environ[s]})
   except:
     pass
-   
+
 
 if str(comp)=='sun':
   env = Environment(tools=['link','sunf90','sunf95','suncc','sunc++'])
@@ -24,7 +24,7 @@ elif str(comp)=='cray':
   env = Environment()
 else:
   env = Environment()
-  
+
 if cray=='yes':
   env.Append(ENV=os.environ)
 
@@ -49,7 +49,7 @@ try:
     env.Replace(F90 = fc, FORTRAN=fc, LINK=fc)
 except:
   pass
- 
+
 try:
   cc = os.environ['CC']
   if len(cc)>0:
@@ -85,17 +85,17 @@ if str(comp)=='sun':
   env.Replace(SHF90FLAGS=['$F90FLAGS','-fPIC'])
   env.Replace(SHLINKFLAGS=['$LINKFLAGS', '-G'])
   comp_dir='sun'
-  
+
   if debug=='yes':
     debug_flag = ' -C'
   else:
     debug_flag = ''
-    
+
   env.Append(FORTRANMODDIRPREFIX = '-moddir=')
   env.Append(INCPREFIX = '-M')
-  
+
   fortran_libs = []
- 
+
 elif str(comp)=='intel':
   #env = Environment(tools=['default','ifort','intelc'])
   if str(openmp)=='no':
@@ -104,26 +104,26 @@ elif str(comp)=='intel':
     omp_flag = ' -openmp'
   env.Append(F90FLAGS='-cpp -g -O3')
   comp_dir='intel'
-  
+
   if debug=='yes':
     debug_flag = ' -check all,noarg_temp_created -traceback'
   else:
     debug_flag = ''
-    
+
   fortran_libs = ['ifcore','ifcoremt']
-  
+
 else:
   env.Append(F90FLAGS='-cpp -g -O3 -fbacktrace')
 
   if warnings=='yes':
     env.Append(F90FLAGS='-Wall -Wextra -Wsurprising -Wno-unused-dummy-argument')
-   
+
   if str(openmp)=='no':
     omp_flag = ''
   else:
     omp_flag = ' -fopenmp'
   comp_dir='gcc'
-  
+
   if debug=='yes':
     debug_flag = ' -fcheck=bounds,pointer -ffpe-trap=zero,overflow,invalid'
   else:
@@ -135,31 +135,31 @@ else:
     sanitize_flag = debug_flag + ''
 
   env.Append(FORTRANMODDIRPREFIX = '-J')
-  
+
   fortran_libs = ['gfortran']
 
 
 env.Append(F90FLAGS=omp_flag+debug_flag)
 env.Append(F90PATH = ['${TARGET.dir}'])
-  
+
 
 if str(prec)=='dp':
-  prec_dir = 'dp'  
+  prec_dir = 'dp'
   env.Append(F90FLAGS=' -DDPREC')
 else:
   prec_dir = 'sp'
-  
-  
+
+
 if cray=='yes':
   env.Replace(CC='cc',CXX='CC',F90='ftn')
   env.Replace(LINK='ftn')
 
-  
+
 missing_pfft = str(missing_pfft_r2r)=='yes'
 if missing_pfft:
   env.Append(F90FLAGS=' -DMISSING_PFFT_R2R')
   env.Append(CFLAGS=' -DMISSING_PFFT_R2R')
-    
+
 
 
 env.Append(FORTRANMODDIR = '${TARGET.dir}')
@@ -185,7 +185,6 @@ objs += env.SharedObject(target='../bin/'+comp_dir+'/c_binding', source='c_bindi
 Depends(objs[-1], 'c_new-inc.f90')
 Depends(objs[-1], 'c_execute-inc.f90')
 objs += env.SharedObject(target='../bin/'+comp_dir+'/c_binding_c', source='c_binding.c')
-
 
 objs = filter(lambda o: str(o)[-4:] != '.mod', objs)
 
@@ -220,14 +219,14 @@ if str(mpi)=='yes':
     if openmp=='yes':
       testobj = env.StaticObject(F90FLAGS='-O3 -g',target='../bin/'+comp_dir+'/testhybrid', source='testhybrid.f90')
       testobj = filter(lambda o: str(o)[-4:] != '.mod', testobj)
-      
+
       libs = ['pfft_omp','pfftf_omp','fftw3_mpi','fftw3f_mpi','fftw3','fftw3f','fftw3_omp','fftw3f_omp']
       test = env.Program(LINKFLAGS=omp_flag+debug_flag, LIBS=libs,target='../bin/'+comp_dir+'/testhybrid', source = sobjs + testobj)
       env.Alias('test',['../bin/'+comp_dir+'/testhybrid'])
     else:
       testobj = env.StaticObject(F90FLAGS='-O3 -g',target='../bin/'+comp_dir+'/testmpi', source='testmpi.f90')
       testobj = filter(lambda o: str(o)[-4:] != '.mod', testobj)
-      
+
       libs = ['pfft','pfftf','fftw3_mpi','fftw3f_mpi','fftw3','fftw3f']
       test = env.Program(LINKFLAGS=omp_flag+debug_flag, LIBS=libs,target='../bin/'+comp_dir+'/testmpi', source = sobjs + testobj)
       env.Alias('test',['../bin/'+comp_dir+'/testmpi'])
@@ -235,11 +234,11 @@ else:
     #Intel Fortran 14 causes infinite compilation for -O3 here. It is not very important to optimize the main test program.
     testobj = env.StaticObject(F90FLAGS='-O2 -g',target='../bin/'+comp_dir+'/testpoisson', source='testpoisson.f90')
     testobj = filter(lambda o: str(o)[-4:] != '.mod', testobj)
-    
+
     ctestobj = env.StaticObject(CFLAGS='-O3 -g'+debug_flag,target='../bin/'+comp_dir+'/c_testpoisson', source='testpoisson.c')
-    
+
     cctestobj = env.StaticObject(CXXFLAGS='-O3 -g'+debug_flag,target='../bin/'+comp_dir+'/cc_testpoisson', source='testpoisson.cc')
-    
+
     test = env.Program(LINKFLAGS=omp_flag+debug_flag, LIBS=['fftw3','fftw3f','fftw3_omp'],target='../bin/'+comp_dir+'/testpoisson', source = sobjs + testobj)
     test += env.Program(LINK=env['CC'],LINKFLAGS=omp_flag+debug_flag, LIBS=['m','fftw3','fftw3f','fftw3_omp']+fortran_libs,target='../bin/'+comp_dir+'/c_testpoisson', source = sobjs + ctestobj)
     test += env.Program(LINK=env['CXX'], LINKFLAGS=omp_flag+debug_flag, LIBS=['m','fftw3','fftw3f','fftw3_omp']+fortran_libs,target='../bin/'+comp_dir+'/cc_testpoisson', source = sobjs + cctestobj)
