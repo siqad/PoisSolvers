@@ -32,16 +32,15 @@ void check_solution(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*);
 
 int main(){
-  std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty." <<
-    "See LICENCE.GPL for licence info." << std::endl;
+  std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty."
+            << "See LICENCE.GPL for licence info." << std::endl;
   // domain dimensions
   const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z
   // gridpoint numbers
-  const int ns[3] = {9, 9, 9}; //x, y, z
+  const int ns[3] = {10, 10, 10}; //x, y, z
   // distances between gridpoints
   double ds[3];
   //boundary conditions
-
   const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
                       PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
                       PoisFFT::DIRICHLET, PoisFFT::DIRICHLET};
@@ -70,10 +69,8 @@ int main(){
 }
 
 void save_file2D( const int ns[3], const double ds[3], const double Ls[3], double* arr, char fname[]){
-  // testing file (csv)
   std::ofstream outfile;
   outfile.open(fname, std::ios_base::out | std::ios_base::trunc );
-  //Dump to file.
   std::cout << "Dumping to " << fname << std::endl;
   const int k = ns[2]/2;
   for (int i = 0; i < ns[0]; i++){
@@ -119,15 +116,10 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a
       double y = ds[1]*(j+0.5);
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
-        if( (x <= Ls[0]/3.0 || x >= Ls[0]*2.0/3.0) || (y <= Ls[1]/3.0 || y >= Ls[1]*2.0/3.0) || (z <= Ls[2]/3.0 || z >= Ls[2]*2.0/3.0) ){
-          a[IND(i,j,k)] = 5; //Set for the material outside of the electrodes
+        a[IND(i,j,k)] = 5.0; //Set default set to bulk volume charge density.
+        if( (x >= Ls[0]/3.0 && x <= Ls[0]*2.0/3.0) && (y >= Ls[1]/3.0 && y <= Ls[1]*2.0/3.0) && (z >= Ls[2]/3.0 && z <= Ls[2]*2.0/3.0) ){
+          a[IND(i,j,k)] = 0.0; //set to 0 inside of electrodes.
         }
-        // if( (fabs(x-Ls[0]/3.0) <= ds[0]/2) || (fabs(x-2*Ls[0]/3.0) <= ds[0]/2) ||
-        //     (fabs(y-Ls[1]/3.0) <= ds[1]/2) || (fabs(y-2*Ls[1]/3.0) <= ds[1]/2) ||
-        //     (fabs(z-Ls[2]/3.0) <= ds[2]/2) || (fabs(z-2*Ls[2]/3.0) <= ds[2]/2) ){
-        //   // a[IND(i,j,k)] += 1e5*(-1.6e-19/8.85418782e-12);
-        //   a[IND(i,j,k)] = 10;
-        // }
       }
     }
   }
