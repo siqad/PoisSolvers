@@ -20,6 +20,7 @@ https://arxiv.org/pdf/1208.0901.pdf
 #include <stdlib.h>
 #include <iomanip>
 #include <fstream>
+#include "electrodes.h"
 
 const double pi = 3.14159265358979323846;
 
@@ -32,37 +33,25 @@ void check_solution(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*);
 
 int main(){
-  std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty."
-            << "See LICENCE.GPL for licence info." << std::endl;
-  // domain dimensions
-  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z
-  // gridpoint numbers
-  const int ns[3] = {10, 10, 10}; //x, y, z
-  // distances between gridpoints
-  double ds[3];
-  //boundary conditions
-  const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
+  std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
+  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
+  const int ns[3] = {10, 10, 10}; //x, y, z gridpoint numbers
+  double ds[3];  // distances between gridpoints
+  const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,  //boundary conditions
                       PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
                       PoisFFT::DIRICHLET, PoisFFT::DIRICHLET};
   int i;
-  // set the grid, depends on the boundary conditions
-  for (i = 0; i<3; i++){
+  for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
     ds[i] = Ls[i] / ns[i];
   }
-  // allocate the arrays contiguously, you can use any other class
-  // from which you can get a pointer to contiguous buffer
-  double *arr = new double[ns[0]*ns[1]*ns[2]];
-  double *RHS = new double[ns[0]*ns[1]*ns[2]];
-  // set the right-hand side
-  init_rhs(ns, ds, Ls, RHS);
-  // create solver object, 3 dimensions, double precision
-  PoisFFT::Solver<3, double> S(ns, Ls, BCs);
-  //run the solver, can be run many times for different right-hand side
-  S.execute(arr, RHS);
-  //solution is in arr
-  save_file2D(ns, ds, Ls, arr, FILENAME);
-  // check correctness (compares with known, exact solution)
-  //check_solution(ns, ds, Ls, arr);
+  double *arr = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
+  double *RHS = new double[ns[0]*ns[1]*ns[2]]; // from which you can get a pointer to contiguous buffer
+  std::pair<bool,double> *electrodemap = new std::pair<bool,double>[ns[0]*ns[1]*ns[2]]; //stores electrode surface info and potentials.
+  init_rhs(ns, ds, Ls, RHS); // set the right-hand side
+  PoisFFT::Solver<3, double> S(ns, Ls, BCs); // create solver object, 3 dimensions, double precision
+  S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
+  save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
+  //check_solution(ns, ds, Ls, arr); // check correctness (compares with known, exact solution)
   std::cout << "Ending, deleting variables" << std::endl;
   delete[] RHS;
   delete[] arr;
@@ -117,9 +106,10 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
         a[IND(i,j,k)] = 5.0; //Set default set to bulk volume charge density.
-        if( (x >= Ls[0]/3.0 && x <= Ls[0]*2.0/3.0) && (y >= Ls[1]/3.0 && y <= Ls[1]*2.0/3.0) && (z >= Ls[2]/3.0 && z <= Ls[2]*2.0/3.0) ){
-          a[IND(i,j,k)] = 0.0; //set to 0 inside of electrodes.
-        }
+        // setting to 0 inside electrodes dealt with in Electrodes::draw()
+        // if( (x >= Ls[0]/3.0 && x <= Ls[0]*2.0/3.0) && (y >= Ls[1]/3.0 && y <= Ls[1]*2.0/3.0) && (z >= Ls[2]/3.0 && z <= Ls[2]*2.0/3.0) ){
+        //   a[IND(i,j,k)] = 0.0; //set to 0 inside of electrodes.
+        // }
       }
     }
   }
