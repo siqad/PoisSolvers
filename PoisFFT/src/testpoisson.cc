@@ -124,10 +124,14 @@ int main(void){
   // ProfilerStart("./profileresult.out"); //using google performance tools
   const std::clock_t begin_time = std::clock();
   init_rhs(ns, ds, Ls, RHS); // set the right-hand side
-  Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 5);
-  Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 10);
-  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 15);
-  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 20);
+  // Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 5);
+  // Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 10);
+  // Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 15);
+  // Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 20);
+  Electrodes elec1(2.0, 4.0, 2.0, 4.0, 3.0, 6.0, 5);
+  Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10);
+  Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 15);
+  Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 20);
   elec1.draw(ns, ds, Ls, RHS, electrodemap);
   elec2.draw(ns, ds, Ls, RHS, electrodemap);
   elec3.draw(ns, ds, Ls, RHS, electrodemap);
