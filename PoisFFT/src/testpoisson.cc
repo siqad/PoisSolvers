@@ -23,7 +23,6 @@ https://arxiv.org/pdf/1208.0901.pdf
 #include <algorithm>
 #include <gperftools/profiler.h>
 #include <ctime>
-#include <vector>
 
 const double pi = 3.14159265358979323846;
 
@@ -43,7 +42,7 @@ class Electrodes{
     double y[2]; //ymin and ymax
     double z[2]; //zmin and zmax
     double potential;   //pointer after conversion of vector
-    void draw(const int[3], const double[3], const double[3], double*, std::vector< std::pair<int,double> >*);
+    void draw(const int[3], const double[3], const double[3], double*, std::pair<int,double>*);
 };
 
 Electrodes::Electrodes( void ){}
@@ -59,7 +58,7 @@ Electrodes::Electrodes( double xmin, double xmax, double ymin, double ymax, doub
 
 Electrodes::~Electrodes( void ){}
 
-void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::vector< std::pair<int,double> > *electrodemap){
+void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap){
   int i, j, k; //draw the electrode into an electrode map
   for(int i = (int) x[0]/Ls[0]*ns[0]; i < (int) x[1]/Ls[0]*ns[0]; i++){ //set RHS 0 inside electrodes
     for(int j = (int) y[0]/Ls[1]*ns[1]; j < (int) y[1]/Ls[1]*ns[1]; j++){
@@ -72,9 +71,8 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
     i = (int) x[iter]/Ls[0]*ns[0]; //xmin first, then xmax
     for(int j = (int) y[0]/Ls[1]*ns[1]; j <= (int) y[1]/Ls[1]*ns[1]; j++){
       for(int k = (int) z[0]/Ls[2]*ns[2]; k <= (int) z[1]/Ls[2]*ns[2]; k++){
-        electrodemap->push_back(std::make_pair(i*ns[1]*ns[2] + j*ns[2] + k, potential));
-        // electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = i*ns[1]*ns[2] + j*ns[2] + k; //set true for electrode surface.
-        // electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
+        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = true; //set true for electrode surface.
+        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
       }
     }
   }
@@ -82,9 +80,8 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
     j = (int) y[iter]/Ls[1]*ns[1]; //ymin first, then ymax
     for(int i = (int) x[0]/Ls[0]*ns[0]; i <= (int) x[1]/Ls[0]*ns[0]; i++){
       for(int k = (int) z[0]/Ls[2]*ns[2]; k <= (int) z[1]/Ls[2]*ns[2]; k++){
-        electrodemap->push_back(std::make_pair(i*ns[1]*ns[2] + j*ns[2] + k, potential));
-        // electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = i*ns[1]*ns[2] + j*ns[2] + k; //set true for electrode surface.
-        // electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
+        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = true; //set true for electrode surface.
+        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
       }
     }
   }
@@ -92,9 +89,8 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
     k = (int) z[iter]/Ls[1]*ns[1]; //zmin
     for(int i = (int) x[0]/Ls[0]*ns[0]; i <= (int) x[1]/Ls[0]*ns[0]; i++){
       for(int j = (int) y[0]/Ls[1]*ns[1]; j <= (int) y[1]/Ls[1]*ns[1]; j++){
-        electrodemap->push_back(std::make_pair(i*ns[1]*ns[2] + j*ns[2] + k, potential));
-        // electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = i*ns[1]*ns[2] + j*ns[2] + k; //set true for electrode surface.
-        // electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
+        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = true; //set true for electrode surface.
+        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
       }
     }
   }
@@ -103,8 +99,8 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
 void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*);
-double check_error(const int[], const double[], double*, double*, std::vector< std::pair<int,double> >*);
-void apply_correction(const int[], const double[], double*, double*, std::vector< std::pair<int,double> >*);
+double check_error(const int[], const double[], double*, double*, std::pair<int,double>*);
+void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
@@ -122,8 +118,7 @@ int main(void){
   double *arr = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
   double *RHS = new double[ns[0]*ns[1]*ns[2]]; // from which you can get a pointer to contiguous buffer
   double *correction = new double[ns[0]*ns[1]*ns[2]]; // correction used to update RHS
-  std::vector< std::pair<int,double> >* electrodemap = new std::vector< std::pair<int,double> >();
-  // std::vector< std::pair<int,double> > electrodemap; //stores electrode surface info and potentials.
+  std::pair<int,double> *electrodemap = new std::pair<int,double>[ns[0]*ns[1]*ns[2]]; //stores electrode surface info and potentials.
   // ProfilerStart("./profileresult.out"); //using google performance tools
   const std::clock_t begin_time = std::clock();
   init_rhs(ns, ds, Ls, RHS); // set the right-hand side
@@ -131,7 +126,6 @@ int main(void){
   elec1.draw(ns, ds, Ls, RHS, electrodemap);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); // create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
-  std::cout << electrodemap->size() << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
     cycleErr = check_error(ns, ds, arr, correction, electrodemap);
@@ -148,22 +142,26 @@ int main(void){
   std::cout << "Ending, deleting variables" << std::endl;
   delete[] RHS;
   delete[] arr;
-  delete[] correction;
   delete[] electrodemap;
+  delete[] correction;
 }
 
-void apply_correction(const int ns[3], const double ds[3], double *RHS, double *correction, std::vector< std::pair<int,double> > *electrodemap){
-  for(int i = 0; i < electrodemap->size(); i++){
-    RHS[electrodemap->at(i).first] -= correction[electrodemap->at(i).first];
+void apply_correction(const int ns[3], const double ds[3], double *RHS, double *correction, std::pair<int,double> *electrodemap){
+  for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
+    if(electrodemap[i].first == true){ //only correct error at electrode surfaces.
+      RHS[i] -= correction[i];
+    }
   }
 }
 
-double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::vector< std::pair<int,double> > *electrodemap){
+double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap){
   double err = 0;
-  for(int i = 0; i < electrodemap->size(); i++){
-    correction[electrodemap->at(i).first] = electrodemap->at(i).second-arr[electrodemap->at(i).first]; //intended potential - found potential.
-    correction[i] = 10*correction[i];
-    err = std::max(err, fabs((electrodemap->at(i).second-arr[electrodemap->at(i).first])/electrodemap->at(i).second)); //get largest error value.
+  for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
+    if(electrodemap[i].first == true){ //only check error at electrodes.
+      correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
+      correction[i] = 10*correction[i];
+      err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
+    }
   }
   return err;
 }
