@@ -105,7 +105,8 @@ void apply_correction(const int[], const double[], double*, double*, std::pair<i
 
 int main(void){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
-  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
+  // const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
+  const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
   const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
