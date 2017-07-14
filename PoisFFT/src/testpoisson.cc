@@ -31,8 +31,6 @@ const double pi = 3.14159265358979323846;
 #define RHOFILE ((char*) "outrho.txt")
 #define CORRECTIONFILE ((char*) "outcorr.txt")
 
-//@@@@@@@@@@@@@@@@ ELECTRODE CLASS DEFINITION
-
 class Electrodes{
   public:
     Electrodes(); //default constructor
@@ -43,7 +41,6 @@ class Electrodes{
     double z[2]; //zmin and zmax
     double potential;   //pointer after conversion of vector
     void draw(const int[3], const double[3], const double[3], double*, std::pair<bool,double>*);
-
 };
 
 Electrodes::Electrodes( void ){}
@@ -59,9 +56,8 @@ Electrodes::Electrodes( double xmin, double xmax, double ymin, double ymax, doub
 
 Electrodes::~Electrodes( void ){}
 
-//draw the electrode into an electrode map
 void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<bool,double> *electrodemap){
-  int i, j, k;
+  int i, j, k; //draw the electrode into an electrode map
   std::cout << (int) x[0]/Ls[0]*ns[0] << " " << (int) x[1]/Ls[0]*ns[0] << " " << (int) y[0]/Ls[0]*ns[0] << " " << (int) y[1]/Ls[0]*ns[0]
             << " " << (int) z[0]/Ls[0]*ns[0] << " " << (int) z[1]/Ls[0]*ns[0] << std::endl;
   for(int i = (int) x[0]/Ls[0]*ns[0]; i < (int) x[1]/Ls[0]*ns[0]; i++){ //set RHS 0 inside electrodes
@@ -100,8 +96,6 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
   }
 }
 
-//@@@@@@@@@@@@@@@@@@@@ START OF MAIN
-
 void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*);
@@ -121,7 +115,6 @@ int main(void){
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
     ds[i] = Ls[i] / ns[i];
   }
-  int count;
   double *arr = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
   double *RHS = new double[ns[0]*ns[1]*ns[2]]; // from which you can get a pointer to contiguous buffer
   double *correction = new double[ns[0]*ns[1]*ns[2]]; // correction used to update RHS
@@ -135,9 +128,7 @@ int main(void){
     cycleErr = check_error(ns, ds, arr, correction, electrodemap);
     std::cout << cycleErr << std::endl;
     apply_correction(ns, ds, RHS, correction, electrodemap);
-    count++;
   }while(cycleErr > MAXERROR);
-  // }while(count < 5);
   std::cout << "Finished!" << std::endl;
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
   save_file2D(ns, ds, Ls, arr, CORRECTIONFILE);
@@ -220,10 +211,6 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
         a[IND(i,j,k)] = 1.5e10*Q_E; //Set default set to bulk volume charge density.
-        // setting to 0 inside electrodes dealt with in Electrodes::draw()
-        // if( (x >= Ls[0]/3.0 && x <= Ls[0]*2.0/3.0) && (y >= Ls[1]/3.0 && y <= Ls[1]*2.0/3.0) && (z >= Ls[2]/3.0 && z <= Ls[2]*2.0/3.0) ){
-        //   a[IND(i,j,k)] = 0.0; //set to 0 inside of electrodes.
-        // }
       }
     }
   }
