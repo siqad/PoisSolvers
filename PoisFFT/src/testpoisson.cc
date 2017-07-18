@@ -64,7 +64,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
   for(int i = (int) ns[0]*x[0]/Ls[0]; i < (int) ns[0]*x[1]/Ls[0]; i++){ //set RHS 0 inside electrodes
     for(int j = (int) ns[1]*y[0]/Ls[1]; j < (int) ns[1]*y[1]/Ls[1]; j++){
       for(int k = (int) ns[2]*z[0]/Ls[2]; k < (int) ns[2]*z[1]/Ls[2]; k++){
-        RHS[i*ns[1]*ns[2] + j*ns[2] + k] = 0;
+        RHS[IND(i,j,k)] = 0;
       }
     }
   }
@@ -72,8 +72,11 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
     i = (int) ns[0]*x[iter]/Ls[0]; //xmin first, then xmax
     for(int j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
       for(int k = (int) ns[2]*z[0]/Ls[2]; k <= (int) ns[2]*z[1]/Ls[2]; k++){
-        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = true; //set true for electrode surface.
-        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
+        electrodemap[IND(i,j,k)].first = true; //set true for electrode surface.
+        electrodemap[IND(i,j,k)].second = potential; //set electrode potential
+        if(xmin!=0){ //set potential of adjacent silicon with workfunction.
+          electrodemap[IND(i-1,j,k)].first = true;
+        }
       }
     }
   }
@@ -81,8 +84,8 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
     j = (int) ns[1]*y[iter]/Ls[1]; //ymin first, then ymax
     for(int i = (int) ns[0]*x[0]/Ls[0]; i <= (int) ns[0]*x[1]/Ls[0]; i++){
       for(int k = (int) ns[2]*z[0]/Ls[2]; k <= (int) ns[2]*z[1]/Ls[2]; k++){
-        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = true; //set true for electrode surface.
-        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
+        electrodemap[IND(i,j,k)].first = true; //set true for electrode surface.
+        electrodemap[IND(i,j,k)].second = potential; //set electrode potential
       }
     }
   }
@@ -90,8 +93,8 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
     k = (int) ns[2]*z[iter]/Ls[2]; //zmin
     for(int i = (int) ns[0]*x[0]/Ls[0]; i <= (int) ns[0]*x[1]/Ls[0]; i++){
       for(int j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
-        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].first = true; //set true for electrode surface.
-        electrodemap[i*ns[1]*ns[2] + j*ns[2] + k].second = potential; //set electrode potential
+        electrodemap[IND(i,j,k)].first = true; //set true for electrode surface.
+        electrodemap[IND(i,j,k)].second = potential; //set electrode potential
       }
     }
   }
@@ -109,15 +112,15 @@ int main(void){
   // const double Ls[3] = {0.1, 0.1, 0.1}; //x, y, z domain dimensions
   const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
+  const int ns[3] = {100, 100, 10}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   // const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
   //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC,
   //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC};
-  const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,  //boundary conditions
-                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
-                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET};
+  const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
+                      PoisFFT::PERIODIC, PoisFFT::PERIODIC,
+                      PoisFFT::PERIODIC, PoisFFT::PERIODIC};
   int i;
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
     ds[i] = Ls[i] / ns[i];
@@ -185,7 +188,7 @@ double check_error(const int ns[3], const double ds[3], double *arr, double *cor
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
-      correction[i] = 1750*correction[i];
+      correction[i] = 500*correction[i];
       err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
     }
   }
@@ -200,7 +203,7 @@ void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double
   for (int i = 0; i < ns[0]; i++){
     for (int j = 0; j < ns[1]; j++){
         outfile << std::setprecision(5) << std::scientific << i*ds[0] <<
-        " " << j*ds[1] << " " << arr[i*ns[1]*ns[2]+j*ns[2]+k] << std::endl;
+        " " << j*ds[1] << " " << arr[IND(i,j,k)] << std::endl;
     }
     outfile << std::endl;
   }
