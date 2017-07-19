@@ -159,7 +159,7 @@ int main(void){
   double *correction = new double[ns[0]*ns[1]*ns[2]]; // correction used to update RHS
   std::pair<int,double> *electrodemap = new std::pair<int,double>[ns[0]*ns[1]*ns[2]]; //stores electrode surface info and potentials.
   int cycleCount = 0;
-  // ProfilerStart("./profileresult.out"); //using google performance tools
+  ProfilerStart("./profileresult.out"); //using google performance tools
   const std::clock_t begin_time = std::clock();
   init_eps(ns, ds, Ls, eps); // set permittivity
   init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
@@ -169,8 +169,8 @@ int main(void){
   // Electrodes elec4(0.06, 0.08, 0.06, 0.08, 0.03, 0.06, 20);
   Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 5, WF_GOLD);
   Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 10, WF_GOLD);
-  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 15, WF_GOLD);
-  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 20, WF_GOLD);
+  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 20, WF_GOLD);
+  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 30, WF_GOLD);
   // Electrodes elec1(2.0, 4.0, 2.0, 4.0, 3.0, 6.0, 5);
   // Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10);
   // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 15);
@@ -193,7 +193,7 @@ int main(void){
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
   save_file2D(ns, ds, Ls, arr, CORRECTIONFILE);
   save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
-  // ProfilerStop();
+  ProfilerStop();
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
   delete[] eps;
@@ -217,8 +217,12 @@ double check_error(const int ns[3], const double ds[3], double *arr, double *cor
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
-      correction[i] = 500*correction[i];
-      err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
+      correction[i] = 600*correction[i];
+      if(electrodemap[i].second != 0){
+        err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
+      } else { //ground electrode, only need to be accurate to within MAXERROR
+        err = std::max(err, fabs(arr[i])); //get largest error value.
+      }
     }
   }
   return err;
