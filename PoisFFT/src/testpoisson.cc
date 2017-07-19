@@ -131,7 +131,7 @@ void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
-double check_error(const int[], const double[], double*, double*, std::pair<int,double>*);
+double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
@@ -142,6 +142,7 @@ int main(void){
   const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
+  int* indexErr = new int;
   // const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
   //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC,
   //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC};
@@ -180,13 +181,13 @@ int main(void){
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  PoisFFT::Solver<3, double> S(ns, Ls, BCs); // create solver object, 3 dimensions, double precision
+  PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(ns, ds, arr, correction, electrodemap);
+    cycleErr = check_error(ns, ds, arr, correction, electrodemap, indexErr);
     apply_correction(ns, ds, RHS, correction, electrodemap);
-    std::cout << "On cycle " << cycleCount << " with error " << cycleErr << "." << std::endl;
+    std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << "." << std::endl;
     cycleCount++;
   }while(cycleErr > MAXERROR);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
@@ -196,6 +197,7 @@ int main(void){
   ProfilerStop();
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
+  delete indexErr;
   delete[] eps;
   delete[] RHS;
   delete[] arr;
@@ -212,16 +214,21 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
   }
 }
 
-double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap){
+double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr){
   double err = 0;
+  double errOld;
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
+      errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
       correction[i] = 600*correction[i];
       if(electrodemap[i].second != 0){
         err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
       } else { //ground electrode, only need to be accurate to within MAXERROR
         err = std::max(err, fabs(arr[i])); //get largest error value.
+      }
+      if( errOld != err ){
+        *indexErr = i;
       }
     }
   }
