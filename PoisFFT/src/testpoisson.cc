@@ -87,11 +87,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((x[0]!=0 && iter==0) || (x[1]!=ns[0]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i-1+2*iter,j,k)].first = true;
-          if(potential != 0){ //abs value of potential reduced by WF-CHI. If electrode potential positive, -(WF-CHI), if negative, +(WF-CHI).
-            electrodemap[IND(i-1+2*iter,j,k)].second = potential - copysign((WF-chi[IND(i-1+2*iter,j,k)]), potential);
-          } else { //ground electrode
-            electrodemap[IND(i-1+2*iter,j,k)].second = potential;
-          }
+          electrodemap[IND(i-1+2*iter,j,k)].second = potential - (WF-chi[IND(i-1+2*iter,j,k)]);
         }
       }
     }
@@ -102,11 +98,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((y[0]!=0 && iter==0) || (y[1]!=ns[1]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j-1+2*iter,k)].first = true;
-          if(potential != 0){ //abs value of potential reduced by WF-CHI. If electrode potential positive, -(WF-CHI), if negative, +(WF-CHI).
-            electrodemap[IND(i,j-1+2*iter,k)].second = potential - copysign((WF-chi[IND(i,j-1+2*iter,k)]), potential);
-          } else { //ground electrode
-            electrodemap[IND(i,j-1+2*iter,k)].second = potential;
-          }
+          electrodemap[IND(i,j-1+2*iter,k)].second = potential - (WF-chi[IND(i,j-1+2*iter,k)]);
         }
       }
     }
@@ -117,11 +109,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((z[0]!=0 && iter==0) || (z[1]!=ns[2]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j,k-1+2*iter)].first = true;
-          if(potential != 0){ //abs value of potential reduced by WF-CHI. If electrode potential positive, -(WF-CHI), if negative, +(WF-CHI).
-            electrodemap[IND(i,j,k-1+2*iter)].second = potential - copysign((WF-chi[IND(i,j,k-1+2*iter)]), potential);
-          } else { //ground electrode
-            electrodemap[IND(i,j,k-1+2*iter)].second = potential;
-          }
+          electrodemap[IND(i,j,k-1+2*iter)].second = potential - (WF-chi[IND(i,j,k-1+2*iter)]);
         }
       }
     }
@@ -140,12 +128,10 @@ int main(void){
   // const double Ls[3] = {0.1, 0.1, 0.1}; //x, y, z domain dimensions
   const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
+  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
-  // const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
-  //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC,
-  //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC};
+
   const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
                       PoisFFT::PERIODIC, PoisFFT::PERIODIC,
                       PoisFFT::PERIODIC, PoisFFT::PERIODIC};
@@ -168,14 +154,14 @@ int main(void){
   // Electrodes elec2(0.02, 0.04, 0.06, 0.08, 0.03, 0.06, 10);
   // Electrodes elec3(0.06, 0.08, 0.02, 0.04, 0.03, 0.06, 15);
   // Electrodes elec4(0.06, 0.08, 0.06, 0.08, 0.03, 0.06, 20);
-  Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 5, WF_GOLD);
-  Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 10, WF_GOLD);
-  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 20, WF_GOLD);
-  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 30, WF_GOLD);
-  // Electrodes elec1(2.0, 4.0, 2.0, 4.0, 3.0, 6.0, 5);
-  // Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10);
-  // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 15);
-  // Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 20);
+  Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
+  Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 0, WF_GOLD);
+  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
+  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 10, WF_GOLD);
+  // Electrodes elec1(2.0, 4.0, 2.0, 4.0, 3.0, 6.0, 5, WF_GOLD);
+  // Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10, WF_GOLD);
+  // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 20, WF_GOLD);
+  // Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 30, WF_GOLD);
   // Electrodes elec1(0.4, 0.6, 0.4, 0.6, 0.4, 0.6, 10, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
@@ -229,19 +215,13 @@ double check_error(const int ns[3], const double ds[3], double *arr, double *cor
           d2Vapprox = (-6.0*arr[IND(i,j,k)]+arr[IND(i-1,j,k)]+arr[IND(i+1,j,k)]+arr[IND(i,j-1,k)]+
                       arr[IND(i,j+1,k)]+arr[IND(i,j,k-1)]+arr[IND(i,j,k+1)])/ds[0]/ds[0];
           correction[IND(i,j,k)] = d2Vtarget - d2Vapprox;
-          if(electrodemap[IND(i,j,k)].second != 0){
-            // err = std::max(err, fabs((electrodemap[IND(i,j,k)].second-arr[IND(i,j,k)])/electrodemap[IND(i,j,k)].second)); //get largest error value.
-            err = std::max(err, fabs(correction[IND(i,j,k)]/d2Vtarget)); //get largest error value.
-          } else { //ground electrode, only need to be accurate to within MAXERROR
-            err = std::max(err, fabs(arr[IND(i,j,k)])); //get largest error value.
-          }
+          err = std::max(err, fabs(correction[IND(i,j,k)]/d2Vtarget)); //get largest error value.
         }
       }
     }
   }
   return err;
 }
-
 
 void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double* arr, char fname[]){
   std::ofstream outfile;
