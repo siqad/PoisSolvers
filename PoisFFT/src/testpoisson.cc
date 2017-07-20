@@ -75,6 +75,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
     for(j = (int) ns[1]*y[0]/Ls[1]; j < (int) ns[1]*y[1]/Ls[1]; j++){
       for(k = (int) ns[2]*z[0]/Ls[2]; k < (int) ns[2]*z[1]/Ls[2]; k++){
         RHS[IND(i,j,k)] = 0;
+        chi[IND(i,j,k)] = WF;
       }
     }
   }
@@ -131,7 +132,7 @@ void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
-double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*);
+double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, double*);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
@@ -139,10 +140,9 @@ int main(void){
   // const double Ls[3] = {0.1, 0.1, 0.1}; //x, y, z domain dimensions
   const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
+  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
-  int* indexErr = new int;
   // const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
   //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC,
   //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC};
@@ -185,9 +185,9 @@ int main(void){
   std::cout << "Beginning solver" << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(ns, ds, arr, correction, electrodemap, indexErr);
+    cycleErr = check_error(ns, ds, arr, correction, electrodemap, RHS);
     apply_correction(ns, ds, RHS, correction, electrodemap);
-    std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << "." << std::endl;
+    std::cout << "On cycle " << cycleCount << " with error " << cycleErr << "." << std::endl;
     cycleCount++;
   }while(cycleErr > MAXERROR);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
@@ -197,7 +197,6 @@ int main(void){
   ProfilerStop();
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
-  delete indexErr;
   delete[] eps;
   delete[] RHS;
   delete[] arr;
@@ -209,31 +208,40 @@ int main(void){
 void apply_correction(const int ns[3], const double ds[3], double *RHS, double *correction, std::pair<int,double> *electrodemap){
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only correct error at electrode surfaces.
-      RHS[i] -= correction[i];
+      RHS[i] += correction[i];
     }
   }
 }
 
-double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr){
+double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, double *RHS){
   double err = 0;
-  double errOld;
-  for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
-    if(electrodemap[i].first == true){ //only check error at electrodes.
-      errOld = err;
-      correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
-      correction[i] = 600*correction[i];
-      if(electrodemap[i].second != 0){
-        err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
-      } else { //ground electrode, only need to be accurate to within MAXERROR
-        err = std::max(err, fabs(arr[i])); //get largest error value.
-      }
-      if( errOld != err ){
-        *indexErr = i;
+  double d2Vtarget;
+  double d2Vapprox;
+  for(int i = 0; i < ns[0]; i++){
+    for(int j = 0; j < ns[1]; j++){
+      for(int k = 0; k < ns[2]; k++){
+        if(electrodemap[IND(i,j,k)].first == true){ //only check error at electrodes.
+          //for each side that is an electrode, add the electrode potential to correction.
+          //for each side that is bulk, add its potential adjusted by the workfunction and electron affinity to correction
+          d2Vtarget = (-6.0*electrodemap[IND(i,j,k)].second+electrodemap[IND(i-1,j,k)].second+electrodemap[IND(i+1,j,k)].second+
+                      electrodemap[IND(i,j-1,k)].second+electrodemap[IND(i,j+1,k)].second+
+                      electrodemap[IND(i,j,k-1)].second+electrodemap[IND(i,j,k+1)].second)/ds[0]/ds[0];
+          d2Vapprox = (-6.0*arr[IND(i,j,k)]+arr[IND(i-1,j,k)]+arr[IND(i+1,j,k)]+arr[IND(i,j-1,k)]+
+                      arr[IND(i,j+1,k)]+arr[IND(i,j,k-1)]+arr[IND(i,j,k+1)])/ds[0]/ds[0];
+          correction[IND(i,j,k)] = d2Vtarget - d2Vapprox;
+          if(electrodemap[IND(i,j,k)].second != 0){
+            // err = std::max(err, fabs((electrodemap[IND(i,j,k)].second-arr[IND(i,j,k)])/electrodemap[IND(i,j,k)].second)); //get largest error value.
+            err = std::max(err, fabs(correction[IND(i,j,k)]/d2Vtarget)); //get largest error value.
+          } else { //ground electrode, only need to be accurate to within MAXERROR
+            err = std::max(err, fabs(arr[IND(i,j,k)])); //get largest error value.
+          }
+        }
       }
     }
   }
   return err;
 }
+
 
 void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double* arr, char fname[]){
   std::ofstream outfile;
@@ -278,8 +286,6 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* c
       double y = ds[1]*(j+0.5);
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
-        // a[IND(i,j,k)] = -1.5e10*Q_E/EPS0; //Set default set to bulk volume charge density.
-        // a[IND(i,j,k)] = -1.5*Q_E/EPS0; //Set default set to bulk volume charge density.
         a[IND(i,j,k)] = -1e10*Q_E/EPS0/eps[IND(i,j,k)]; //Set default set to bulk volume charge density.
         chi[IND(i,j,k)] = CHI_SI;
       }
