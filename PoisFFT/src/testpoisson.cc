@@ -71,6 +71,8 @@ Electrodes::~Electrodes( void ){}
 
 void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
   int i, j, k; //draw the electrode into an electrode map
+  //http://in.ncu.edu.tw/ncume_ee/SchottkyDiode.htm says that potential across metal-semi conductor
+  //follows Schottky Barrier model, regardless of forward/reverse bias.
   for(i = (int) ns[0]*x[0]/Ls[0]; i < (int) ns[0]*x[1]/Ls[0]; i++){ //set RHS 0 inside electrodes
     for(j = (int) ns[1]*y[0]/Ls[1]; j < (int) ns[1]*y[1]/Ls[1]; j++){
       for(k = (int) ns[2]*z[0]/Ls[2]; k < (int) ns[2]*z[1]/Ls[2]; k++){
@@ -79,6 +81,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
       }
     }
   }
+  std::cout << ns[0]*x[1]/Ls[0] << " " << ns[0]-1 << std::endl;
   for( int iter = 0; iter < 2; iter++){
     i = (int) ns[0]*x[iter]/Ls[0]; //xmin first, then xmax
     for(j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
@@ -120,7 +123,7 @@ void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
-double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, double*);
+double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, double*, const int[]);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
@@ -131,9 +134,8 @@ int main(void){
   const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
-
-  const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
-                      PoisFFT::PERIODIC, PoisFFT::PERIODIC,
+  const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions, all must be same type,
+                      PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //or else PoisFFT has undefined behaviour
                       PoisFFT::PERIODIC, PoisFFT::PERIODIC};
   int i;
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
@@ -150,10 +152,10 @@ int main(void){
   const std::clock_t begin_time = std::clock();
   init_eps(ns, ds, Ls, eps); // set permittivity
   init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  // Electrodes elec1(0.02, 0.04, 0.02, 0.04, 0.03, 0.06, 5);
-  // Electrodes elec2(0.02, 0.04, 0.06, 0.08, 0.03, 0.06, 10);
-  // Electrodes elec3(0.06, 0.08, 0.02, 0.04, 0.03, 0.06, 15);
-  // Electrodes elec4(0.06, 0.08, 0.06, 0.08, 0.03, 0.06, 20);
+  // Electrodes elec1(0.02, 0.04, 0.02, 0.04, 0.03, 0.06, 0, WF_GOLD);
+  // Electrodes elec2(0.02, 0.04, 0.06, 0.08, 0.03, 0.06, 0, WF_GOLD);
+  // Electrodes elec3(0.06, 0.08, 0.02, 0.04, 0.03, 0.06, 10, WF_GOLD);
+  // Electrodes elec4(0.06, 0.08, 0.06, 0.08, 0.03, 0.06, 20, WF_GOLD);
   Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
   Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 0, WF_GOLD);
   Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
@@ -162,7 +164,11 @@ int main(void){
   // Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10, WF_GOLD);
   // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 20, WF_GOLD);
   // Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 30, WF_GOLD);
-  // Electrodes elec1(0.4, 0.6, 0.4, 0.6, 0.4, 0.6, 10, WF_GOLD);
+  // Electrodes elec1(0.0, 1.0, 0.0, 0.1, 0.3, 0.6, 0, WF_GOLD);
+  // Electrodes elec2(0.0, 1.0, 0.9, 1.0, 0.3, 0.6, 0, WF_GOLD);
+  // Electrodes elec3(0.2, 0.4, 0.4, 0.6, 0.3, 0.6, 10, WF_GOLD);
+  // Electrodes elec4(0.6, 0.8, 0.4, 0.6, 0.3, 0.6, 10, WF_GOLD);
+  // Electrodes elec1(0.6, 0.7, 0.1, 0.5, 0.3, 0.6, 10, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
@@ -171,7 +177,7 @@ int main(void){
   std::cout << "Beginning solver" << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(ns, ds, arr, correction, electrodemap, RHS);
+    cycleErr = check_error(ns, ds, arr, correction, electrodemap, RHS, BCs);
     apply_correction(ns, ds, RHS, correction, electrodemap);
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << "." << std::endl;
     cycleCount++;
@@ -199,21 +205,65 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
   }
 }
 
-double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, double *RHS){
+double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, double *RHS, const int BCs[6]){
   double err = 0;
   double d2Vtarget;
   double d2Vapprox;
+  double xplust, xminust, yplust, yminust, zplust, zminust;
+  double xplusa, xminusa, yplusa, yminusa, zplusa, zminusa;
   for(int i = 0; i < ns[0]; i++){
     for(int j = 0; j < ns[1]; j++){
       for(int k = 0; k < ns[2]; k++){
         if(electrodemap[IND(i,j,k)].first == true){ //only check error at electrodes.
           //for each side that is an electrode, add the electrode potential to correction.
           //for each side that is bulk, add its potential adjusted by the workfunction and electron affinity to correction
+          // xminust = electrodemap[IND(i-1,j,k)].second;
+          // yplust = electrodemap[IND(i,j+1,k)].second;
+          // yminust = electrodemap[IND(i,j-1,k)].second;
+          // zplust = electrodemap[IND(i,j,k+1)].second;
+          // zminust = electrodemap[IND(i,j,k-1)].second;
+          // xplusa = arr[IND(i+1,j,k)];
+          // xminusa = arr[IND(i-1,j,k)];
+          // yplusa = arr[IND(i,j+1,k)];
+          // yminusa = arr[IND(i,j-1,k)];
+          // zplusa = arr[IND(i,j,k+1)];
+          // zminusa = arr[IND(i,j,k-1)];
+          // if( BCs[0] == PoisFFT::PERIODIC ){ //all boundary conditions must be the same, all are PERIODIC. Wrap-around.
+          //   if(i == ns[0]-1){
+          //     xplust = electrodemap[IND(0,j,k)].second;
+          //     xplusa = arr[IND(0,j,k)];
+          //     // std::cout << "xmax" << std::endl;
+          //   } else if(i == 0){
+          //     xminust = electrodemap[IND(ns[0]-1,j,k)].second;
+          //     xminusa = arr[IND(ns[0]-1,j,k)];
+          //     // std::cout << "xmin" << std::endl;
+          //   }
+          //   if(j == ns[1]-1){
+          //     yplust = electrodemap[IND(i,0,k)].second;
+          //     yplusa = arr[IND(i,0,k)];
+          //     // std::cout << "ymax" << std::endl;
+          //   } else if(j == 0){
+          //     yminust = electrodemap[IND(i,ns[1]-1,k)].second;
+          //     yminusa = arr[IND(i,ns[1]-1,k)];
+          //     // std::cout << "ymin" << std::endl;
+          //   }
+          //   if(k == ns[2]-1){
+          //     zplust = electrodemap[IND(i,j,0)].second;
+          //     zplusa = arr[IND(i,j,0)];
+          //     // std::cout << "zmax" << std::endl;
+          //   } else if(k == 0){
+          //     zminust = electrodemap[IND(i,j,ns[2]-1)].second;
+          //     zminusa = arr[IND(i,j,ns[2]-1)];
+          //     // std::cout << "zmin" << std::endl;
+          //   }
+          // }
           d2Vtarget = (-6.0*electrodemap[IND(i,j,k)].second+electrodemap[IND(i-1,j,k)].second+electrodemap[IND(i+1,j,k)].second+
                       electrodemap[IND(i,j-1,k)].second+electrodemap[IND(i,j+1,k)].second+
                       electrodemap[IND(i,j,k-1)].second+electrodemap[IND(i,j,k+1)].second)/ds[0]/ds[0];
+          // d2Vtarget = (-6.0*electrodemap[IND(i,j,k)].second+xplust+xminust+yplust+yminust+zplust+zminust)/ds[0]/ds[0];
           d2Vapprox = (-6.0*arr[IND(i,j,k)]+arr[IND(i-1,j,k)]+arr[IND(i+1,j,k)]+arr[IND(i,j-1,k)]+
                       arr[IND(i,j+1,k)]+arr[IND(i,j,k-1)]+arr[IND(i,j,k+1)])/ds[0]/ds[0];
+          // d2Vapprox = (-6.0*arr[IND(i,j,k)]+xplusa+xminusa+yplusa+yminusa+zplusa+zminusa)/ds[0]/ds[0];
           correction[IND(i,j,k)] = d2Vtarget - d2Vapprox;
           err = std::max(err, fabs(correction[IND(i,j,k)]/d2Vtarget)); //get largest error value.
         }
