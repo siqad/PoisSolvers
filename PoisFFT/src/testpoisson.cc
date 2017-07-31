@@ -39,6 +39,7 @@ const double pi = 3.14159265358979323846;
 #define WF_CESIUM 2.1 //workfunction for cesium in eV
 #define WF_NICKEL 5.01
 #define CHI_SI 4.05//electron affinity for silicon in eV from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
+#define EPS_SI 11.7
 
 
 
@@ -169,14 +170,14 @@ int main(void){
   // Electrodes elec2(0.02, 0.04, 0.06, 0.08, 0.03, 0.06, 10);
   // Electrodes elec3(0.06, 0.08, 0.02, 0.04, 0.03, 0.06, 15);
   // Electrodes elec4(0.06, 0.08, 0.06, 0.08, 0.03, 0.06, 20);
-  Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 5, WF_GOLD);
-  Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 10, WF_GOLD);
-  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 20, WF_GOLD);
-  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 30, WF_GOLD);
-  // Electrodes elec1(2.0, 4.0, 2.0, 4.0, 3.0, 6.0, 5);
-  // Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10);
-  // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 15);
-  // Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 20);
+  Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
+  Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 5, WF_GOLD);
+  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
+  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 15, WF_GOLD);
+  // // Electrodes elec1(2.0, 4.0, 2.0, 4.0, 3.0, 6.0, 5, WF_GOLD);
+  // Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10, WF_GOLD);
+  // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 15, WF_GOLD);
+  // Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 20, WF_GOLD);
   // Electrodes elec1(0.4, 0.6, 0.4, 0.6, 0.4, 0.6, 10, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
@@ -188,7 +189,7 @@ int main(void){
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
     cycleErr = check_error(ns, ds, arr, correction, electrodemap, indexErr, arrOld);
     apply_correction(ns, ds, RHS, correction, electrodemap);
-    std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << "." << std::endl;
+    std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
     cycleCount++;
   }while(cycleErr > MAXERROR && cycleErr != 0);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
@@ -223,8 +224,12 @@ double check_error(const int ns[3], const double ds[3], double *arr, double *cor
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
-      correction[i] = 600*correction[i];
-      err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
+      correction[i] = 850*correction[i];
+      if(electrodemap[i].second != 0){
+        err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
+      } else {
+        err = std::max(err, arr[i]/10); //get largest error value.
+      }
       if( errOld != err ){
         *indexErr = i;
       }
@@ -258,9 +263,10 @@ void init_eps(const int ns[3], const double ds[3], const double Ls[3], double* a
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
         if (y < Ls[1]/2){
-          a[IND(i,j,k)] = 1;  //Free space
+          a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
+          // a[IND(i,j,k)] = 1;  //Free space
         } else{
-          a[IND(i,j,k)] = 1e3; //Si permittivity
+          a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
         }
       }
     }
@@ -277,8 +283,6 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* c
       double y = ds[1]*(j+0.5);
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
-        // a[IND(i,j,k)] = -1.5e10*Q_E/EPS0; //Set default set to bulk volume charge density.
-        // a[IND(i,j,k)] = -1.5*Q_E/EPS0; //Set default set to bulk volume charge density.
         a[IND(i,j,k)] = -1e10*Q_E/EPS0/eps[IND(i,j,k)]; //Set default set to bulk volume charge density.
         chi[IND(i,j,k)] = CHI_SI;
       }
