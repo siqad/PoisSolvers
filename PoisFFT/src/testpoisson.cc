@@ -131,7 +131,7 @@ void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
-double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*);
+double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
@@ -154,6 +154,7 @@ int main(void){
     ds[i] = Ls[i] / ns[i];
   }
   double *arr = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
+  double *arrOld = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
   double *eps = new double[ns[0]*ns[1]*ns[2]]; //RELATIVE permittivity.
   double *chi = new double[ns[0]*ns[1]*ns[2]]; //electron affinity or WF
   double *RHS = new double[ns[0]*ns[1]*ns[2]]; // from which you can get a pointer to contiguous buffer, will contain rho.
@@ -185,11 +186,11 @@ int main(void){
   std::cout << "Beginning solver" << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(ns, ds, arr, correction, electrodemap, indexErr);
+    cycleErr = check_error(ns, ds, arr, correction, electrodemap, indexErr, arrOld);
     apply_correction(ns, ds, RHS, correction, electrodemap);
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << "." << std::endl;
     cycleCount++;
-  }while(cycleErr > MAXERROR);
+  }while(cycleErr > MAXERROR && cycleErr != 0);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
   save_file2D(ns, ds, Ls, arr, CORRECTIONFILE);
@@ -214,7 +215,8 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
   }
 }
 
-double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr){
+//takes a long time, not sure how to tune the correction factor
+double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld){
   double err = 0;
   double errOld;
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
@@ -222,15 +224,12 @@ double check_error(const int ns[3], const double ds[3], double *arr, double *cor
       errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
       correction[i] = 600*correction[i];
-      if(electrodemap[i].second != 0){
-        err = std::max(err, fabs((electrodemap[i].second-arr[i])/electrodemap[i].second)); //get largest error value.
-      } else { //ground electrode, only need to be accurate to within MAXERROR
-        err = std::max(err, fabs(arr[i])); //get largest error value.
-      }
+      err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
       if( errOld != err ){
         *indexErr = i;
       }
     }
+    arrOld[i] = arr[i];
   }
   return err;
 }
