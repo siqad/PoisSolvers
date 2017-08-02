@@ -87,11 +87,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((x[0]!=0 && iter==0) || (x[1]!=ns[0]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i-1+2*iter,j,k)].first = true;
-          if(potential != 0){ //abs value of potential reduced by WF-CHI. If electrode potential positive, -(WF-CHI), if negative, +(WF-CHI).
-            electrodemap[IND(i-1+2*iter,j,k)].second = potential - copysign((WF-chi[IND(i-1+2*iter,j,k)]), potential);
-          } else { //ground electrode
-            electrodemap[IND(i-1+2*iter,j,k)].second = potential;
-          }
+          electrodemap[IND(i-1+2*iter,j,k)].second = potential - copysign((WF-chi[IND(i-1+2*iter,j,k)]), potential);
         }
       }
     }
@@ -102,11 +98,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((y[0]!=0 && iter==0) || (y[1]!=ns[1]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j-1+2*iter,k)].first = true;
-          if(potential != 0){ //abs value of potential reduced by WF-CHI. If electrode potential positive, -(WF-CHI), if negative, +(WF-CHI).
-            electrodemap[IND(i,j-1+2*iter,k)].second = potential - copysign((WF-chi[IND(i,j-1+2*iter,k)]), potential);
-          } else { //ground electrode
-            electrodemap[IND(i,j-1+2*iter,k)].second = potential;
-          }
+          electrodemap[IND(i,j-1+2*iter,k)].second = potential - copysign((WF-chi[IND(i,j-1+2*iter,k)]), potential);
         }
       }
     }
@@ -117,11 +109,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((z[0]!=0 && iter==0) || (z[1]!=ns[2]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j,k-1+2*iter)].first = true;
-          if(potential != 0){ //abs value of potential reduced by WF-CHI. If electrode potential positive, -(WF-CHI), if negative, +(WF-CHI).
-            electrodemap[IND(i,j,k-1+2*iter)].second = potential - copysign((WF-chi[IND(i,j,k-1+2*iter)]), potential);
-          } else { //ground electrode
-            electrodemap[IND(i,j,k-1+2*iter)].second = potential;
-          }
+          electrodemap[IND(i,j,k-1+2*iter)].second = potential - copysign((WF-chi[IND(i,j,k-1+2*iter)]), potential);
         }
       }
     }
@@ -132,7 +120,7 @@ void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
-double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*);
+double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
@@ -140,7 +128,7 @@ int main(void){
   // const double Ls[3] = {0.1, 0.1, 0.1}; //x, y, z domain dimensions
   const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
+  const int ns[3] = {10, 10, 10}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -170,15 +158,19 @@ int main(void){
   // Electrodes elec2(0.02, 0.04, 0.06, 0.08, 0.03, 0.06, 10);
   // Electrodes elec3(0.06, 0.08, 0.02, 0.04, 0.03, 0.06, 15);
   // Electrodes elec4(0.06, 0.08, 0.06, 0.08, 0.03, 0.06, 20);
-  Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
-  Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 5, WF_GOLD);
-  Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
-  Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 15, WF_GOLD);
+  // Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
+  // Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 5, WF_GOLD);
+  // Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
+  // Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 15, WF_GOLD);
   // // Electrodes elec1(2.0, 4.0, 2.0, 4.0, 3.0, 6.0, 5, WF_GOLD);
   // Electrodes elec2(2.0, 4.0, 6.0, 8.0, 3.0, 6.0, 10, WF_GOLD);
   // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 15, WF_GOLD);
   // Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 20, WF_GOLD);
   // Electrodes elec1(0.4, 0.6, 0.4, 0.6, 0.4, 0.6, 10, WF_GOLD);
+  Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.6, 0, WF_GOLD);
+  Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
+  Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
+  Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.6, 5, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
@@ -187,7 +179,7 @@ int main(void){
   std::cout << "Beginning solver" << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(ns, ds, arr, correction, electrodemap, indexErr, arrOld);
+    cycleErr = check_error(ns, Ls, arr, correction, electrodemap, indexErr, arrOld, eps);
     apply_correction(ns, ds, RHS, correction, electrodemap);
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
     cycleCount++;
@@ -217,18 +209,20 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
 }
 
 //takes a long time, not sure how to tune the correction factor
-double check_error(const int ns[3], const double ds[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld){
+double check_error(const int ns[3], const double Ls[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld, double *eps){
   double err = 0;
   double errOld;
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
-      correction[i] = 850*correction[i];
+      // std::cout << EPS0*eps[i]/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2] << std::endl;
+      // correction[i] *= EPS0*eps[i]/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2];
+      correction[i] *= 60;
       if(electrodemap[i].second != 0){
         err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
       } else {
-        err = std::max(err, arr[i]/10); //get largest error value.
+        // err = std::max(err, arr[i]/10); //assume 0's are done fine.
       }
       if( errOld != err ){
         *indexErr = i;
