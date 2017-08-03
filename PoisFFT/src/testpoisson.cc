@@ -128,7 +128,7 @@ int main(void){
   // const double Ls[3] = {0.1, 0.1, 0.1}; //x, y, z domain dimensions
   const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {10, 10, 10}; //x, y, z gridpoint numbers
+  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers, so far stable for 100x100x100
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -167,10 +167,10 @@ int main(void){
   // Electrodes elec3(6.0, 8.0, 2.0, 4.0, 3.0, 6.0, 15, WF_GOLD);
   // Electrodes elec4(6.0, 8.0, 6.0, 8.0, 3.0, 6.0, 20, WF_GOLD);
   // Electrodes elec1(0.4, 0.6, 0.4, 0.6, 0.4, 0.6, 10, WF_GOLD);
-  Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.6, 0, WF_GOLD);
-  Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.6, 5, WF_GOLD);
+  Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.7, 0, WF_GOLD);
+  Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.7, 20, WF_GOLD);
+  Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.7, 20, WF_GOLD);
+  Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.7, 5, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
@@ -217,12 +217,12 @@ double check_error(const int ns[3], const double Ls[3], double *arr, double *cor
       errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential.
       // std::cout << EPS0*eps[i]/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2] << std::endl;
-      // correction[i] *= EPS0*eps[i]/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2];
-      correction[i] *= 60;
+      correction[i] *= 0.9*EPS0*eps[i]/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2];
+      // std::cout << EPS0*eps[i]/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2] << std::endl;
       if(electrodemap[i].second != 0){
         err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
       } else {
-        // err = std::max(err, arr[i]/10); //assume 0's are done fine.
+        // err = std::max(err, arr[i]/10); //assume 0's are taken care of.
       }
       if( errOld != err ){
         *indexErr = i;
