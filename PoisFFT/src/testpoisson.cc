@@ -133,7 +133,7 @@ int main(void){
   // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions
   const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
+  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -232,9 +232,8 @@ double check_error(const int ns[3], const double Ls[3], double *arr, double *cor
       correction[i] *= correctionWeight;
       if(electrodemap[i].second != 0){
         err = std::max(err, fabs((arr[i] - electrodemap[i].second)/electrodemap[i].second)); //get largest error value.
-        // err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
       } else {
-        // err = std::max(err, arr[i]/10); //assume 0's are taken care of.
+        err = std::max(err, arr[i]);
       }
       if( errOld != err ){
         *indexErr = i;
