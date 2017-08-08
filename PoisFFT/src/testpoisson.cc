@@ -133,7 +133,7 @@ int main(void){
   // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions
   const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
+  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -224,14 +224,12 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
 double check_error(const int ns[3], const double Ls[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld, double *eps){
   double err = 0;
   double errOld;
+  double correctionWeight = 10.0*Ls[0]*ns[0]*ns[1]*ns[2]*ns[0]/100.0/100.0/100.0/100.0*EPS0/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2];
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential. Looking at laplacian of potential doesn't allow snapping to electrode potentials.
-      correction[i] *= 10.0*Ls[0]*EPS0/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2];
-      // correction[i] *= 600000000000000;
-      // std::cout << EPS0/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2] << std::endl;
-
+      correction[i] *= correctionWeight;
       if(electrodemap[i].second != 0){
         err = std::max(err, fabs((arr[i] - electrodemap[i].second)/electrodemap[i].second)); //get largest error value.
         // err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
@@ -291,7 +289,7 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* c
       double y = ds[1]*(j+0.5);
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
-        a[IND(i,j,k)] = -1e10*Q_E/EPS0/eps[IND(i,j,k)]; //Set default set to bulk volume charge density.
+        a[IND(i,j,k)] = -1e10*Q_E/EPS0/eps[IND(i,j,k)]; //Scale according to relative permittivity.
         chi[IND(i,j,k)] = CHI_SI;
       }
     }
