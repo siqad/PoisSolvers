@@ -1,6 +1,7 @@
 #PoisFFT at https://github.com/LadaF/PoisFFT
 PoisFFT/bin
 PoisFFT/lib
+PoisFFT/src/out*.txt
 
 #in-house poisson solver at https://github.com/NathanChiu/poissonsolver
 poissonsolver/outfile*.txt
