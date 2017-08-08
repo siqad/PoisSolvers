@@ -234,7 +234,7 @@ double check_error(const int ns[3], const double Ls[3], double *arr, double *cor
         err = std::max(err, fabs((arr[i] - electrodemap[i].second)/electrodemap[i].second)); //get largest error value.
         // err = std::max(err, fabs((arr[i] - arrOld[i])/arrOld[i])); //get largest error value.
       } else {
-        // err = std::max(err, arr[i]/10); //assume 0's are done fine.
+        // err = std::max(err, arr[i]/10); //assume 0's are taken care of.
       }
       if( errOld != err ){
         *indexErr = i;
