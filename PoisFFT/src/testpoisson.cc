@@ -126,14 +126,13 @@ void apply_correction(const int[], const double[], double*, double*, std::pair<i
 
 int main(void){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
-  // const double Ls[3] = {0.1, 0.1, 0.1}; //x, y, z domain dimensions
-  // const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
+  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
   // const double Ls[3] = {1.0e-1, 1.0e-1, 1.0e-1}; //x, y, z domain dimensions
   // const double Ls[3] = {1.0e-2, 1.0e-2, 1.0e-2}; //x, y, z domain dimensions
   // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions
-  const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions
+  // const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
+  const int ns[3] = {40, 40, 40}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -159,14 +158,14 @@ int main(void){
   // Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 5, WF_GOLD);
   // Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
   // Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 15, WF_GOLD);
-  // Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.6, 0, WF_GOLD);
-  // Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  // Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  // Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.6, 5, WF_GOLD);
   // Electrodes elec1(1, 9, 1, 2, 3, 6, 0, WF_GOLD);
   // Electrodes elec2(1, 2, 4, 6, 3, 6, 20, WF_GOLD);
   // Electrodes elec3(8, 9, 4, 6, 3, 6, 20, WF_GOLD);
   // Electrodes elec4(3, 7, 8, 9, 3, 6, 5, WF_GOLD);
+  Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.6, 0, WF_GOLD);
+  Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
+  Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
+  Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.6, 5, WF_GOLD);
   // Electrodes elec1(0.1e-1, 0.9e-1, 0.1e-1, 0.2e-1, 0.3e-1, 0.6e-1, 0, WF_GOLD);
   // Electrodes elec2(0.1e-1, 0.2e-1, 0.4e-1, 0.6e-1, 0.3e-1, 0.6e-1, 20, WF_GOLD);
   // Electrodes elec3(0.8e-1, 0.9e-1, 0.4e-1, 0.6e-1, 0.3e-1, 0.6e-1, 20, WF_GOLD);
@@ -179,10 +178,10 @@ int main(void){
   // Electrodes elec2(0.1e-6, 0.2e-6, 0.4e-6, 0.6e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
   // Electrodes elec3(0.8e-6, 0.9e-6, 0.4e-6, 0.6e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
   // Electrodes elec4(0.3e-6, 0.7e-6, 0.8e-6, 0.9e-6, 0.3e-6, 0.6e-6, 5, WF_GOLD);
-  Electrodes elec1(0.1e-9, 0.9e-9, 0.1e-9, 0.2e-9, 0.3e-9, 0.6e-9, 0, WF_GOLD);
-  Electrodes elec2(0.1e-9, 0.2e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
-  Electrodes elec3(0.8e-9, 0.9e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
-  Electrodes elec4(0.3e-9, 0.7e-9, 0.8e-9, 0.9e-9, 0.3e-9, 0.6e-9, 5, WF_GOLD);
+  // Electrodes elec1(0.1e-9, 0.9e-9, 0.1e-9, 0.2e-9, 0.3e-9, 0.6e-9, 0, WF_GOLD);
+  // Electrodes elec2(0.1e-9, 0.2e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
+  // Electrodes elec3(0.8e-9, 0.9e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
+  // Electrodes elec4(0.3e-9, 0.7e-9, 0.8e-9, 0.9e-9, 0.3e-9, 0.6e-9, 5, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
@@ -202,7 +201,6 @@ int main(void){
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
   save_file2D(ns, ds, Ls, arr, CORRECTIONFILE);
   save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
-
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
   delete indexErr;
@@ -225,7 +223,7 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
 double check_error(const int ns[3], const double Ls[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld, double *eps){
   double err = 0;
   double errOld;
-  double correctionWeight = 10.0*Ls[0]*ns[0]*ns[1]*ns[2]*ns[0]/100.0/100.0/100.0/100.0*EPS0/Q_E/ns[0]/ns[1]/ns[2]/Ls[0]/Ls[1]/Ls[2];
+  double correctionWeight = 1e-7*ns[0]*EPS0/Q_E/Ls[0]/Ls[0];
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
