@@ -152,7 +152,6 @@ int main(void){
   double *correction = new double[ns[0]*ns[1]*ns[2]]; // correction used to update RHS
   std::pair<int,double> *electrodemap = new std::pair<int,double>[ns[0]*ns[1]*ns[2]]; //stores electrode surface info and potentials.
   int cycleCount = 0;
-  // ProfilerStart("./profileresult.out"); //using google performance tools
   const std::clock_t begin_time = std::clock();
   init_eps(ns, ds, Ls, eps); // set permittivity
   init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
@@ -190,6 +189,7 @@ int main(void){
   elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
+  ProfilerStart("./profileresult.out"); //using google performance tools
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
     cycleErr = check_error(ns, Ls, arr, correction, electrodemap, indexErr, arrOld, eps);
@@ -197,11 +197,12 @@ int main(void){
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
     cycleCount++;
   }while(cycleErr > MAXERROR && cycleErr != 0);
+  ProfilerStop();
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
   save_file2D(ns, ds, Ls, arr, CORRECTIONFILE);
   save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
-  // ProfilerStop();
+
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
   delete indexErr;
