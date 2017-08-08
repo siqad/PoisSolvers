@@ -73,17 +73,13 @@ Electrodes::~Electrodes( void ){}
 
 void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
   int i, j, k; //draw the electrode into an electrode map
-  //http://in.ncu.edu.tw/ncume_ee/SchottkyDiode.htm says that potential across metal-semi conductor
-  //follows Schottky Barrier model, regardless of forward/reverse bias.
   for(i = (int) ns[0]*x[0]/Ls[0]; i < (int) ns[0]*x[1]/Ls[0]; i++){ //set RHS 0 inside electrodes
     for(j = (int) ns[1]*y[0]/Ls[1]; j < (int) ns[1]*y[1]/Ls[1]; j++){
       for(k = (int) ns[2]*z[0]/Ls[2]; k < (int) ns[2]*z[1]/Ls[2]; k++){
         RHS[IND(i,j,k)] = 0;
-        chi[IND(i,j,k)] = WF;
       }
     }
   }
-  std::cout << ns[0]*x[1]/Ls[0] << " " << ns[0]-1 << std::endl;
   for( int iter = 0; iter < 2; iter++){
     i = (int) ns[0]*x[iter]/Ls[0]; //xmin first, then xmax
     for(j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
