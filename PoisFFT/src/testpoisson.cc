@@ -208,6 +208,7 @@ int main(void){
   // ProfilerStop();
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
+  delete indexErr;
   delete[] eps;
   delete[] RHS;
   delete[] arr;
@@ -219,7 +220,7 @@ int main(void){
 void apply_correction(const int ns[3], const double ds[3], double *RHS, double *correction, std::pair<int,double> *electrodemap){
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only correct error at electrode surfaces.
-      RHS[i] += correction[i];
+      RHS[i] -= correction[i];
     }
   }
 }
