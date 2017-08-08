@@ -92,11 +92,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((x[0]!=0 && iter==0) || (x[1]!=ns[0]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i-1+2*iter,j,k)].first = true;
-<<<<<<< HEAD
-          electrodemap[IND(i-1+2*iter,j,k)].second = potential - (WF-chi[IND(i-1+2*iter,j,k)]);
-=======
           electrodemap[IND(i-1+2*iter,j,k)].second = potential - copysign((WF-chi[IND(i-1+2*iter,j,k)]), potential);
->>>>>>> refineFFT
         }
       }
     }
@@ -107,11 +103,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((y[0]!=0 && iter==0) || (y[1]!=ns[1]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j-1+2*iter,k)].first = true;
-<<<<<<< HEAD
-          electrodemap[IND(i,j-1+2*iter,k)].second = potential - (WF-chi[IND(i,j-1+2*iter,k)]);
-=======
           electrodemap[IND(i,j-1+2*iter,k)].second = potential - copysign((WF-chi[IND(i,j-1+2*iter,k)]), potential);
->>>>>>> refineFFT
         }
       }
     }
@@ -122,11 +114,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((z[0]!=0 && iter==0) || (z[1]!=ns[2]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j,k-1+2*iter)].first = true;
-<<<<<<< HEAD
-          electrodemap[IND(i,j,k-1+2*iter)].second = potential - (WF-chi[IND(i,j,k-1+2*iter)]);
-=======
           electrodemap[IND(i,j,k-1+2*iter)].second = potential - copysign((WF-chi[IND(i,j,k-1+2*iter)]), potential);
->>>>>>> refineFFT
         }
       }
     }
@@ -137,11 +125,7 @@ void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
-<<<<<<< HEAD
-double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, double*, const int[]);
-=======
 double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*);
->>>>>>> refineFFT
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
@@ -156,14 +140,9 @@ int main(void){
   const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
-<<<<<<< HEAD
-  const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions, all must be same type,
-                      PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //or else PoisFFT has undefined behaviour
-=======
   int* indexErr = new int;
   const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
                       PoisFFT::PERIODIC, PoisFFT::PERIODIC,
->>>>>>> refineFFT
                       PoisFFT::PERIODIC, PoisFFT::PERIODIC};
   int i;
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
