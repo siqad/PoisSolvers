@@ -35,6 +35,7 @@ const double pi = 3.14159265358979323846;
 #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 #define FILENAME ((char*)"outfile.txt")
 #define RHOFILE ((char*) "outrho.txt")
+#define EPSFILE ((char*) "outeps.txt")
 #define CORRECTIONFILE ((char*) "outcorr.txt")
 #define WF_GOLD 5.1 //workfunction for gold in eV
 #define WF_COPPER 4.7 //workfunction for copper in eV
@@ -70,7 +71,7 @@ Electrodes::Electrodes( double xmin, double xmax, double ymin, double ymax, doub
 }
 
 Electrodes::~Electrodes( void ){}
-
+//https://ecee.colorado.edu/~bart/book/book/chapter3/ch3_2.htm#3_2_3 for information on metal-semiconductor junction under bias
 void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
   int i, j, k; //draw the electrode into an electrode map
   for(i = (int) ns[0]*x[0]/Ls[0]; i < (int) ns[0]*x[1]/Ls[0]; i++){ //set RHS 0 inside electrodes
@@ -88,7 +89,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((x[0]!=0 && iter==0) || (x[1]!=ns[0]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i-1+2*iter,j,k)].first = true;
-          electrodemap[IND(i-1+2*iter,j,k)].second = potential - copysign((WF-chi[IND(i-1+2*iter,j,k)]), potential);
+          electrodemap[IND(i-1+2*iter,j,k)].second = potential - (WF-chi[IND(i-1+2*iter,j,k)]);
         }
       }
     }
@@ -99,7 +100,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((y[0]!=0 && iter==0) || (y[1]!=ns[1]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j-1+2*iter,k)].first = true;
-          electrodemap[IND(i,j-1+2*iter,k)].second = potential - copysign((WF-chi[IND(i,j-1+2*iter,k)]), potential);
+          electrodemap[IND(i,j-1+2*iter,k)].second = potential - (WF-chi[IND(i,j-1+2*iter,k)]);
         }
       }
     }
@@ -110,7 +111,7 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
         if((z[0]!=0 && iter==0) || (z[1]!=ns[2]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j,k-1+2*iter)].first = true;
-          electrodemap[IND(i,j,k-1+2*iter)].second = potential - copysign((WF-chi[IND(i,j,k-1+2*iter)]), potential);
+          electrodemap[IND(i,j,k-1+2*iter)].second = potential - (WF-chi[IND(i,j,k-1+2*iter)]);
         }
       }
     }
@@ -126,13 +127,14 @@ void apply_correction(const int[], const double[], double*, double*, std::pair<i
 
 int main(void){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
-  const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions
-  // const double Ls[3] = {1.0e-1, 1.0e-1, 1.0e-1}; //x, y, z domain dimensions
-  // const double Ls[3] = {1.0e-2, 1.0e-2, 1.0e-2}; //x, y, z domain dimensions
-  // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions
-  // const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions
-  // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions
-  const int ns[3] = {40, 40, 40}; //x, y, z gridpoint numbers
+  // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions in DECAMETRE
+  // const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions in METRE
+  // const double Ls[3] = {1.0e-1, 1.0e-1, 1.0e-1}; //x, y, z domain dimensions in DECIMETRE
+  // const double Ls[3] = {1.0e-2, 1.0e-2, 1.0e-2}; //x, y, z domain dimensions in CENTIMETRE
+  const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
+  // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
+  // const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions in NANOMETRE
+  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -154,38 +156,83 @@ int main(void){
   const std::clock_t begin_time = std::clock();
   init_eps(ns, ds, Ls, eps); // set permittivity
   init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  // Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
-  // Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 5, WF_GOLD);
-  // Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
-  // Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 15, WF_GOLD);
+  // DECAMETRE
   // Electrodes elec1(1, 9, 1, 2, 3, 6, 0, WF_GOLD);
   // Electrodes elec2(1, 2, 4, 6, 3, 6, 20, WF_GOLD);
   // Electrodes elec3(8, 9, 4, 6, 3, 6, 20, WF_GOLD);
   // Electrodes elec4(3, 7, 8, 9, 3, 6, 5, WF_GOLD);
-  Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.6, 0, WF_GOLD);
-  Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.6, 5, WF_GOLD);
+  // METRE
+  // Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
+  // Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 5, WF_GOLD);
+  // Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
+  // Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 15, WF_GOLD);
+  // Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.6, 0, WF_GOLD);
+  // Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
+  // Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
+  // Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.6, -5, WF_GOLD);
+  // Electrodes elec1(0.15, 0.25, 0.1, 0.4, 0.3, 0.6, -10, WF_GOLD);
+  // Electrodes elec2(0.45, 0.55, 0.1, 0.4, 0.3, 0.6, 10, WF_GOLD);
+  // Electrodes elec3(0.75, 0.85, 0.1, 0.4, 0.3, 0.6, -10, WF_GOLD);
+  // Electrodes elec4(0.15, 0.25, 0.6, 0.9, 0.3, 0.6, 10, WF_GOLD);
+  // Electrodes elec5(0.45, 0.55, 0.6, 0.9, 0.3, 0.6, -10, WF_GOLD);
+  // Electrodes elec6(0.75, 0.85, 0.6, 0.9, 0.3, 0.6, 10, WF_GOLD);
+  // DECIMETRE
   // Electrodes elec1(0.1e-1, 0.9e-1, 0.1e-1, 0.2e-1, 0.3e-1, 0.6e-1, 0, WF_GOLD);
   // Electrodes elec2(0.1e-1, 0.2e-1, 0.4e-1, 0.6e-1, 0.3e-1, 0.6e-1, 20, WF_GOLD);
   // Electrodes elec3(0.8e-1, 0.9e-1, 0.4e-1, 0.6e-1, 0.3e-1, 0.6e-1, 20, WF_GOLD);
   // Electrodes elec4(0.3e-1, 0.7e-1, 0.8e-1, 0.9e-1, 0.3e-1, 0.6e-1, 5, WF_GOLD);
+  // CENTIMETRE
   // Electrodes elec1(0.1e-2, 0.9e-2, 0.1e-2, 0.2e-2, 0.3e-2, 0.6e-2, 0, WF_GOLD);
   // Electrodes elec2(0.1e-2, 0.2e-2, 0.4e-2, 0.6e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
   // Electrodes elec3(0.8e-2, 0.9e-2, 0.4e-2, 0.6e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
   // Electrodes elec4(0.3e-2, 0.7e-2, 0.8e-2, 0.9e-2, 0.3e-2, 0.6e-2, 5, WF_GOLD);
-  // Electrodes elec1(0.1e-6, 0.9e-6, 0.1e-6, 0.2e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-6, 0.2e-6, 0.4e-6, 0.6e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec3(0.8e-6, 0.9e-6, 0.4e-6, 0.6e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec4(0.3e-6, 0.7e-6, 0.8e-6, 0.9e-6, 0.3e-6, 0.6e-6, 5, WF_GOLD);
+  // MILLIMETRE
+  // Electrodes elec1(0.1e-3, 0.9e-3, 0.1e-3, 0.2e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
+  // Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
+  // Electrodes elec3(0.8e-3, 0.9e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
+  // Electrodes elec4(0.3e-3, 0.7e-3, 0.8e-3, 0.9e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
+  Electrodes elec1(0.2e-3, 0.4e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
+  Electrodes elec2(0.2e-3, 0.4e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
+  Electrodes elec3(0.6e-3, 0.8e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
+  Electrodes elec4(0.6e-3, 0.8e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
+  // MICROMETRE
+  // Electrodes elec1(0.1e-6, 0.4e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec2(0.1e-6, 0.15e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec3(0.35e-6, 0.4e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec4(0.2e-6, 0.3e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // Electrodes elec5(0.6e-6, 0.9e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec6(0.6e-6, 0.65e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec7(0.85e-6, 0.9e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec8(0.7e-6, 0.8e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // Electrodes elec9(0.1e-6, 0.4e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec10(0.1e-6, 0.15e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec11(0.35e-6, 0.4e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec12(0.2e-6, 0.3e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // Electrodes elec13(0.6e-6, 0.9e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec14(0.6e-6, 0.65e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec15(0.85e-6, 0.9e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec16(0.7e-6, 0.8e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // NANOMETRE
   // Electrodes elec1(0.1e-9, 0.9e-9, 0.1e-9, 0.2e-9, 0.3e-9, 0.6e-9, 0, WF_GOLD);
   // Electrodes elec2(0.1e-9, 0.2e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
   // Electrodes elec3(0.8e-9, 0.9e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
-  // Electrodes elec4(0.3e-9, 0.7e-9, 0.8e-9, 0.9e-9, 0.3e-9, 0.6e-9, 5, WF_GOLD);
+  // Electrodes elec4(0.3e-9, 0.7e-9, 0.8e-9, 0.9e-9, 0.3e-9, 0.6e-9, -5, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec5.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec8.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec9.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec10.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec11.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec12.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec13.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec14.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec15.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec16.draw(ns, ds, Ls, RHS, electrodemap, chi);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
   ProfilerStart("./profileresult.out"); //using google performance tools
@@ -199,7 +246,6 @@ int main(void){
   ProfilerStop();
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
-  save_file2D(ns, ds, Ls, arr, CORRECTIONFILE);
   save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
@@ -266,8 +312,8 @@ void init_eps(const int ns[3], const double ds[3], const double Ls[3], double* a
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
         if (y < Ls[1]/2){
-          // a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
-          a[IND(i,j,k)] = 1;  //Free space
+          a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
+          // a[IND(i,j,k)] = 1;  //Free space
         } else{
           // a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
           a[IND(i,j,k)] = 1;  //Free space
@@ -287,7 +333,7 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* c
       double y = ds[1]*(j+0.5);
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
-        a[IND(i,j,k)] = -1e10*Q_E/EPS0/eps[IND(i,j,k)]; //Scale according to relative permittivity.
+        a[IND(i,j,k)] = 1e10*Q_E/EPS0/eps[IND(i,j,k)]; //Scale according to relative permittivity.
         chi[IND(i,j,k)] = CHI_SI;
       }
     }

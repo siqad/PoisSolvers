@@ -3,6 +3,7 @@ PoisFFT/bin
 PoisFFT/lib
 PoisFFT/src/out*.txt
 PoisFFT/src/*.out
+PoisFFT/PoisSolverSlides.odp
 
 #in-house poisson solver at https://github.com/NathanChiu/poissonsolver
 poissonsolver/outfile*.txt
