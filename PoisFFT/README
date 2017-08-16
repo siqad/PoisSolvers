@@ -1,72 +1,72 @@
-The PoisFFT library solves the Poisson equation on a uniform Cartesian grid 
-using the Fast Fourier Transform. It calls the library FFTW3 and (if MPI is used) 
-also PFFT.
+# PoisSolvers
 
-The description is available in article
+A C++ solver for the 3D Poisson's equation using the PoisFFT implementation for the Fourier transform
 
-  Vladimir Fuka: PoisFFT - a free parallel fast Poisson solver, Applied Mathematics and Computation, 2015
+## Getting Started
 
-  available online: http://dx.doi.org/10.1016/j.amc.2015.03.011 
-  preprint: http://arxiv.org/abs/1409.8116
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-Please cite this article when using the library for your research.
+### Prerequisites
 
+#### PoisFFT
 
-The Poisson equation used is
+You will need to install PoisFFT for the Fourier transform implementation. Visit their github page and follow the installation instructions at
 
-    \Delta \phi = b
- 
- where `\phi` and `b` are functions of 1, 2 or 3 spatial dimensions.
+```
+https://github.com/LadaF/PoisFFT
+```
 
+### Setting up
 
- 
- 
- 
- 
-For instruction how to use the API after installation see `usage_Fortran.txt`,
-`usage_C.txt` and `usage_C++`.
+1. Install PoisFFT
+2. Clone this repository to your preferred directory.
 
+Done!
 
+## Description
 
-For examples see `testpoisson.f90`, `testpoisson.c` and `testpoisson.cc`.
+The solver an iterative solver that uses the FFT to complete its iterations. The solver allows for electrodes to be defined within the sample body, essentially setting an internal boundary condition at the defined electrode surface. The FFT is able to handle boundary conditions at the sample edges, but cannot easily handle internal boundary conditions. The solver overcomes this by going through an iterative algorithm, and checking the potential at the electrode at each iteration. It then tweaks the volumetric charge density at the electrode surfaces until the potentials at electrode surfaces are within defined error ranges. The solver continues on tweaking the volumetric charge density until it arrives at a sufficiently correct 3D potential.
 
+## Running the tool
 
+In testpoisson.cc, changes can be made to customize the problem to be solved by the solver.
 
+### Setting electrodes
 
+Electrodes can be set by calling
 
+```
+Electrodes electrodenamehere(xmin, xmax, ymin, ymax, zmin, zmax, potential, workfunction)
+```
 
-The installation is done using SConstruct, a Python based build environment, if you do not have it, you must install it first. 
+Remember to draw the electrode into electrodemap with
 
-For compiling the library use
+```
+electrodenamehere.draw(ns, ds, Ls, RHS, electrodemap, chi)
+```
 
-    scons
+### Setting physical parameters
 
-or 
+Physical parameters such as permittivity and the volumetric charge density can be set by pointing eps or RHS respectively towards to data set.
+Please ensure that the data is of size (ns[0]*ns[1]*ns[2]).
+An initial guess for the potential can be set by pointing arr to the intial assumption data set.
 
-    scons mpi=yes
+###
 
-in the `src` directory.
+in the PoisFFT/src/ directory, do:
 
-For compiling of the test programs add `test` after the above command.
+```
+./compileandrun.sh
+```
 
-If you use other compilers than GCC (gfortran, gcc, g++), add argument comp, i.e.,
+This will compile the code using g++, and run the resulting executable file. 2D plots of the potential and the associated charge density will also be produced using GNUplot.
 
-    scons comp=intel
+## Authors
 
-or
+* **Nathan Chiu**
 
-    scons comp=sun
+## Acknowledgments
 
-For other compilers you will have to add the options in the `SConstruct` file.
-
-If you want to disable OpenMP, use
-
-    scons openmp=no
-
-With MPI it is disabled automatically, but can be explicitly enabled by
-
-    scons mpi=yes openmp=yes
-
-for hybrid MPI/OpenMP parallelization.
-
-
+*  Vladimir Fuka: PoisFFT - a free parallel fast Poisson solver, Applied Mathematics and Computation, 2015
+available online: http://dx.doi.org/10.1016/j.amc.2015.03.011
+preprint: http://arxiv.org/abs/1409.8116

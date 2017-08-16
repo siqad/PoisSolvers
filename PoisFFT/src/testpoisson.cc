@@ -131,10 +131,10 @@ int main(void){
   // const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions in METRE
   // const double Ls[3] = {1.0e-1, 1.0e-1, 1.0e-1}; //x, y, z domain dimensions in DECIMETRE
   // const double Ls[3] = {1.0e-2, 1.0e-2, 1.0e-2}; //x, y, z domain dimensions in CENTIMETRE
-  const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
-  // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
+  // const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
+  const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
   // const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions in NANOMETRE
-  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
+  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -191,27 +191,27 @@ int main(void){
   // Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
   // Electrodes elec3(0.8e-3, 0.9e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
   // Electrodes elec4(0.3e-3, 0.7e-3, 0.8e-3, 0.9e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
-  Electrodes elec1(0.2e-3, 0.4e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
-  Electrodes elec2(0.2e-3, 0.4e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
-  Electrodes elec3(0.6e-3, 0.8e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
-  Electrodes elec4(0.6e-3, 0.8e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
+  // Electrodes elec1(0.2e-3, 0.4e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
+  // Electrodes elec2(0.2e-3, 0.4e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
+  // Electrodes elec3(0.6e-3, 0.8e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
+  // Electrodes elec4(0.6e-3, 0.8e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
   // MICROMETRE
-  // Electrodes elec1(0.1e-6, 0.4e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-6, 0.15e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec3(0.35e-6, 0.4e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec4(0.2e-6, 0.3e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  // Electrodes elec5(0.6e-6, 0.9e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec6(0.6e-6, 0.65e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec7(0.85e-6, 0.9e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec8(0.7e-6, 0.8e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  // Electrodes elec9(0.1e-6, 0.4e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec10(0.1e-6, 0.15e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec11(0.35e-6, 0.4e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec12(0.2e-6, 0.3e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  // Electrodes elec13(0.6e-6, 0.9e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec14(0.6e-6, 0.65e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec15(0.85e-6, 0.9e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec16(0.7e-6, 0.8e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  Electrodes elec1(0.1e-6, 0.4e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  Electrodes elec2(0.1e-6, 0.15e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec3(0.35e-6, 0.4e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec4(0.2e-6, 0.3e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  Electrodes elec5(0.6e-6, 0.9e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  Electrodes elec6(0.6e-6, 0.65e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec7(0.85e-6, 0.9e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec8(0.7e-6, 0.8e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  Electrodes elec9(0.1e-6, 0.4e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  Electrodes elec10(0.1e-6, 0.15e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec11(0.35e-6, 0.4e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec12(0.2e-6, 0.3e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  Electrodes elec13(0.6e-6, 0.9e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  Electrodes elec14(0.6e-6, 0.65e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec15(0.85e-6, 0.9e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  Electrodes elec16(0.7e-6, 0.8e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
   // NANOMETRE
   // Electrodes elec1(0.1e-9, 0.9e-9, 0.1e-9, 0.2e-9, 0.3e-9, 0.6e-9, 0, WF_GOLD);
   // Electrodes elec2(0.1e-9, 0.2e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
@@ -221,18 +221,18 @@ int main(void){
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec5.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec8.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec9.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec10.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec11.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec12.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec13.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec14.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec15.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec16.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec5.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec8.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec9.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec10.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec11.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec12.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec13.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec14.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec15.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec16.draw(ns, ds, Ls, RHS, electrodemap, chi);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
   ProfilerStart("./profileresult.out"); //using google performance tools
@@ -333,7 +333,7 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* c
       double y = ds[1]*(j+0.5);
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
-        a[IND(i,j,k)] = 1e10*Q_E/EPS0/eps[IND(i,j,k)]; //Scale according to relative permittivity.
+        a[IND(i,j,k)] = 1e16*Q_E/EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
         chi[IND(i,j,k)] = CHI_SI;
       }
     }
