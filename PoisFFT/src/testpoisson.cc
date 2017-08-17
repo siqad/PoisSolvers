@@ -1,16 +1,16 @@
 /*
-MODIFICATIONS (as required by GPL)
-2017 May 11
+MODIFICATIONS
   -Changes to init_rhs to create non-sinusoidal RHS
-  -Added #define FILENAME to define
-  -removed call to check_solution from main(). Need exact solution to use check_solution (Need to modify for every test)
-  -Added file output to main()
-  -Added std::cout statements to check program flow.
-  -Added notice to GNU GPL file, as required in section 2c.
-  -Added Electrode class and drawing functionality
-To build, after installing dependencies (fftw, pfft), go to /src/ and do: sudo scons test
-The executable will appear as ../bin/gcc/cc_testpoisson
-https://arxiv.org/pdf/1208.0901.pdf
+  -Removed call to check_solution from main(). Need exact solution to use check_solution (Need to modify for every test)
+  -Added file output
+  -Added Electrode class, constructor, and drawing functionality
+  -Added electrodemap, a centralized place to save electrode information
+  -Implement algorithm for internal boundary condition (at electrodes)
+  -Add workfunction and electron affinity functionality.
+  -Add iterative looping, now performs FFT many times, each iteration approaching the desired answer
+  -Adjusted weight until iterative loop is stable for variable input parameters.
+  -Added google-perftools profiler
+  -Added consideration for relative permittivity
 Conceptually, FFT gives a solution for given charge density and permittivity. Since it is not clear how to set "internal boundary conditions"
 to fix the electrode potentials in the FFT solution, the program uses the FFT to iteratively produce solutions to Poisson's equation,
 varying charge at the electrode surfaces until the potential at all electrode surfaces is sufficiently accurate.
@@ -131,8 +131,8 @@ int main(void){
   // const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions in METRE
   // const double Ls[3] = {1.0e-1, 1.0e-1, 1.0e-1}; //x, y, z domain dimensions in DECIMETRE
   // const double Ls[3] = {1.0e-2, 1.0e-2, 1.0e-2}; //x, y, z domain dimensions in CENTIMETRE
-  // const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
-  const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
+  const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
+  // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
   // const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions in NANOMETRE
   const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
@@ -195,23 +195,27 @@ int main(void){
   // Electrodes elec2(0.2e-3, 0.4e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
   // Electrodes elec3(0.6e-3, 0.8e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
   // Electrodes elec4(0.6e-3, 0.8e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
+  Electrodes elec1(0.1e-3, 0.9e-3, 0.1e-3, 0.2e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
+  Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 0, WF_COPPER);
+  Electrodes elec3(0.8e-3, 0.9e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 0, WF_ZINC);
+  Electrodes elec4(0.3e-3, 0.7e-3, 0.8e-3, 0.9e-3, 0.3e-3, 0.6e-3, 0, WF_NICKEL);
   // MICROMETRE
-  Electrodes elec1(0.1e-6, 0.4e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  Electrodes elec2(0.1e-6, 0.15e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec3(0.35e-6, 0.4e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec4(0.2e-6, 0.3e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  Electrodes elec5(0.6e-6, 0.9e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  Electrodes elec6(0.6e-6, 0.65e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec7(0.85e-6, 0.9e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec8(0.7e-6, 0.8e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  Electrodes elec9(0.1e-6, 0.4e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  Electrodes elec10(0.1e-6, 0.15e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec11(0.35e-6, 0.4e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec12(0.2e-6, 0.3e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  Electrodes elec13(0.6e-6, 0.9e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  Electrodes elec14(0.6e-6, 0.65e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec15(0.85e-6, 0.9e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  Electrodes elec16(0.7e-6, 0.8e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // Electrodes elec1(0.1e-6, 0.4e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec2(0.1e-6, 0.15e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec3(0.35e-6, 0.4e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec4(0.2e-6, 0.3e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // Electrodes elec5(0.6e-6, 0.9e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec6(0.6e-6, 0.65e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec7(0.85e-6, 0.9e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec8(0.7e-6, 0.8e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // Electrodes elec9(0.1e-6, 0.4e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec10(0.1e-6, 0.15e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec11(0.35e-6, 0.4e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec12(0.2e-6, 0.3e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
+  // Electrodes elec13(0.6e-6, 0.9e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  // Electrodes elec14(0.6e-6, 0.65e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec15(0.85e-6, 0.9e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
+  // Electrodes elec16(0.7e-6, 0.8e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
   // NANOMETRE
   // Electrodes elec1(0.1e-9, 0.9e-9, 0.1e-9, 0.2e-9, 0.3e-9, 0.6e-9, 0, WF_GOLD);
   // Electrodes elec2(0.1e-9, 0.2e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
@@ -221,18 +225,18 @@ int main(void){
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec5.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec8.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec9.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec10.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec11.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec12.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec13.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec14.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec15.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec16.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec5.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec8.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec9.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec10.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec11.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec12.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec13.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec14.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec15.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  // elec16.draw(ns, ds, Ls, RHS, electrodemap, chi);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
   ProfilerStart("./profileresult.out"); //using google performance tools
