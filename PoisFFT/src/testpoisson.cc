@@ -122,7 +122,7 @@ void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
-double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*);
+double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*, const int[]);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 
 int main(void){
@@ -130,17 +130,23 @@ int main(void){
   // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions in DECAMETRE
   // const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions in METRE
   // const double Ls[3] = {1.0e-1, 1.0e-1, 1.0e-1}; //x, y, z domain dimensions in DECIMETRE
-  // const double Ls[3] = {1.0e-2, 1.0e-2, 1.0e-2}; //x, y, z domain dimensions in CENTIMETRE
-  const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
+  const double Ls[3] = {1.0e-2, 1.0e-2, 1.0e-2}; //x, y, z domain dimensions in CENTIMETRE
+  // const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
   // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
   // const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions in NANOMETRE
   const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
-  const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
-                      PoisFFT::PERIODIC, PoisFFT::PERIODIC,
-                      PoisFFT::PERIODIC, PoisFFT::PERIODIC};
+  // const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
+  //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC,
+  //                     PoisFFT::PERIODIC, PoisFFT::PERIODIC};
+  // const int BCs[6] = {PoisFFT::NEUMANN, PoisFFT::NEUMANN,  //boundary conditions
+  //                     PoisFFT::NEUMANN, PoisFFT::NEUMANN,
+  //                     PoisFFT::NEUMANN, PoisFFT::NEUMANN};
+  const int BCs[6] = {PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,  //boundary conditions
+                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET,
+                      PoisFFT::DIRICHLET, PoisFFT::DIRICHLET};
   int i;
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
     ds[i] = Ls[i] / ns[i];
@@ -186,6 +192,13 @@ int main(void){
   // Electrodes elec2(0.1e-2, 0.2e-2, 0.4e-2, 0.6e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
   // Electrodes elec3(0.8e-2, 0.9e-2, 0.4e-2, 0.6e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
   // Electrodes elec4(0.3e-2, 0.7e-2, 0.8e-2, 0.9e-2, 0.3e-2, 0.6e-2, 5, WF_GOLD);
+  Electrodes elec1(0.1e-2, 0.2e-2, 0.3e-2, 0.7e-2, 0.3e-2, 0.6e-2, 10, WF_GOLD);
+  Electrodes elec2(0.2e-2, 0.4e-2, 0.47e-2, 0.53e-2, 0.3e-2, 0.6e-2, 10, WF_GOLD);
+  Electrodes elec3(0.4e-2, 0.5e-2, 0.3e-2, 0.7e-2, 0.3e-2, 0.6e-2, 10, WF_GOLD);
+  Electrodes elec4(0.6e-2, 0.7e-2, 0.3e-2, 0.55e-2, 0.3e-2, 0.6e-2, 15, WF_GOLD);
+  Electrodes elec5(0.6e-2, 0.7e-2, 0.65e-2, 0.7e-2, 0.3e-2, 0.6e-2, 15, WF_GOLD);
+  Electrodes elec6(0.8e-2, 0.9e-2, 0.3e-2, 0.35e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
+  Electrodes elec7(0.8e-2, 0.9e-2, 0.4e-2, 0.7e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
   // MILLIMETRE
   // Electrodes elec1(0.1e-3, 0.9e-3, 0.1e-3, 0.2e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
   // Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
@@ -195,10 +208,17 @@ int main(void){
   // Electrodes elec2(0.2e-3, 0.4e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
   // Electrodes elec3(0.6e-3, 0.8e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
   // Electrodes elec4(0.6e-3, 0.8e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
-  Electrodes elec1(0.1e-3, 0.9e-3, 0.1e-3, 0.2e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
-  Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 0, WF_COPPER);
-  Electrodes elec3(0.8e-3, 0.9e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 0, WF_ZINC);
-  Electrodes elec4(0.3e-3, 0.7e-3, 0.8e-3, 0.9e-3, 0.3e-3, 0.6e-3, 0, WF_NICKEL);
+  // Electrodes elec1(0.1e-3, 0.9e-3, 0.1e-3, 0.2e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
+  // Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 10, WF_COPPER);
+  // Electrodes elec3(0.8e-3, 0.9e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_ZINC);
+  // Electrodes elec4(0.3e-3, 0.7e-3, 0.8e-3, 0.9e-3, 0.3e-3, 0.6e-3, 0, WF_NICKEL);
+  // Electrodes elec1(0.1e-3, 0.2e-3, 0.3e-3, 0.7e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
+  // Electrodes elec2(0.2e-3, 0.4e-3, 0.47e-3, 0.53e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
+  // Electrodes elec3(0.4e-3, 0.5e-3, 0.3e-3, 0.7e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
+  // Electrodes elec4(0.6e-3, 0.7e-3, 0.3e-3, 0.55e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
+  // Electrodes elec5(0.6e-3, 0.7e-3, 0.65e-3, 0.7e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
+  // Electrodes elec6(0.8e-3, 0.9e-3, 0.3e-3, 0.35e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
+  // Electrodes elec7(0.8e-3, 0.9e-3, 0.4e-3, 0.7e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
   // MICROMETRE
   // Electrodes elec1(0.1e-6, 0.4e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
   // Electrodes elec2(0.1e-6, 0.15e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
@@ -225,7 +245,9 @@ int main(void){
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec5.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec5.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
   // elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
   // elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
   // elec8.draw(ns, ds, Ls, RHS, electrodemap, chi);
@@ -242,7 +264,7 @@ int main(void){
   ProfilerStart("./profileresult.out"); //using google performance tools
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(ns, Ls, arr, correction, electrodemap, indexErr, arrOld, eps);
+    cycleErr = check_error(ns, Ls, arr, correction, electrodemap, indexErr, arrOld, eps, BCs);
     apply_correction(ns, ds, RHS, correction, electrodemap);
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
     cycleCount++;
@@ -270,10 +292,15 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
   }
 }
 
-double check_error(const int ns[3], const double Ls[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld, double *eps){
+double check_error(const int ns[3], const double Ls[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld, double *eps, const int BCs[6]){
   double err = 0;
   double errOld;
-  double correctionWeight = 1e-7*ns[0]*EPS0/Q_E/Ls[0]/Ls[0];
+  double correctionWeight;
+  if(BCs[0] == PoisFFT::PERIODIC){
+    correctionWeight = 1e-7*ns[0]*EPS0/Q_E/Ls[0]/Ls[0]; //Periodic
+  } else if(BCs[0] == PoisFFT::DIRICHLET || BCs[0] == PoisFFT::NEUMANN){
+    correctionWeight = 0.5e-7*ns[0]*EPS0/Q_E/Ls[0]/Ls[0];  //Dirichlet & Neumann
+  }
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
