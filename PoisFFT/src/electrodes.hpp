@@ -2,6 +2,7 @@
 #define ELECTRODES_H
 
 #include <utility>
+#define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 
 class Electrodes{
   public:

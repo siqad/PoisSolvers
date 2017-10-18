@@ -1,8 +1,10 @@
 #include <utility>
-#include "electrodes.h"
+#include "electrodes.hpp"
+#include <iostream>
 
 
 Electrodes::Electrodes( void ){}
+Electrodes::~Electrodes( void ){}
 Electrodes::Electrodes( double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, double pot, double wf){
   x[0] = xmin;
   x[1] = xmax;
@@ -17,6 +19,7 @@ Electrodes::Electrodes( double xmin, double xmax, double ymin, double ymax, doub
 //draw the electrode into an electrode map
 void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
   int i, j, k; //draw the electrode into an electrode map
+  std::cout << "DRAW" << std::endl;
   for(i = (int) ns[0]*x[0]/Ls[0]; i < (int) ns[0]*x[1]/Ls[0]; i++){ //set RHS 0 inside electrodes
     for(j = (int) ns[1]*y[0]/Ls[1]; j < (int) ns[1]*y[1]/Ls[1]; j++){
       for(k = (int) ns[2]*z[0]/Ls[2]; k < (int) ns[2]*z[1]/Ls[2]; k++){
