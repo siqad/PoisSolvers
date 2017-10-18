@@ -156,104 +156,14 @@ int main(void){
   const std::clock_t begin_time = std::clock();
   init_eps(ns, ds, Ls, eps); // set permittivity
   init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  // DECAMETRE
-  // Electrodes elec1(1, 9, 1, 2, 3, 6, 0, WF_GOLD);
-  // Electrodes elec2(1, 2, 4, 6, 3, 6, 20, WF_GOLD);
-  // Electrodes elec3(8, 9, 4, 6, 3, 6, 20, WF_GOLD);
-  // Electrodes elec4(3, 7, 8, 9, 3, 6, 5, WF_GOLD);
-  // METRE
-  // Electrodes elec1(0.2, 0.4, 0.2, 0.4, 0.3, 0.6, 0, WF_GOLD);
-  // Electrodes elec2(0.2, 0.4, 0.6, 0.8, 0.3, 0.6, 5, WF_GOLD);
-  // Electrodes elec3(0.6, 0.8, 0.2, 0.4, 0.3, 0.6, 10, WF_GOLD);
-  // Electrodes elec4(0.6, 0.8, 0.6, 0.8, 0.3, 0.6, 15, WF_GOLD);
-  // Electrodes elec1(0.1, 0.9, 0.1, 0.2, 0.3, 0.6, 0, WF_GOLD);
-  // Electrodes elec2(0.1, 0.2, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  // Electrodes elec3(0.8, 0.9, 0.4, 0.6, 0.3, 0.6, 20, WF_GOLD);
-  // Electrodes elec4(0.3, 0.7, 0.8, 0.9, 0.3, 0.6, -5, WF_GOLD);
-  // Electrodes elec1(0.15, 0.25, 0.1, 0.4, 0.3, 0.6, -10, WF_GOLD);
-  // Electrodes elec2(0.45, 0.55, 0.1, 0.4, 0.3, 0.6, 10, WF_GOLD);
-  // Electrodes elec3(0.75, 0.85, 0.1, 0.4, 0.3, 0.6, -10, WF_GOLD);
-  // Electrodes elec4(0.15, 0.25, 0.6, 0.9, 0.3, 0.6, 10, WF_GOLD);
-  // Electrodes elec5(0.45, 0.55, 0.6, 0.9, 0.3, 0.6, -10, WF_GOLD);
-  // Electrodes elec6(0.75, 0.85, 0.6, 0.9, 0.3, 0.6, 10, WF_GOLD);
-  // DECIMETRE
-  // Electrodes elec1(0.1e-1, 0.9e-1, 0.1e-1, 0.2e-1, 0.3e-1, 0.6e-1, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-1, 0.2e-1, 0.4e-1, 0.6e-1, 0.3e-1, 0.6e-1, 20, WF_GOLD);
-  // Electrodes elec3(0.8e-1, 0.9e-1, 0.4e-1, 0.6e-1, 0.3e-1, 0.6e-1, 20, WF_GOLD);
-  // Electrodes elec4(0.3e-1, 0.7e-1, 0.8e-1, 0.9e-1, 0.3e-1, 0.6e-1, 5, WF_GOLD);
-  // CENTIMETRE
-  // Electrodes elec1(0.1e-2, 0.9e-2, 0.1e-2, 0.2e-2, 0.3e-2, 0.6e-2, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-2, 0.2e-2, 0.4e-2, 0.6e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
-  // Electrodes elec3(0.8e-2, 0.9e-2, 0.4e-2, 0.6e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
-  // Electrodes elec4(0.3e-2, 0.7e-2, 0.8e-2, 0.9e-2, 0.3e-2, 0.6e-2, 5, WF_GOLD);
-  // Electrodes elec1(0.1e-2, 0.2e-2, 0.3e-2, 0.7e-2, 0.3e-2, 0.6e-2, 10, WF_GOLD);
-  // Electrodes elec2(0.2e-2, 0.4e-2, 0.47e-2, 0.53e-2, 0.3e-2, 0.6e-2, 10, WF_GOLD);
-  // Electrodes elec3(0.4e-2, 0.5e-2, 0.3e-2, 0.7e-2, 0.3e-2, 0.6e-2, 10, WF_GOLD);
-  // Electrodes elec4(0.6e-2, 0.7e-2, 0.3e-2, 0.55e-2, 0.3e-2, 0.6e-2, 15, WF_GOLD);
-  // Electrodes elec5(0.6e-2, 0.7e-2, 0.65e-2, 0.7e-2, 0.3e-2, 0.6e-2, 15, WF_GOLD);
-  // Electrodes elec6(0.8e-2, 0.9e-2, 0.3e-2, 0.35e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
-  // Electrodes elec7(0.8e-2, 0.9e-2, 0.4e-2, 0.7e-2, 0.3e-2, 0.6e-2, 20, WF_GOLD);
-  // MILLIMETRE
-  // Electrodes elec1(0.1e-3, 0.9e-3, 0.1e-3, 0.2e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
-  // Electrodes elec3(0.8e-3, 0.9e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
-  // Electrodes elec4(0.3e-3, 0.7e-3, 0.8e-3, 0.9e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
-  // Electrodes elec1(0.2e-3, 0.4e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
-  // Electrodes elec2(0.2e-3, 0.4e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 5, WF_GOLD);
-  // Electrodes elec3(0.6e-3, 0.8e-3, 0.2e-3, 0.4e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
-  // Electrodes elec4(0.6e-3, 0.8e-3, 0.6e-3, 0.8e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
-  // Electrodes elec1(0.1e-3, 0.9e-3, 0.1e-3, 0.2e-3, 0.3e-3, 0.6e-3, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-3, 0.2e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 10, WF_COPPER);
-  // Electrodes elec3(0.8e-3, 0.9e-3, 0.4e-3, 0.6e-3, 0.3e-3, 0.6e-3, 20, WF_ZINC);
-  // Electrodes elec4(0.3e-3, 0.7e-3, 0.8e-3, 0.9e-3, 0.3e-3, 0.6e-3, 0, WF_NICKEL);
-  // Electrodes elec1(0.1e-3, 0.2e-3, 0.3e-3, 0.7e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
-  // Electrodes elec2(0.2e-3, 0.4e-3, 0.47e-3, 0.53e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
-  // Electrodes elec3(0.4e-3, 0.5e-3, 0.3e-3, 0.7e-3, 0.3e-3, 0.6e-3, 10, WF_GOLD);
-  // Electrodes elec4(0.6e-3, 0.7e-3, 0.3e-3, 0.55e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
-  // Electrodes elec5(0.6e-3, 0.7e-3, 0.65e-3, 0.7e-3, 0.3e-3, 0.6e-3, 15, WF_GOLD);
-  // Electrodes elec6(0.8e-3, 0.9e-3, 0.3e-3, 0.35e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
-  // Electrodes elec7(0.8e-3, 0.9e-3, 0.4e-3, 0.7e-3, 0.3e-3, 0.6e-3, 20, WF_GOLD);
-  // MICROMETRE
-  // Electrodes elec1(0.1e-6, 0.4e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-6, 0.15e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec3(0.35e-6, 0.4e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec4(0.2e-6, 0.3e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  // Electrodes elec5(0.6e-6, 0.9e-6, 0.1e-6, 0.15e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec6(0.6e-6, 0.65e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec7(0.85e-6, 0.9e-6, 0.2e-6, 0.3e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec8(0.7e-6, 0.8e-6, 0.35e-6, 0.4e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  // Electrodes elec9(0.1e-6, 0.4e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec10(0.1e-6, 0.15e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec11(0.35e-6, 0.4e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec12(0.2e-6, 0.3e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
-  // Electrodes elec13(0.6e-6, 0.9e-6, 0.6e-6, 0.65e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  // Electrodes elec14(0.6e-6, 0.65e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec15(0.85e-6, 0.9e-6, 0.7e-6, 0.8e-6, 0.3e-6, 0.6e-6, 20, WF_GOLD);
-  // Electrodes elec16(0.7e-6, 0.8e-6, 0.85e-6, 0.9e-6, 0.3e-6, 0.6e-6, -5, WF_GOLD);
   Electrodes elec1(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
   Electrodes elec2(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 5, WF_GOLD);
   Electrodes elec3(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 10, WF_GOLD);
   Electrodes elec4(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 15, WF_GOLD);
-  // NANOMETRE
-  // Electrodes elec1(0.1e-9, 0.9e-9, 0.1e-9, 0.2e-9, 0.3e-9, 0.6e-9, 0, WF_GOLD);
-  // Electrodes elec2(0.1e-9, 0.2e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
-  // Electrodes elec3(0.8e-9, 0.9e-9, 0.4e-9, 0.6e-9, 0.3e-9, 0.6e-9, 20, WF_GOLD);
-  // Electrodes elec4(0.3e-9, 0.7e-9, 0.8e-9, 0.9e-9, 0.3e-9, 0.6e-9, -5, WF_GOLD);
   elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
   elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec6.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec7.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec8.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec9.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec10.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec11.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec12.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec13.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec14.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec15.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  // elec16.draw(ns, ds, Ls, RHS, electrodemap, chi);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
   ProfilerStart("./profileresult.out"); //using google performance tools
