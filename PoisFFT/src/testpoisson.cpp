@@ -1,21 +1,3 @@
-/*
-MODIFICATIONS
-  -Changes to init_rhs to create non-sinusoidal RHS
-  -Removed call to check_solution from main(). Need exact solution to use check_solution (Need to modify for every test)
-  -Added file output
-  -Added Electrode class, constructor, and drawing functionality
-  -Added electrodemap, a centralized place to save electrode information
-  -Implement algorithm for internal boundary condition (at electrodes)
-  -Add workfunction and electron affinity functionality.
-  -Add iterative looping, now performs FFT many times, each iteration approaching the desired answer
-  -Adjusted weight until iterative loop is stable for variable input parameters.
-  -Added google-perftools profiler
-  -Added consideration for relative permittivity
-Conceptually, FFT gives a solution for given charge density and permittivity. Since it is not clear how to set "internal boundary conditions"
-to fix the electrode potentials in the FFT solution, the program uses the FFT to iteratively produce solutions to Poisson's equation,
-varying charge at the electrode surfaces until the potential at all electrode surfaces is sufficiently accurate.
-*/
-
 #include <cmath>
 #include <iostream>
 #include "poisfft.h"
@@ -46,95 +28,17 @@ const double pi = 3.14159265358979323846;
 #define CHI_SI 4.05//electron affinity for silicon in eV from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
 #define EPS_SI 11.7
 
-// class Electrodes{
-//   public:
-//     Electrodes(); //default constructor
-//     Electrodes(double, double, double, double, double, double, double, double); //parametrized constructor
-//     ~Electrodes(); //destructor
-//     double x[2]; //xmin (x[0]) and xmax (x[1])
-//     double y[2]; //ymin and ymax
-//     double z[2]; //zmin and zmax
-//     double potential;   //pointer after conversion of vector
-//     double WF;
-//     void draw(const int[3], const double[3], const double[3], double*, std::pair<int,double>*, double*);
-// };
-//
-// Electrodes::Electrodes( void ){}
-// Electrodes::Electrodes( double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, double pot, double wf){
-//   x[0] = xmin;
-//   x[1] = xmax;
-//   y[0] = ymin;
-//   y[1] = ymax;
-//   z[0] = zmin;
-//   z[1] = zmax;
-//   potential = pot;
-//   WF = wf;
-// }
-//
-// Electrodes::~Electrodes( void ){}
-// //https://ecee.colorado.edu/~bart/book/book/chapter3/ch3_2.htm#3_2_3 for information on metal-semiconductor junction under bias
-// void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
-//   int i, j, k; //draw the electrode into an electrode map
-//   for(i = (int) ns[0]*x[0]/Ls[0]; i < (int) ns[0]*x[1]/Ls[0]; i++){ //set RHS 0 inside electrodes
-//     for(j = (int) ns[1]*y[0]/Ls[1]; j < (int) ns[1]*y[1]/Ls[1]; j++){
-//       for(k = (int) ns[2]*z[0]/Ls[2]; k < (int) ns[2]*z[1]/Ls[2]; k++){
-//         RHS[IND(i,j,k)] = 0;
-//       }
-//     }
-//   }
-//   for( int iter = 0; iter < 2; iter++){
-//     i = (int) ns[0]*x[iter]/Ls[0]; //xmin first, then xmax
-//     for(j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
-//       for(k = (int) ns[2]*z[0]/Ls[2]; k <= (int) ns[2]*z[1]/Ls[2]; k++){
-//         electrodemap[IND(i,j,k)].first = true; //set true for electrode surface.
-//         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
-//         if((x[0]!=0 && iter==0) || (x[1]!=ns[0]-1 && iter==1)){ //set potential of adjacent silicon with WF.
-//           electrodemap[IND(i-1+2*iter,j,k)].first = true;
-//           electrodemap[IND(i-1+2*iter,j,k)].second = potential - (WF-chi[IND(i-1+2*iter,j,k)]);
-//         }
-//       }
-//     }
-//     j = (int) ns[1]*y[iter]/Ls[1]; //ymin first, then ymax
-//     for(i = (int) ns[0]*x[0]/Ls[0]; i <= (int) ns[0]*x[1]/Ls[0]; i++){
-//       for(k = (int) ns[2]*z[0]/Ls[2]; k <= (int) ns[2]*z[1]/Ls[2]; k++){
-//         electrodemap[IND(i,j,k)].first = true; //set true for electrode surface.
-//         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
-//         if((y[0]!=0 && iter==0) || (y[1]!=ns[1]-1 && iter==1)){ //set potential of adjacent silicon with WF.
-//           electrodemap[IND(i,j-1+2*iter,k)].first = true;
-//           electrodemap[IND(i,j-1+2*iter,k)].second = potential - (WF-chi[IND(i,j-1+2*iter,k)]);
-//         }
-//       }
-//     }
-//     k = (int) ns[2]*z[iter]/Ls[2]; //zmin
-//     for(i = (int) ns[0]*x[0]/Ls[0]; i <= (int) ns[0]*x[1]/Ls[0]; i++){
-//       for(j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
-//         electrodemap[IND(i,j,k)].first = true; //set true for electrode surface.
-//         electrodemap[IND(i,j,k)].second = potential; //set electrode potential
-//         if((z[0]!=0 && iter==0) || (z[1]!=ns[2]-1 && iter==1)){ //set potential of adjacent silicon with WF.
-//           electrodemap[IND(i,j,k-1+2*iter)].first = true;
-//           electrodemap[IND(i,j,k-1+2*iter)].second = potential - (WF-chi[IND(i,j,k-1+2*iter)]);
-//         }
-//       }
-//     }
-//   }
-// }
-
 void save_file2D(const int[], const double[], const double[], double*, char[]);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
 double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*, const int[]);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
+void create_electrode(const int[], const double[], const double[], double*, std::pair<int,double>*, double*);
 
 int main(void){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
-  // const double Ls[3] = {10.0, 10.0, 10.0}; //x, y, z domain dimensions in DECAMETRE
-  // const double Ls[3] = {1.0, 1.0, 1.0}; //x, y, z domain dimensions in METRE
-  // const double Ls[3] = {1.0e-1, 1.0e-1, 1.0e-1}; //x, y, z domain dimensions in DECIMETRE
   const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in CENTIMETRE
-  // const double Ls[3] = {1.0e-3, 1.0e-3, 1.0e-3}; //x, y, z domain dimensions in MILLIMETRE
-  // const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
-  // const double Ls[3] = {1.0e-9, 1.0e-9, 1.0e-9}; //x, y, z domain dimensions in NANOMETRE
   const int ns[3] = {150, 150, 150}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
@@ -157,14 +61,7 @@ int main(void){
   const std::clock_t begin_time = std::clock();
   init_eps(ns, ds, Ls, eps); // set permittivity
   init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  Electrodes elec1(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  Electrodes elec2(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 5, WF_GOLD);
-  Electrodes elec3(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 10, WF_GOLD);
-  Electrodes elec4(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 15, WF_GOLD);
-  elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
-  elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  create_electrode(ns, ds, Ls, RHS, electrodemap, chi);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
   ProfilerStart("./profileresult.out"); //using google performance tools
@@ -188,6 +85,18 @@ int main(void){
   delete[] electrodemap;
   delete[] chi;
   delete[] correction;
+}
+
+void create_electrode(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
+  std::cout << "enyyoo" << std::endl;
+  Electrodes elec1(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
+  Electrodes elec2(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 5, WF_GOLD);
+  Electrodes elec3(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 10, WF_GOLD);
+  Electrodes elec4(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 15, WF_GOLD);
+  elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
+  elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
+  elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
 }
 
 void apply_correction(const int ns[3], const double ds[3], double *RHS, double *correction, std::pair<int,double> *electrodemap){
