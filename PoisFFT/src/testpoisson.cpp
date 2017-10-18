@@ -88,7 +88,6 @@ int main(void){
 }
 
 void create_electrode(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
-  std::cout << "enyyoo" << std::endl;
   Electrodes elec1(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
   Electrodes elec2(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 5, WF_GOLD);
   Electrodes elec3(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 10, WF_GOLD);
