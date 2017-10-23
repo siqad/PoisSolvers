@@ -34,12 +34,20 @@ void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
 double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*, const int[]);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
-void create_electrode(const int[], const double[], const double[], double*, std::pair<int,double>*, double*);
+void create_electrode(const int[], const double[], const double[], double*, std::pair<int,double>*, double*, const int, Electrodes[]);
+void worker(int);
+void calc_charge(const int[], const double[], double*, const int, Electrodes[]);
 
 int main(void){
+  for(int i = 0; i < 1; i++){
+    worker(i);
+  }
+}
+
+void worker(int step){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
-  const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in CENTIMETRE
-  const int ns[3] = {150, 150, 150}; //x, y, z gridpoint numbers
+  const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
+  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -50,8 +58,15 @@ int main(void){
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
     ds[i] = Ls[i] / ns[i];
   }
-  double *arr = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
-  double *arrOld = new double[ns[0]*ns[1]*ns[2]]; // allocate the arrays contiguously, you can use any other class
+  const int numElectrodes = 4;
+  Electrodes elecs[numElectrodes] = {
+    Electrodes(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 1, WF_GOLD),
+    Electrodes(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD),
+    Electrodes(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD),
+    Electrodes(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD)
+  };
+  double *arr = new double[ns[0]*ns[1]*ns[2]];
+  double *arrOld = new double[ns[0]*ns[1]*ns[2]];
   double *eps = new double[ns[0]*ns[1]*ns[2]]; //RELATIVE permittivity.
   double *chi = new double[ns[0]*ns[1]*ns[2]]; //electron affinity or WF
   double *RHS = new double[ns[0]*ns[1]*ns[2]]; // from which you can get a pointer to contiguous buffer, will contain rho.
@@ -61,7 +76,7 @@ int main(void){
   const std::clock_t begin_time = std::clock();
   init_eps(ns, ds, Ls, eps); // set permittivity
   init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  create_electrode(ns, ds, Ls, RHS, electrodemap, chi);
+  create_electrode(ns, ds, Ls, RHS, electrodemap, chi, numElectrodes, elecs);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
   ProfilerStart("./profileresult.out"); //using google performance tools
@@ -72,6 +87,7 @@ int main(void){
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
     cycleCount++;
   }while(cycleErr > MAXERROR && cycleErr != 0);
+  calc_charge(ns, Ls, RHS, numElectrodes, elecs);
   ProfilerStop();
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
@@ -87,15 +103,54 @@ int main(void){
   delete[] correction;
 }
 
-void create_electrode(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
-  Electrodes elec1(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD);
-  Electrodes elec2(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 5, WF_GOLD);
-  Electrodes elec3(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 10, WF_GOLD);
-  Electrodes elec4(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 15, WF_GOLD);
-  elec1.draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
-  elec2.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec3.draw(ns, ds, Ls, RHS, electrodemap, chi);
-  elec4.draw(ns, ds, Ls, RHS, electrodemap, chi);
+void calc_charge( const int ns[3], const double Ls[3], double* RHS , const int numElectrodes, Electrodes elecs[]){
+  //Want this to take in electrode location parameters, and spit out the charge on the conductor.
+  double xmin = 0;
+  double xmax = 0;
+  double ymin = 0;
+  double ymax = 0;
+  double zmin = 0;
+  double zmax = 0;
+  double sum;
+  // std::cout << elecs[0].x[0] << std::endl;
+  // std::cout << elecs[0].x[1] << std::endl;
+  // std::cout << elecs[0].y[0] << std::endl;
+  // std::cout << elecs[0].y[1] << std::endl;
+  // std::cout << elecs[0].z[0] << std::endl;
+  // std::cout << elecs[0].z[1] << std::endl;
+  for( int currElectrode = 0; currElectrode < numElectrodes; currElectrode++){
+    xmin = elecs[currElectrode].x[0];
+    xmax = elecs[currElectrode].x[1];
+    ymin = elecs[currElectrode].y[0];
+    ymax = elecs[currElectrode].y[1];
+    zmin = elecs[currElectrode].z[0];
+    zmax = elecs[currElectrode].z[1];
+    sum = 0;
+
+
+    std::cout << xmin << std::endl;
+    std::cout << xmax << std::endl;
+    std::cout << ymin << std::endl;
+    std::cout << ymax << std::endl;
+    std::cout << zmin << std::endl;
+    std::cout << zmax << std::endl;
+    for(int i = (int) ns[0]*xmin/Ls[0]; i <= (int) ns[0]*xmax/Ls[0]; i++){ //xmin first, then xmax
+      for(int j = (int) ns[1]*ymin/Ls[1]; j <= (int) ns[1]*ymax/Ls[1]; j++){
+        for(int k = (int) ns[2]*zmin/Ls[2]; k <= (int) ns[2]*zmax/Ls[2]; k++){
+          sum += RHS[IND(i,j,k)];
+        }
+      }
+    }
+    std::cout << "TOTAL SUM = " << sum << std::endl;
+    sum = sum*((xmax-xmin)*(ymax-ymin)*(zmax-zmin));
+    std::cout << "Calculated charge on electrode " << currElectrode << " = " << sum << std::endl;
+  }
+}
+
+void create_electrode(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi, const int numElectrodes, Electrodes elecs[]){
+  for(int i = 0; i < numElectrodes; i++){
+    elecs[i].draw(ns, ds, Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
+  }
 }
 
 void apply_correction(const int ns[3], const double ds[3], double *RHS, double *correction, std::pair<int,double> *electrodemap){
@@ -157,8 +212,8 @@ void init_eps(const int ns[3], const double ds[3], const double Ls[3], double* a
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
         if (y < Ls[1]/2){
-          a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
-          // a[IND(i,j,k)] = 1;  //Free space
+          // a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
+          a[IND(i,j,k)] = 1;  //Free space
         } else{
           // a[IND(i,j,k)] = EPS_SI; //Si relative permittivity
           a[IND(i,j,k)] = 1;  //Free space
