@@ -55,6 +55,9 @@ int main(void){
 }
 
 void temp(int *count, std::vector<Electrodes> *elecs){
+
+  int pix_x1, pix_x2, pix_y1, pix_y2;
+  double potential;
   boost::property_tree::ptree tree; // Create empty property tree object
   boost::property_tree::read_xml("cooldbdesign.xml", tree); // Parse the XML into the property tree.
   BOOST_FOREACH(boost::property_tree::ptree::value_type &node, tree.get_child("dbdesigner.design")) {
@@ -67,17 +70,18 @@ void temp(int *count, std::vector<Electrodes> *elecs){
             std::string label = v2.first; //get the name of each param
             if(label == "dim"){ //Read the 4 numbers
               *count = *count + 1;
-              int x1, x2, y1, y2;
-              double potential;
-              x1 = v2.second.get<int>("<xmlattr>.x1", -1);
-              x2 = v2.second.get<int>("<xmlattr>.x2", -1);
-              y1 = v2.second.get<int>("<xmlattr>.y1", -1);
-              y2 = v2.second.get<int>("<xmlattr>.y2", -1);
-              potential = v2.second.get<double>("<xmlattr>.potential", -1);
-              std::cout << x1 << " " << y1 << ", " << x2 << " " << y2 << std::endl;
-              elecs->push_back(Electrodes(x1*1e-8, x2*1e-8, y1*1e-8, y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
-            }
-            else if(label != "<xmlattr>"){ //skip all the <layer type=...> stuff
+              pix_x1 = v2.second.get<int>("<xmlattr>.x1", -1); //get the 2D corners in pixel distances
+              pix_x2 = v2.second.get<int>("<xmlattr>.x2", -1);
+              pix_y1 = v2.second.get<int>("<xmlattr>.y1", -1);
+              pix_y2 = v2.second.get<int>("<xmlattr>.y2", -1);
+              std::cout << pix_x1 << " " << pix_y1 << ", " << pix_x2 << " " << pix_y2 << std::endl;
+              // elecs->push_back(Electrodes(pix_x1*1e-8, pix_x2*1e-8, pix_y1*1e-8, pix_y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
+            }else if(label == "potential") {
+              potential = subtree2.get<double>(label);
+              std::cout << label << ":  " << potential << std::endl;
+            }else if(label == "electrode_type"){ //electrode_type is the last one
+              elecs->push_back(Electrodes(pix_x1*1e-8, pix_x2*1e-8, pix_y1*1e-8, pix_y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
+            }else if(label != "<xmlattr>"){ //unexpected extras
               std::string value = subtree2.get<std::string>(label);
               std::cout << label << ":  " << value << std::endl;
             }
@@ -91,7 +95,7 @@ void temp(int *count, std::vector<Electrodes> *elecs){
 void worker(int step, std::vector<Electrodes> elec_vec){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
-  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
+  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
@@ -103,7 +107,7 @@ void worker(int step, std::vector<Electrodes> elec_vec){
     ds[i] = Ls[i] / ns[i];
   }
   // const int numElectrodes = 4;
-  // const int numElectrodes = 1;
+  // const int numElectrodes = 2;
   const int numElectrodes = elec_vec.size();
   Electrodes elecs[numElectrodes];
   for (int i = 0; i < numElectrodes; i++){
@@ -118,12 +122,12 @@ void worker(int step, std::vector<Electrodes> elec_vec){
     std::cout << elecs[i].WF << std::endl;
   }
   // Electrodes elecs[numElectrodes] = {
-  //   Electrodes(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD),
-  //   // Electrodes(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD),
+  //   Electrodes(0.1e-6, 0.37e-6, 0.04e-6, 0.38e-6, 0.3e-6, 0.7e-6, 6, WF_GOLD),
+  //   Electrodes(0.28e-6, 0.74e-6, 0.55e-6, 0.84e-6, 0.3e-6, 0.7e-6, 5, WF_GOLD),
   //   // Electrodes(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD),
   //   // Electrodes(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD)
   // };
-  // elecs[step].potential = 2.0;
+  elecs[step].potential = 2.0;
   double *arr = new double[ns[0]*ns[1]*ns[2]];
   double *arrOld = new double[ns[0]*ns[1]*ns[2]];
   double *eps = new double[ns[0]*ns[1]*ns[2]]; //RELATIVE permittivity.
