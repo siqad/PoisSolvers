@@ -8,13 +8,17 @@
 #include <algorithm>
 #include <gperftools/profiler.h>
 #include <ctime>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
 #include "electrodes.hpp"
+#include <vector>
 
 const double pi = 3.14159265358979323846;
 
 #define EPS0 8.85418782e-12
 #define Q_E 1.6e-19
-#define MAXERROR 5e-2
+#define MAXERROR 1e-1
 #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 #define FILENAME ((char*)"outfile.txt")
 #define RHOFILE ((char*) "outrho.txt")
@@ -35,36 +39,91 @@ void init_rhs(const int[], const double[], const double[], double*, double*, dou
 double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*, const int[]);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 void create_electrode(const int[], const double[], const double[], double*, std::pair<int,double>*, double*, const int, Electrodes[]);
-void worker(int);
+void worker(int, std::vector<Electrodes>);
 void calc_charge(const int[], const double[], double*, const int, Electrodes[]);
+void temp(int*, std::vector<Electrodes>*);
 
 int main(void){
+  int count = 0;
+  std::vector<Electrodes> elec_vec;
+  temp(&count, &elec_vec);
+  std::cout << "VECTOR SIZE " << elec_vec.size() << std::endl;
   for(int i = 0; i < 1; i++){
-    worker(i);
+    worker(i, elec_vec);
+  }
+  return 0;
+}
+
+void temp(int *count, std::vector<Electrodes> *elecs){
+  boost::property_tree::ptree tree; // Create empty property tree object
+  boost::property_tree::read_xml("cooldbdesign.xml", tree); // Parse the XML into the property tree.
+  BOOST_FOREACH(boost::property_tree::ptree::value_type &node, tree.get_child("dbdesigner.design")) {
+    boost::property_tree::ptree subtree = node.second; //get subtree with layer items at the top
+    if( node.first == "layer"){ //go one level below layers.
+      BOOST_FOREACH( boost::property_tree::ptree::value_type const&v, subtree.get_child( "" ) ) {
+        boost::property_tree::ptree subtree2 = v.second; //get subtree with layer item params at the top
+        if (v.first == "electrode"){
+          BOOST_FOREACH( boost::property_tree::ptree::value_type const&v2, subtree2.get_child( "" ) ) {
+            std::string label = v2.first; //get the name of each param
+            if(label == "dim"){ //Read the 4 numbers
+              *count = *count + 1;
+              int x1, x2, y1, y2;
+              double potential;
+              x1 = v2.second.get<int>("<xmlattr>.x1", -1);
+              x2 = v2.second.get<int>("<xmlattr>.x2", -1);
+              y1 = v2.second.get<int>("<xmlattr>.y1", -1);
+              y2 = v2.second.get<int>("<xmlattr>.y2", -1);
+              potential = v2.second.get<double>("<xmlattr>.potential", -1);
+              std::cout << x1 << " " << y1 << ", " << x2 << " " << y2 << std::endl;
+              elecs->push_back(Electrodes(x1*1e-8, x2*1e-8, y1*1e-8, y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
+            }
+            else if(label != "<xmlattr>"){ //skip all the <layer type=...> stuff
+              std::string value = subtree2.get<std::string>(label);
+              std::cout << label << ":  " << value << std::endl;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
-void worker(int step){
+void worker(int step, std::vector<Electrodes> elec_vec){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
-  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
+  const int ns[3] = {50, 50, 50}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
-  const int BCs[6] = {PoisFFT::PERIODIC, PoisFFT::PERIODIC,  //boundary conditions
-                      PoisFFT::PERIODIC, PoisFFT::PERIODIC,
-                      PoisFFT::PERIODIC, PoisFFT::PERIODIC};
+  const int BCs[6] = {PoisFFT::NEUMANN, PoisFFT::NEUMANN,  //boundary conditions
+                      PoisFFT::NEUMANN, PoisFFT::NEUMANN,
+                      PoisFFT::NEUMANN, PoisFFT::NEUMANN};
   int i;
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
     ds[i] = Ls[i] / ns[i];
   }
-  const int numElectrodes = 4;
-  Electrodes elecs[numElectrodes] = {
-    Electrodes(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 1, WF_GOLD),
-    Electrodes(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD),
-    Electrodes(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD),
-    Electrodes(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.6e-6, 0, WF_GOLD)
-  };
+  // const int numElectrodes = 4;
+  // const int numElectrodes = 1;
+  const int numElectrodes = elec_vec.size();
+  Electrodes elecs[numElectrodes];
+  for (int i = 0; i < numElectrodes; i++){
+    elecs[i] = elec_vec[i];
+    std::cout << elecs[i].x[0] << std::endl;
+    std::cout << elecs[i].x[1] << std::endl;
+    std::cout << elecs[i].y[0] << std::endl;
+    std::cout << elecs[i].y[1] << std::endl;
+    std::cout << elecs[i].z[0] << std::endl;
+    std::cout << elecs[i].z[1] << std::endl;
+    std::cout << elecs[i].potential << std::endl;
+    std::cout << elecs[i].WF << std::endl;
+  }
+  // Electrodes elecs[numElectrodes] = {
+  //   Electrodes(0.2e-6, 0.4e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD),
+  //   // Electrodes(0.2e-6, 0.4e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD),
+  //   // Electrodes(0.6e-6, 0.8e-6, 0.2e-6, 0.4e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD),
+  //   // Electrodes(0.6e-6, 0.8e-6, 0.6e-6, 0.8e-6, 0.3e-6, 0.7e-6, 1, WF_GOLD)
+  // };
+  // elecs[step].potential = 2.0;
   double *arr = new double[ns[0]*ns[1]*ns[2]];
   double *arrOld = new double[ns[0]*ns[1]*ns[2]];
   double *eps = new double[ns[0]*ns[1]*ns[2]]; //RELATIVE permittivity.
@@ -92,6 +151,7 @@ void worker(int step){
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
   save_file2D(ns, ds, Ls, RHS, RHOFILE);
   save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
+  save_file2D(ns, ds, Ls, correction, CORRECTIONFILE);
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
   delete indexErr;
@@ -105,19 +165,7 @@ void worker(int step){
 
 void calc_charge( const int ns[3], const double Ls[3], double* RHS , const int numElectrodes, Electrodes elecs[]){
   //Want this to take in electrode location parameters, and spit out the charge on the conductor.
-  double xmin = 0;
-  double xmax = 0;
-  double ymin = 0;
-  double ymax = 0;
-  double zmin = 0;
-  double zmax = 0;
-  double sum;
-  // std::cout << elecs[0].x[0] << std::endl;
-  // std::cout << elecs[0].x[1] << std::endl;
-  // std::cout << elecs[0].y[0] << std::endl;
-  // std::cout << elecs[0].y[1] << std::endl;
-  // std::cout << elecs[0].z[0] << std::endl;
-  // std::cout << elecs[0].z[1] << std::endl;
+  double xmin, xmax, ymin, ymax, zmin, zmax, sum;
   for( int currElectrode = 0; currElectrode < numElectrodes; currElectrode++){
     xmin = elecs[currElectrode].x[0];
     xmax = elecs[currElectrode].x[1];
@@ -126,14 +174,6 @@ void calc_charge( const int ns[3], const double Ls[3], double* RHS , const int n
     zmin = elecs[currElectrode].z[0];
     zmax = elecs[currElectrode].z[1];
     sum = 0;
-
-
-    std::cout << xmin << std::endl;
-    std::cout << xmax << std::endl;
-    std::cout << ymin << std::endl;
-    std::cout << ymax << std::endl;
-    std::cout << zmin << std::endl;
-    std::cout << zmax << std::endl;
     for(int i = (int) ns[0]*xmin/Ls[0]; i <= (int) ns[0]*xmax/Ls[0]; i++){ //xmin first, then xmax
       for(int j = (int) ns[1]*ymin/Ls[1]; j <= (int) ns[1]*ymax/Ls[1]; j++){
         for(int k = (int) ns[2]*zmin/Ls[2]; k <= (int) ns[2]*zmax/Ls[2]; k++){
@@ -141,7 +181,6 @@ void calc_charge( const int ns[3], const double Ls[3], double* RHS , const int n
         }
       }
     }
-    std::cout << "TOTAL SUM = " << sum << std::endl;
     sum = sum*((xmax-xmin)*(ymax-ymin)*(zmax-zmin));
     std::cout << "Calculated charge on electrode " << currElectrode << " = " << sum << std::endl;
   }
@@ -161,7 +200,8 @@ void apply_correction(const int ns[3], const double ds[3], double *RHS, double *
   }
 }
 
-double check_error(const int ns[3], const double Ls[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *arrOld, double *eps, const int BCs[6]){
+double check_error(const int ns[3], const double Ls[3], double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr,
+                   double *arrOld, double *eps, const int BCs[6]){
   double err = 0;
   double errOld;
   double correctionWeight;
@@ -170,6 +210,7 @@ double check_error(const int ns[3], const double Ls[3], double *arr, double *cor
   } else if(BCs[0] == PoisFFT::DIRICHLET || BCs[0] == PoisFFT::NEUMANN){
     correctionWeight = 0.5e-7*ns[0]*EPS0/Q_E/Ls[0]/Ls[0];  //Dirichlet & Neumann
   }
+  // for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
   for(int i = 0; i < ns[0]*ns[1]*ns[2]; i++){
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
@@ -184,7 +225,7 @@ double check_error(const int ns[3], const double Ls[3], double *arr, double *cor
         *indexErr = i;
       }
     }
-    arrOld[i] = arr[i];
+    // arrOld[i] = arr[i];
   }
   return err;
 }
@@ -204,7 +245,7 @@ void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double
 
 void init_eps(const int ns[3], const double ds[3], const double Ls[3], double* a){
   int i,j,k;
-  std::cout << "Initialising rho" << std::endl;
+  std::cout << "Initialising eps" << std::endl;
   for (i=0;i<ns[0];i++){
     double x = ds[0]*(i+0.5);
     for (j=0;j<ns[1];j++){
@@ -233,7 +274,8 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* c
       double y = ds[1]*(j+0.5);
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
-        a[IND(i,j,k)] = 1e16*Q_E/EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
+        // a[IND(i,j,k)] = 1e16*Q_E/EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
+        a[IND(i,j,k)] = 0; //in m^-3, scale by permittivity
         chi[IND(i,j,k)] = CHI_SI;
       }
     }

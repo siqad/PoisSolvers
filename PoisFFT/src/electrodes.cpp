@@ -2,7 +2,6 @@
 #include "electrodes.hpp"
 #include <iostream>
 
-
 Electrodes::Electrodes( void ){}
 Electrodes::~Electrodes( void ){}
 Electrodes::Electrodes( double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, double pot, double wf){
@@ -62,4 +61,5 @@ void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], d
       }
     }
   }
+  // std::cout << "Count is: " << count << std::endl;
 }
