@@ -4,7 +4,7 @@
     <program>
         <file_purpose>save</file_purpose>
         <version>TBD</version>
-        <date>2017-12-14 14:37:28</date>
+        <date>2017-12-15 11:54:35</date>
     </program>
     <!--GUI Flags-->
     <gui>
@@ -38,20 +38,20 @@
         <layer type="electrodes">
             <electrode>
                 <layer_id>2</layer_id>
-                <dim x1="11" y1="13" x2="32" y2="33"/>
-                <potential>3</potential>
+                <dim x1="5" y1="8" x2="40" y2="40"/>
+                <potential>0</potential>
                 <electrode_type>0</electrode_type>
             </electrode>
             <electrode>
                 <layer_id>2</layer_id>
-                <dim x1="61" y1="16" x2="81" y2="45"/>
-                <potential>6</potential>
+                <dim x1="57" y1="42" x2="79" y2="70"/>
+                <potential>0</potential>
                 <electrode_type>0</electrode_type>
             </electrode>
             <electrode>
                 <layer_id>2</layer_id>
-                <dim x1="23" y1="55" x2="71" y2="72"/>
-                <potential>9</potential>
+                <dim x1="13" y1="70" x2="40" y2="95"/>
+                <potential>0</potential>
                 <electrode_type>0</electrode_type>
             </electrode>
         </layer>

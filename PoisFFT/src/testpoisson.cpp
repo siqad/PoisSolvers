@@ -16,6 +16,8 @@
 
 const double pi = 3.14159265358979323846;
 
+#define SIMGRID 50
+#define SIMLENGTH 1.0e-6
 #define EPS0 8.85418782e-12
 #define Q_E 1.6e-19
 #define MAXERROR 1e-1
@@ -41,12 +43,14 @@ void apply_correction(const int[], const double[], double*, double*, std::pair<i
 void create_electrode(const int[], const double[], const double[], double*, std::pair<int,double>*, double*, const int, Electrodes[]);
 void worker(int, std::vector<Electrodes>);
 void calc_charge(const int[], const double[], double*, const int, Electrodes[]);
-void temp(int*, std::vector<Electrodes>*);
+void parse_tree(std::vector<Electrodes>*);
+std::vector<Electrodes> set_buffer(std::vector<Electrodes>);
 
 int main(void){
   int count = 0;
   std::vector<Electrodes> elec_vec;
-  temp(&count, &elec_vec);
+  parse_tree(&elec_vec);
+  elec_vec = set_buffer(elec_vec);
   std::cout << "VECTOR SIZE " << elec_vec.size() << std::endl;
   for(int i = 0; i < 1; i++){
     worker(i, elec_vec);
@@ -54,7 +58,96 @@ int main(void){
   return 0;
 }
 
-void temp(int *count, std::vector<Electrodes> *elecs){
+std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
+  //want to scale electrodes down to fit the simulation space.
+  //First, find the (min, max) (x, y) values.
+  //Then, extend or contract so that 10% of the sim space is left on each edge as buffer space.
+  double xmin = 100;
+  double ymin = 100;
+  double xmax = 0;
+  double ymax = 0;
+  double xlength;
+  double ylength;
+  double xscale = 1;
+  double yscale = 1;
+  double finalscale;
+  double xoffset = 0;
+  double yoffset = 0;
+  // std::cout << "HELLO" << std::endl;
+  for(int i = 0; i < elec_vec.size(); i++){
+    xmin = std::min(xmin, elec_vec[i].x[0]);
+    ymin = std::min(ymin, elec_vec[i].y[0]);
+    xmax = std::max(xmax, elec_vec[i].x[1]);
+    ymax = std::max(ymax, elec_vec[i].y[1]);
+  }
+
+  // std::cout << "xmin: " << xmin << std::endl;
+  // std::cout << "xmax: " << xmax << std::endl;
+  // std::cout << "ymin: " << ymin << std::endl;
+  // std::cout << "ymax: " << ymax << std::endl;
+
+  //x-scaling to keep 10% buffer on each horizontal side.
+  if(xmin < 0.1*SIMLENGTH || xmax > 0.9*SIMLENGTH){
+    xlength = xmax - xmin;
+    xscale = 0.8*SIMLENGTH/xlength;
+    // std::cout << "xlength: " << xlength << std::endl;
+  }
+  if(ymin < 0.1*SIMLENGTH || ymax > 0.9*SIMLENGTH){
+    ylength = ymax - ymin;
+    yscale = 0.8*SIMLENGTH/ylength;
+    // std::cout << "ylength: " << ylength << std::endl;
+  }
+  // std::cout << "xscale: " << xscale << std::endl;
+  // std::cout << "yscale: " << yscale << std::endl;
+  //scale all elements by lowest scaling factor.
+  finalscale = std::min(xscale, yscale);
+  for(int i = 0; i < elec_vec.size(); i++){
+    elec_vec[i].x[0] *= finalscale;
+    elec_vec[i].x[1] *= finalscale;
+    elec_vec[i].y[0] *= finalscale;
+    elec_vec[i].y[1] *= finalscale;
+  }
+  //now sample is sure to fit within simulation boundaries, with space for buffer.
+  //translate the violating part to the buffer boundary, once for x and once for y.
+  xmin = 100;
+  ymin = 100;
+  xmax = 0;
+  ymax = 0;
+  for(int i = 0; i < elec_vec.size(); i++){
+    xmin = std::min(xmin, elec_vec[i].x[0]);
+    ymin = std::min(ymin, elec_vec[i].y[0]);
+    xmax = std::max(xmax, elec_vec[i].x[1]);
+    ymax = std::max(ymax, elec_vec[i].y[1]);
+  }
+  // std::cout << "xmin: " << xmin << std::endl;
+  // std::cout << "xmax: " << xmax << std::endl;
+  // std::cout << "ymin: " << ymin << std::endl;
+  // std::cout << "ymax: " << ymax << std::endl;
+  if(xmin < 0.1*SIMLENGTH){
+    //find the offset
+    xoffset = 0.1*SIMLENGTH - xmin;
+  }else if(xmax > 0.9*SIMLENGTH){
+    xoffset = xmax - 0.9*SIMLENGTH;
+  }
+  if(ymin < 0.1*SIMLENGTH){
+    //find the offset in y
+    yoffset = 0.1*SIMLENGTH - ymin;
+  }else if(ymax > 0.9*SIMLENGTH){
+    yoffset = ymax - 0.9*SIMLENGTH;
+  }
+  //fix the offsets
+  for(int i = 0; i < elec_vec.size(); i++){
+    elec_vec[i].x[0] += xoffset;
+    elec_vec[i].x[1] += xoffset;
+    elec_vec[i].y[0] += yoffset;
+    elec_vec[i].y[1] += yoffset;
+    // std::cout << elec_vec[i].x[0] << " " << elec_vec[i].x[1] << ", " << elec_vec[i].y[0] << " " << elec_vec[i].y[1] << std::endl;
+  }
+  return elec_vec;
+
+}
+
+void parse_tree(std::vector<Electrodes> *elecs){
 
   int pix_x1, pix_x2, pix_y1, pix_y2;
   double potential;
@@ -69,7 +162,6 @@ void temp(int *count, std::vector<Electrodes> *elecs){
           BOOST_FOREACH( boost::property_tree::ptree::value_type const&v2, subtree2.get_child( "" ) ) {
             std::string label = v2.first; //get the name of each param
             if(label == "dim"){ //Read the 4 numbers
-              *count = *count + 1;
               pix_x1 = v2.second.get<int>("<xmlattr>.x1", -1); //get the 2D corners in pixel distances
               pix_x2 = v2.second.get<int>("<xmlattr>.x2", -1);
               pix_y1 = v2.second.get<int>("<xmlattr>.y1", -1);
@@ -94,8 +186,8 @@ void temp(int *count, std::vector<Electrodes> *elecs){
 
 void worker(int step, std::vector<Electrodes> elec_vec){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
-  const double Ls[3] = {1.0e-6, 1.0e-6, 1.0e-6}; //x, y, z domain dimensions in MICROMETRE
-  const int ns[3] = {100, 100, 100}; //x, y, z gridpoint numbers
+  const double Ls[3] = {SIMLENGTH, SIMLENGTH, SIMLENGTH}; //x, y, z domain dimensions in MICROMETRE
+  const int ns[3] = {SIMGRID, SIMGRID, SIMGRID}; //x, y, z gridpoint numbers
   double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
