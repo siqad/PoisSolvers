@@ -34,26 +34,52 @@ const double pi = 3.14159265358979323846;
 #define CHI_SI 4.05//electron affinity for silicon in eV from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
 #define EPS_SI 11.7
 
-void save_file2D(const int[], const double[], const double[], double*, char[]);
+void save_file2D(const int[], const double[], const double[], double*, char[], std::string);
 void check_solution(const int[], const double[], const double[], double*);
 void init_eps(const int[], const double[], const double[], double*);
 void init_rhs(const int[], const double[], const double[], double*, double*, double*);
 double check_error(const int[], const double[], double*, double*, std::pair<int,double>*, int*, double*, double*, const int[]);
 void apply_correction(const int[], const double[], double*, double*, std::pair<int,double>*);
 void create_electrode(const int[], const double[], const double[], double*, std::pair<int,double>*, double*, const int, Electrodes[]);
-void worker(int, std::vector<Electrodes>);
+void worker(int, std::vector<Electrodes>, std::string);
 void calc_charge(const int[], const double[], double*, const int, Electrodes[]);
-void parse_tree(std::vector<Electrodes>*);
+void parse_tree(std::vector<Electrodes>*, std::string);
 std::vector<Electrodes> set_buffer(std::vector<Electrodes>);
 
-int main(void){
+int main(int argc,char* argv[]){
   int count = 0;
+  std::cout << "Number of command line arguments: " << argc << std::endl;
   std::vector<Electrodes> elec_vec;
-  parse_tree(&elec_vec);
-  elec_vec = set_buffer(elec_vec);
-  std::cout << "VECTOR SIZE " << elec_vec.size() << std::endl;
-  for(int i = 0; i < 1; i++){
-    worker(i, elec_vec);
+  std::string arg1;
+  std::string arg2;
+  std::string outpath;
+  for(int i = 0; i < argc; i++){
+    std::cout << argv[i] << std::endl;
+  }
+  if(argc == 1){
+    std::cout << "No path was passed to the solver program. Program terminating." << std::endl;
+  }else if(argc > 2){ //need at LEAST binary call, input path, output path.
+    arg1 = argv[1];
+    arg2 = argv[2];
+    if(arg1.find(".xml") != std::string::npos){ //argv[1] is an xml path, assume it is the INPUT file.
+      std::cout << "Input path detected." << std::endl;
+      parse_tree(&elec_vec, argv[1]);
+      elec_vec = set_buffer(elec_vec);
+      std::cout << "VECTOR SIZE " << elec_vec.size() << std::endl;
+    }else{
+      std::cout << "Path not detected. Problem XML path needs to be provided as first argument to binary. Terminating." << std::endl;
+    }
+    if(arg2.find(".xml") != std::string::npos){ //argv[2] is an xml path, assume it is the OUTPUT file.
+      std::cout << "Output path detected." << std::endl;
+      std::size_t found = arg2.find_last_of("/\\");
+      outpath = arg2.substr(0, found);
+      std::cout << outpath << std::endl;
+      for(int i = 0; i < 1; i++){
+        worker(i, elec_vec, outpath); //where the magic happens
+      }
+    }else{
+      std::cout << "Path not detected. Result XML path needs to be provided as second argument to binary. Terminating." << std::endl;
+    }
   }
   return 0;
 }
@@ -147,12 +173,14 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
 
 }
 
-void parse_tree(std::vector<Electrodes> *elecs){
+void parse_tree(std::vector<Electrodes> *elecs, std::string path){
 
   int pix_x1, pix_x2, pix_y1, pix_y2;
   double potential;
+  std::cout << "PARSING NOW, PATH NAME IS " << path << std::endl;
   boost::property_tree::ptree tree; // Create empty property tree object
-  boost::property_tree::read_xml("cooldbdesign.xml", tree); // Parse the XML into the property tree.
+  // boost::property_tree::read_xml("cooldbdesign.xml", tree); // Parse the XML into the property tree.
+  boost::property_tree::read_xml(path, tree); // Parse the XML into the property tree.
   BOOST_FOREACH(boost::property_tree::ptree::value_type &node, tree.get_child("dbdesigner.design")) {
     boost::property_tree::ptree subtree = node.second; //get subtree with layer items at the top
     if( node.first == "layer"){ //go one level below layers.
@@ -182,9 +210,10 @@ void parse_tree(std::vector<Electrodes> *elecs){
       }
     }
   }
+  std::cout << "Successfully read " << path << std::endl;
 }
 
-void worker(int step, std::vector<Electrodes> elec_vec){
+void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   const double Ls[3] = {SIMLENGTH, SIMLENGTH, SIMLENGTH}; //x, y, z domain dimensions in MICROMETRE
   const int ns[3] = {SIMGRID, SIMGRID, SIMGRID}; //x, y, z gridpoint numbers
@@ -234,7 +263,7 @@ void worker(int step, std::vector<Electrodes> elec_vec){
   create_electrode(ns, ds, Ls, RHS, electrodemap, chi, numElectrodes, elecs);
   PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
   std::cout << "Beginning solver" << std::endl;
-  ProfilerStart("./profileresult.out"); //using google performance tools
+  // ProfilerStart("./profileresult.out"); //using google performance tools
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
     cycleErr = check_error(ns, Ls, arr, correction, electrodemap, indexErr, arrOld, eps, BCs);
@@ -243,11 +272,11 @@ void worker(int step, std::vector<Electrodes> elec_vec){
     cycleCount++;
   }while(cycleErr > MAXERROR && cycleErr != 0);
   calc_charge(ns, Ls, RHS, numElectrodes, elecs);
-  ProfilerStop();
+  // ProfilerStop();
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
-  save_file2D(ns, ds, Ls, RHS, RHOFILE);
-  save_file2D(ns, ds, Ls, arr, FILENAME); //solution is in arr
-  save_file2D(ns, ds, Ls, correction, CORRECTIONFILE);
+  save_file2D(ns, ds, Ls, RHS, RHOFILE, resultpath);
+  save_file2D(ns, ds, Ls, arr, FILENAME, resultpath); //solution is in arr
+  save_file2D(ns, ds, Ls, correction, CORRECTIONFILE, resultpath);
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
   delete indexErr;
@@ -326,10 +355,16 @@ double check_error(const int ns[3], const double Ls[3], double *arr, double *cor
   return err;
 }
 
-void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double* arr, char fname[]){
+void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double* arr, char fname[], std::string pathname){
+  // std::string finalpath = fname;
+  std::string temp = fname;
+  std::string finalpath = pathname+"/"+temp;
   std::ofstream outfile;
-  outfile.open(fname, std::ios_base::out | std::ios_base::trunc );
-  std::cout << "Dumping to " << fname << std::endl;
+  // std::cout << pathname << std::endl;
+  // std::cout << finalpath << std::endl;
+  // std::cout << temp << std::endl;
+  outfile.open(finalpath.c_str(), std::ios_base::out | std::ios_base::trunc );
+  std::cout << "Dumping to " << finalpath << std::endl;
   const int k = ns[2]/2;
   for (int i = 0; i < ns[0]; i++){
     for (int j = 0; j < ns[1]; j++){
