@@ -184,26 +184,29 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
   BOOST_FOREACH(boost::property_tree::ptree::value_type &node, tree.get_child("dbdesigner.design")) {
     boost::property_tree::ptree subtree = node.second; //get subtree with layer items at the top
     if( node.first == "layer"){ //go one level below layers.
-      BOOST_FOREACH( boost::property_tree::ptree::value_type const&v, subtree.get_child( "" ) ) {
-        boost::property_tree::ptree subtree2 = v.second; //get subtree with layer item params at the top
-        if (v.first == "electrode"){
-          BOOST_FOREACH( boost::property_tree::ptree::value_type const&v2, subtree2.get_child( "" ) ) {
-            std::string label = v2.first; //get the name of each param
-            if(label == "dim"){ //Read the 4 numbers
-              pix_x1 = v2.second.get<int>("<xmlattr>.x1", -1); //get the 2D corners in pixel distances
-              pix_x2 = v2.second.get<int>("<xmlattr>.x2", -1);
-              pix_y1 = v2.second.get<int>("<xmlattr>.y1", -1);
-              pix_y2 = v2.second.get<int>("<xmlattr>.y2", -1);
-              std::cout << pix_x1 << " " << pix_y1 << ", " << pix_x2 << " " << pix_y2 << std::endl;
-              // elecs->push_back(Electrodes(pix_x1*1e-8, pix_x2*1e-8, pix_y1*1e-8, pix_y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
-            }else if(label == "potential") {
-              potential = subtree2.get<double>(label);
-              std::cout << label << ":  " << potential << std::endl;
-            }else if(label == "electrode_type"){ //electrode_type is the last one
-              elecs->push_back(Electrodes(pix_x1*1e-8, pix_x2*1e-8, pix_y1*1e-8, pix_y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
-            }else if(label != "<xmlattr>"){ //unexpected extras
-              std::string value = subtree2.get<std::string>(label);
-              std::cout << label << ":  " << value << std::endl;
+      std::string type = node.second.get<std::string>("<xmlattr>.type");
+      if (type == "Electrode"){ //make sure that the layer type is Electrode
+        BOOST_FOREACH( boost::property_tree::ptree::value_type const&v, subtree.get_child( "" ) ) {
+          boost::property_tree::ptree subtree2 = v.second; //get subtree with layer item params at the top
+          if (v.first == "electrode"){ //for each electrode, read into memory
+            BOOST_FOREACH( boost::property_tree::ptree::value_type const&v2, subtree2.get_child( "" ) ) {
+              std::string label = v2.first; //get the name of each param
+              if(label == "dim"){ //Read the 4 numbers
+                pix_x1 = v2.second.get<int>("<xmlattr>.x1", -1); //get the 2D corners in pixel distances
+                pix_x2 = v2.second.get<int>("<xmlattr>.x2", -1);
+                pix_y1 = v2.second.get<int>("<xmlattr>.y1", -1);
+                pix_y2 = v2.second.get<int>("<xmlattr>.y2", -1);
+                std::cout << pix_x1 << " " << pix_y1 << ", " << pix_x2 << " " << pix_y2 << std::endl;
+                // elecs->push_back(Electrodes(pix_x1*1e-8, pix_x2*1e-8, pix_y1*1e-8, pix_y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
+              }else if(label == "potential") {
+                potential = subtree2.get<double>(label);
+                std::cout << label << ":  " << potential << std::endl;
+              }else if(label == "electrode_type"){ //electrode_type is the last one
+                elecs->push_back(Electrodes(pix_x1*1e-8, pix_x2*1e-8, pix_y1*1e-8, pix_y2*1e-8, 0.3e-6, 0.7e-6, potential, WF_GOLD));
+              }else if(label != "<xmlattr>"){ //unexpected extras
+                std::string value = subtree2.get<std::string>(label);
+                std::cout << label << ":  " << value << std::endl;
+              }
             }
           }
         }
