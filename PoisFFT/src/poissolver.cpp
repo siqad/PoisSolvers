@@ -6,9 +6,6 @@ int main(int argc,char* argv[]){
   std::string arg1;
   std::string arg2;
   std::string outpath;
-  double finalscale = 0;
-  double xoffset = 0;
-  double yoffset = 0;
 
   if(argc == 1){
     std::cout << "No path was passed to the solver program. Program terminating." << std::endl;
@@ -18,8 +15,8 @@ int main(int argc,char* argv[]){
     if(arg1.find(".xml") != std::string::npos){ //argv[1] is an xml path, assume it is the INPUT file.
       std::cout << "Input path detected." << std::endl;
       parse_tree(&elec_vec, argv[1]);
-      elec_vec = set_buffer(elec_vec, &finalscale, &xoffset, &yoffset);
-      std::cout << finalscale << " " << xoffset << " " << yoffset << std::endl;
+      elec_vec = set_buffer(elec_vec);
+      std::cout << SimParams::finalscale << " " << SimParams::xoffset << " " << SimParams::yoffset << std::endl;
       std::cout << "VECTOR SIZE " << elec_vec.size() << std::endl;
       if(arg2.find(".xml") != std::string::npos){ //argv[2] is an xml path, assume it is the OUTPUT file.
         std::cout << "Output path detected." << std::endl;
@@ -27,7 +24,7 @@ int main(int argc,char* argv[]){
         outpath = arg2.substr(0, found);
         std::cout << outpath << std::endl;
         for(int i = 0; i < 1; i++){
-          worker(i, elec_vec, outpath, finalscale, xoffset, yoffset); //where the magic happens
+          worker(i, elec_vec, outpath); //where the magic happens
         }
       }else{
         std::cout << "Path not detected. Result XML path needs to be provided as second argument to binary. Terminating." << std::endl;
@@ -39,7 +36,7 @@ int main(int argc,char* argv[]){
   return 0;
 }
 
-std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec, double* finalscale, double* xoffset, double* yoffset) {
+std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
   //want to scale electrodes down to fit the simulation space.
   //First, find the (min, max) (x, y) values.
   //Then, extend or contract so that 10% of the sim space is left on each edge as buffer space.
@@ -75,18 +72,18 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec, double* fin
     std::cout << "ylength: " << ylength << std::endl;
   }
   //scale all elements by lowest scaling factor.
-  *finalscale = std::min(xscale, yscale);
-  std::cout << "Final scaling factor is: " << *finalscale << std::endl;
+  SimParams::finalscale = std::min(xscale, yscale);
+  std::cout << "Final scaling factor is: " << SimParams::finalscale << std::endl;
   for(int i = 0; i < elec_vec.size(); i++){
     std::cout << elec_vec[i].x[0] << std::endl;
     std::cout << elec_vec[i].x[1] << std::endl;
     std::cout << elec_vec[i].y[0] << std::endl;
     std::cout << elec_vec[i].y[1] << std::endl;
 
-    elec_vec[i].x[0] *= *(finalscale);
-    elec_vec[i].x[1] *= *(finalscale);
-    elec_vec[i].y[0] *= *(finalscale);
-    elec_vec[i].y[1] *= *(finalscale);
+    elec_vec[i].x[0] *= SimParams::finalscale;
+    elec_vec[i].x[1] *= SimParams::finalscale;
+    elec_vec[i].y[0] *= SimParams::finalscale;
+    elec_vec[i].y[1] *= SimParams::finalscale;
 
     std::cout << elec_vec[i].x[0] << std::endl;
     std::cout << elec_vec[i].x[1] << std::endl;
@@ -114,25 +111,25 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec, double* fin
 
   if(xmin < 0.1*SimParams::Ls[0]){  //too far to the left, want positive offset to bring it right
     //find the offset
-    *xoffset = 0.1*SimParams::Ls[0] - xmin;
+    SimParams::xoffset = 0.1*SimParams::Ls[0] - xmin;
   }else if(xmax > 0.9*SimParams::Ls[0]){ //too far right, want negative offset to bring it left.
-    *xoffset = 0.9*SimParams::Ls[0] - xmax;
+    SimParams::xoffset = 0.9*SimParams::Ls[0] - xmax;
   }
   if(ymin < 0.1*SimParams::Ls[1]){ //too far up
     //find the offset in y
-    *yoffset = 0.1*SimParams::Ls[1] - ymin;
+    SimParams::yoffset = 0.1*SimParams::Ls[1] - ymin;
   }else if(ymax > 0.9*SimParams::Ls[1]){ //too far down
-    *yoffset = 0.9*SimParams::Ls[1] - ymax;
+    SimParams::yoffset = 0.9*SimParams::Ls[1] - ymax;
   }
 
-  std::cout << "X offset is: " << *xoffset << std::endl;
-  std::cout << "Y offset is: " << *yoffset << std::endl;
+  std::cout << "X offset is: " << SimParams::xoffset << std::endl;
+  std::cout << "Y offset is: " << SimParams::yoffset << std::endl;
   //fix the offsets
   for(int i = 0; i < elec_vec.size(); i++){ //move all points based on offset.
-    elec_vec[i].x[0] += *(xoffset);
-    elec_vec[i].x[1] += *(xoffset);
-    elec_vec[i].y[0] += *(yoffset);
-    elec_vec[i].y[1] += *(yoffset);
+    elec_vec[i].x[0] += SimParams::xoffset;
+    elec_vec[i].x[1] += SimParams::xoffset;
+    elec_vec[i].y[0] += SimParams::yoffset;
+    elec_vec[i].y[1] += SimParams::yoffset;
     // std::cout << elec_vec[i].x[0] << " " << elec_vec[i].x[1] << ", " << elec_vec[i].y[0] << " " << elec_vec[i].y[1] << std::endl;
   }
   return elec_vec;
@@ -181,8 +178,7 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
   std::cout << "Successfully read " << path << std::endl;
 }
 
-
-void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, double finalscale, double xoffset, double yoffset){
+void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   double cycleErr;
   int* indexErr = new int;
@@ -217,10 +213,10 @@ void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, 
   calc_charge(RHS, elec_vec);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
 
-  save_file2D(arr, SimParams::OUTFILE, resultpath, finalscale, xoffset, yoffset); //solution is in arr
-  save_file2D(RHS, SimParams::RHOFILE, resultpath, finalscale, xoffset, yoffset);
-  save_file2D(correction, SimParams::CORRFILE, resultpath, finalscale, xoffset, yoffset);
-  save_fileXML(arr, SimParams::RESXML, resultpath, finalscale, xoffset, yoffset, elec_vec);
+  save_file2D(arr, SimParams::OUTFILE, resultpath); //solution is in arr
+  save_file2D(RHS, SimParams::RHOFILE, resultpath);
+  save_file2D(correction, SimParams::CORRFILE, resultpath);
+  save_fileXML(arr, SimParams::RESXML, resultpath, elec_vec);
 
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
@@ -298,7 +294,7 @@ double check_error(double *arr, double *correction, std::pair<int,double> *elect
   return err;
 }
 
-void save_file2D(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset){
+void save_file2D(double* arr, char fname[], std::string pathname){
   // std::string finalpath = fname;
   std::string temp = fname;
   std::string finalpath = pathname+"/"+temp;
@@ -311,15 +307,15 @@ void save_file2D(double* arr, char fname[], std::string pathname, double finalsc
   const int k = SimParams::ns[2]/2;
   for (int i = 0; i < SimParams::ns[0]; i++){
     for (int j = 0; j < SimParams::ns[1]; j++){
-      outfile << std::setprecision(5) << std::scientific << (i*SimParams::ds[0]-xoffset)/finalscale << " "
-              << (j*SimParams::ds[1]-yoffset)/finalscale << " " << arr[SimParams::IND(i,j,k)] << std::endl;
+      outfile << std::setprecision(5) << std::scientific << (i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale << " "
+              << (j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale << " " << arr[SimParams::IND(i,j,k)] << std::endl;
     }
     outfile << std::endl;
   }
 }
 
 
-void save_fileXML(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset, std::vector<Electrodes> elec_vec){
+void save_fileXML(double* arr, char fname[], std::string pathname, std::vector<Electrodes> elec_vec){
 
   // define major XML nodes
   boost::property_tree::ptree tree;
@@ -348,10 +344,10 @@ void save_fileXML(double* arr, char fname[], std::string pathname, double finals
   // electrode
   for (auto elec : elec_vec) {
     boost::property_tree::ptree node_dim;
-    node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-xoffset)/finalscale/SimParams::Ls[0]).c_str()));
-    node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-yoffset)/finalscale/SimParams::Ls[1]).c_str()));
-    node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-xoffset)/finalscale/SimParams::Ls[0]).c_str()));
-    node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-yoffset)/finalscale/SimParams::Ls[1]).c_str()));
+    node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
+    node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
+    node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
+    node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
     node_electrode.add_child("dim", node_dim);
     boost::property_tree::ptree node_pot;
     node_pot.put("", std::to_string(elec.potential).c_str());
@@ -364,8 +360,8 @@ void save_fileXML(double* arr, char fname[], std::string pathname, double finals
     for (int j = 0; j < SimParams::ns[1]; j++){
       //create each entry
       boost::property_tree::ptree node_potential_val;
-      node_potential_val.put("<xmlattr>.x", (std::to_string((i*SimParams::ds[0]-xoffset)/finalscale/SimParams::Ls[0])).c_str());
-      node_potential_val.put("<xmlattr>.y", (std::to_string((j*SimParams::ds[1]-yoffset)/finalscale/SimParams::Ls[1])).c_str());
+      node_potential_val.put("<xmlattr>.x", (std::to_string((i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0])).c_str());
+      node_potential_val.put("<xmlattr>.y", (std::to_string((j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1])).c_str());
       node_potential_val.put("<xmlattr>.val", std::to_string(arr[SimParams::IND(i,j,k)]).c_str());
       node_potential_map.add_child("potential_val", node_potential_val);
     }
