@@ -40,6 +40,7 @@ namespace SimParams
 {
   // scaling and offset values
   double finalscale, xoffset, yoffset;
+  std::string resultpath;
 
   //stuff used during simulation
   double Ls[3] = {1e-6, 1e-6, 1e-6}; // simulation length in x, y, z
@@ -73,16 +74,16 @@ class Poissolver
   //   void draw(const int[3], const double[3], const double[3], double*, std::pair<int,double>*, double*);
 };
 
-void save_file2D(double* arr, char fname[], std::string pathname);
-void save_fileXML(double* arr, char fname[], std::string pathname, std::vector<Electrodes> elec_vec);
+void save_file2D(double* arr, char fname[]);
+void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec);
 void init_eps(double* eps);
 void init_rhs(double* chi, double* eps, double* rhs);
 double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
 void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
 void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
-void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath);
+void worker(int step, std::vector<Electrodes> elec_vec);
 void calc_charge(double* RHS , std::vector<Electrodes> elecs);
-void parse_tree(std::vector<Electrodes>*, std::string);
+void parse_tree(std::vector<Electrodes> *elecs, std::string path);
 std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
 
 #endif //POISSOLVER_H

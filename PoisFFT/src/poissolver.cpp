@@ -5,7 +5,6 @@ int main(int argc,char* argv[]){
   std::vector<Electrodes> elec_vec;
   std::string arg1;
   std::string arg2;
-  std::string outpath;
 
   if(argc == 1){
     std::cout << "No path was passed to the solver program. Program terminating." << std::endl;
@@ -17,14 +16,13 @@ int main(int argc,char* argv[]){
       parse_tree(&elec_vec, argv[1]);
       elec_vec = set_buffer(elec_vec);
       std::cout << SimParams::finalscale << " " << SimParams::xoffset << " " << SimParams::yoffset << std::endl;
-      std::cout << "VECTOR SIZE " << elec_vec.size() << std::endl;
       if(arg2.find(".xml") != std::string::npos){ //argv[2] is an xml path, assume it is the OUTPUT file.
         std::cout << "Output path detected." << std::endl;
         std::size_t found = arg2.find_last_of("/\\");
-        outpath = arg2.substr(0, found);
-        std::cout << outpath << std::endl;
+        SimParams::resultpath = arg2.substr(0, found);
+        std::cout << SimParams::resultpath << std::endl;
         for(int i = 0; i < 1; i++){
-          worker(i, elec_vec, outpath); //where the magic happens
+          worker(i, elec_vec); //where the magic happens
         }
       }else{
         std::cout << "Path not detected. Result XML path needs to be provided as second argument to binary. Terminating." << std::endl;
@@ -55,11 +53,6 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
     ymax = std::max(ymax, elec_vec[i].y[1]);
   }
 
-  std::cout << "xmin: " << xmin << std::endl;
-  std::cout << "xmax: " << xmax << std::endl;
-  std::cout << "ymin: " << ymin << std::endl;
-  std::cout << "ymax: " << ymax << std::endl;
-
   //x-scaling to keep 10% buffer on each horizontal side.
   if(xmin < 0.1*SimParams::Ls[0] || xmax > 0.9*SimParams::Ls[0]){
     xlength = xmax - xmin;
@@ -73,23 +66,12 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
   }
   //scale all elements by lowest scaling factor.
   SimParams::finalscale = std::min(xscale, yscale);
-  std::cout << "Final scaling factor is: " << SimParams::finalscale << std::endl;
+  // std::cout << "Final scaling factor is: " << SimParams::finalscale << std::endl;
   for(int i = 0; i < elec_vec.size(); i++){
-    std::cout << elec_vec[i].x[0] << std::endl;
-    std::cout << elec_vec[i].x[1] << std::endl;
-    std::cout << elec_vec[i].y[0] << std::endl;
-    std::cout << elec_vec[i].y[1] << std::endl;
-
     elec_vec[i].x[0] *= SimParams::finalscale;
     elec_vec[i].x[1] *= SimParams::finalscale;
     elec_vec[i].y[0] *= SimParams::finalscale;
     elec_vec[i].y[1] *= SimParams::finalscale;
-
-    std::cout << elec_vec[i].x[0] << std::endl;
-    std::cout << elec_vec[i].x[1] << std::endl;
-    std::cout << elec_vec[i].y[0] << std::endl;
-    std::cout << elec_vec[i].y[1] << std::endl;
-
   }
   //now sample is sure to fit within simulation boundaries, with space for buffer.
   //translate the violating part to the buffer boundary, once for x and once for y.
@@ -104,11 +86,6 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
     xmax = std::max(xmax, elec_vec[i].x[1]);
     ymax = std::max(ymax, elec_vec[i].y[1]);
   }
-  std::cout << "xmin: " << xmin << std::endl;
-  std::cout << "xmax: " << xmax << std::endl;
-  std::cout << "ymin: " << ymin << std::endl;
-  std::cout << "ymax: " << ymax << std::endl;
-
   if(xmin < 0.1*SimParams::Ls[0]){  //too far to the left, want positive offset to bring it right
     //find the offset
     SimParams::xoffset = 0.1*SimParams::Ls[0] - xmin;
@@ -121,19 +98,14 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
   }else if(ymax > 0.9*SimParams::Ls[1]){ //too far down
     SimParams::yoffset = 0.9*SimParams::Ls[1] - ymax;
   }
-
-  std::cout << "X offset is: " << SimParams::xoffset << std::endl;
-  std::cout << "Y offset is: " << SimParams::yoffset << std::endl;
   //fix the offsets
   for(int i = 0; i < elec_vec.size(); i++){ //move all points based on offset.
     elec_vec[i].x[0] += SimParams::xoffset;
     elec_vec[i].x[1] += SimParams::xoffset;
     elec_vec[i].y[0] += SimParams::yoffset;
     elec_vec[i].y[1] += SimParams::yoffset;
-    // std::cout << elec_vec[i].x[0] << " " << elec_vec[i].x[1] << ", " << elec_vec[i].y[0] << " " << elec_vec[i].y[1] << std::endl;
   }
   return elec_vec;
-
 }
 
 void parse_tree(std::vector<Electrodes> *elecs, std::string path){
@@ -141,7 +113,6 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
   double potential;
   std::cout << "PARSING NOW, PATH NAME IS " << path << std::endl;
   boost::property_tree::ptree tree; // Create empty property tree object
-  // boost::property_tree::read_xml("cooldbdesign.xml", tree); // Parse the XML into the property tree.
   boost::property_tree::read_xml(path, tree); // Parse the XML into the property tree.
   BOOST_FOREACH(boost::property_tree::ptree::value_type &node, tree.get_child("dbdesigner.design")) {
     boost::property_tree::ptree subtree = node.second; //get subtree with layer items at the top
@@ -159,7 +130,6 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
                 pix_y1 = v2.second.get<int>("<xmlattr>.y1", -1);
                 pix_y2 = v2.second.get<int>("<xmlattr>.y2", -1);
                 std::cout << pix_x1 << " " << pix_y1 << ", " << pix_x2 << " " << pix_y2 << std::endl;
-                // elecs->push_back(Electrodes(pix_x1*1e-8, pix_x2*1e-8, pix_y1*1e-8, pix_y2*1e-8, 0.3e-6, 0.7e-6, potential, PhysConstants::WF_GOLD));
               }else if(label == "potential") {
                 potential = subtree2.get<double>(label);
                 std::cout << label << ":  " << potential << std::endl;
@@ -178,7 +148,7 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
   std::cout << "Successfully read " << path << std::endl;
 }
 
-void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath){
+void worker(int step, std::vector<Electrodes> elec_vec){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   double cycleErr;
   int* indexErr = new int;
@@ -213,10 +183,10 @@ void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath){
   calc_charge(RHS, elec_vec);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
 
-  save_file2D(arr, SimParams::OUTFILE, resultpath); //solution is in arr
-  save_file2D(RHS, SimParams::RHOFILE, resultpath);
-  save_file2D(correction, SimParams::CORRFILE, resultpath);
-  save_fileXML(arr, SimParams::RESXML, resultpath, elec_vec);
+  save_file2D(arr, SimParams::OUTFILE); //solution is in arr
+  save_file2D(RHS, SimParams::RHOFILE);
+  save_file2D(correction, SimParams::CORRFILE);
+  save_fileXML(arr, SimParams::RESXML, elec_vec);
 
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
@@ -294,14 +264,10 @@ double check_error(double *arr, double *correction, std::pair<int,double> *elect
   return err;
 }
 
-void save_file2D(double* arr, char fname[], std::string pathname){
-  // std::string finalpath = fname;
+void save_file2D(double* arr, char fname[]){
   std::string temp = fname;
-  std::string finalpath = pathname+"/"+temp;
+  std::string finalpath = SimParams::resultpath + "/" + temp;
   std::ofstream outfile;
-  // std::cout << pathname << std::endl;
-  // std::cout << finalpath << std::endl;
-  // std::cout << temp << std::endl;
   outfile.open(finalpath.c_str(), std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping to " << finalpath << std::endl;
   const int k = SimParams::ns[2]/2;
@@ -315,7 +281,7 @@ void save_file2D(double* arr, char fname[], std::string pathname){
 }
 
 
-void save_fileXML(double* arr, char fname[], std::string pathname, std::vector<Electrodes> elec_vec){
+void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec){
 
   // define major XML nodes
   boost::property_tree::ptree tree;
@@ -324,12 +290,9 @@ void save_fileXML(double* arr, char fname[], std::string pathname, std::vector<E
   boost::property_tree::ptree node_sim_params; // <sim_params>
   boost::property_tree::ptree node_electrode;  // <electrode>
   boost::property_tree::ptree node_potential_map;  // <potential>
-
-  // std::string finalpath = fname;
   std::string temp = fname;
-  std::string finalpath = pathname+"/"+temp;
+  std::string finalpath = SimParams::resultpath + "/" + temp;
 
-  std::cout << finalpath << std::endl;
   std::cout << "Write results to XML..." << std::endl;
   // NOTE in the future, there's probably a range of stuff that can be exported.
   // for now, only export charge config
@@ -375,7 +338,6 @@ void save_fileXML(double* arr, char fname[], std::string pathname, std::vector<E
   boost::property_tree::write_xml(finalpath, tree, std::locale(), boost::property_tree::xml_writer_make_settings<std::string>(' ',4));
 
   std::cout << "Write to XML complete." << std::endl;
-
 }
 
 
@@ -397,7 +359,7 @@ void init_eps(double* eps){
       }
     }
   }
-  std::cout << "Finished rho initialisation" << std::endl;
+  std::cout << "Finished eps initialisation" << std::endl;
 }
 
 void init_rhs(double* chi, double* eps, double* rhs){
