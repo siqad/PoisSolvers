@@ -140,7 +140,6 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec, double* fin
 }
 
 void parse_tree(std::vector<Electrodes> *elecs, std::string path){
-
   int pix_x1, pix_x2, pix_y1, pix_y2;
   double potential;
   std::cout << "PARSING NOW, PATH NAME IS " << path << std::endl;
@@ -185,39 +184,13 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
 
 void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, double finalscale, double xoffset, double yoffset){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
-
-  // const double Ls[3] = {SIMLENGTH, SIMLENGTH, SIMLENGTH}; //x, y, z domain dimensions in MICROMETRE
-  // Just pass SimParams::Ls instead
-  // const int ns[3] = {SIMGRID, SIMGRID, SIMGRID}; //x, y, z gridpoint numbers
-  // Just pass SimParams::ns instead
-  // double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
 
-  // Just pass SimParams::BCs instead
-  // const int BCs[6] = {PoisFFT::NEUMANN, PoisFFT::NEUMANN,  //boundary conditions
-  //                     PoisFFT::NEUMANN, PoisFFT::NEUMANN,
-  //                     PoisFFT::NEUMANN, PoisFFT::NEUMANN};
-  int i;
-  for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
+  // Calculate and save ds
+  for (int i = 0; i<3; i++){
     SimParams::ds[i] = SimParams::Ls[i] / (double)SimParams::ns[i];
   }
-  // const int numElectrodes = 4;
-  // const int numElectrodes = 2;
-  const int numElectrodes = elec_vec.size();
-  Electrodes elecs[numElectrodes];
-  for (int i = 0; i < numElectrodes; i++){
-    elecs[i] = elec_vec[i];
-    std::cout << elecs[i].x[0] << std::endl;
-    std::cout << elecs[i].x[1] << std::endl;
-    std::cout << elecs[i].y[0] << std::endl;
-    std::cout << elecs[i].y[1] << std::endl;
-    std::cout << elecs[i].z[0] << std::endl;
-    std::cout << elecs[i].z[1] << std::endl;
-    std::cout << elecs[i].potential << std::endl;
-    std::cout << elecs[i].WF << std::endl;
-  }
-
   const int nsize = SimParams::ns[0]*SimParams::ns[1]*SimParams::ns[2]; //array size
   double *arr = new double[nsize];
   double *eps = new double[nsize]; //RELATIVE permittivity.
@@ -229,7 +202,7 @@ void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, 
   const std::clock_t begin_time = std::clock();
   init_eps(eps); // set permittivity
   init_rhs(chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  create_electrode(RHS, electrodemap, chi, numElectrodes, elecs);
+  create_electrode(RHS, electrodemap, chi, elec_vec);
   PoisFFT::Solver<3, double> S(SimParams::ns, SimParams::Ls, SimParams::BCs); //   create solver object, 3 dimensions, double precision
 
   std::cout << "Beginning solver" << std::endl;
@@ -241,7 +214,7 @@ void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, 
     cycleCount++;
   }while(cycleErr > SimParams::MAX_ERROR && cycleErr != 0);
 
-  calc_charge(RHS, numElectrodes, elecs);
+  calc_charge(RHS, elec_vec);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
 
   save_file2D(arr, SimParams::OUTFILE, resultpath, finalscale, xoffset, yoffset); //solution is in arr
@@ -261,10 +234,10 @@ void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, 
   delete[] correction;
 }
 
-void calc_charge(double* RHS , const int numElectrodes, Electrodes elecs[]){
+void calc_charge(double* RHS , std::vector<Electrodes> elecs){
   //Want this to take in electrode location parameters, and spit out the charge on the conductor.
   double xmin, xmax, ymin, ymax, zmin, zmax, sum;
-  for( int currElectrode = 0; currElectrode < numElectrodes; currElectrode++){
+  for( int currElectrode = 0; currElectrode < elecs.size(); currElectrode++){
     xmin = elecs[currElectrode].x[0];
     xmax = elecs[currElectrode].x[1];
     ymin = elecs[currElectrode].y[0];
@@ -284,8 +257,8 @@ void calc_charge(double* RHS , const int numElectrodes, Electrodes elecs[]){
   }
 }
 
-void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, const int numElectrodes, Electrodes elecs[]){
-  for(int i = 0; i < numElectrodes; i++){
+void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs){
+  for(int i = 0; i < elecs.size(); i++){
     elecs[i].draw(SimParams::ns, SimParams::ds, SimParams::Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   }
 }

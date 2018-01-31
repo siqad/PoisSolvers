@@ -76,9 +76,9 @@ void init_eps(double* eps);
 void init_rhs(double* chi, double* eps, double* rhs);
 double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
 void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
-void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, const int numElectrodes, Electrodes elecs[]);
+void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
 void worker(int, std::vector<Electrodes>, std::string, double, double, double);
-void calc_charge(double* RHS , const int numElectrodes, Electrodes elecs[]);
+void calc_charge(double* RHS , std::vector<Electrodes> elecs);
 void parse_tree(std::vector<Electrodes>*, std::string);
 std::vector<Electrodes> set_buffer(std::vector<Electrodes>, double*, double*, double*);
 
