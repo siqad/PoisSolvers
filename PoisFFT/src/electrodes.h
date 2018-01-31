@@ -1,8 +1,6 @@
 #ifndef ELECTRODES_H
 #define ELECTRODES_H
-
 #include <utility>
-#define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 
 class Electrodes{
   public:
@@ -15,6 +13,9 @@ class Electrodes{
     double potential;   //pointer after conversion of vector
     double WF;
     void draw(const int[3], const double[3], const double[3], double*, std::pair<int,double>*, double*);
+    int IND(int i, int j, int k, const int ns[]);
 };
+
+
 
 #endif //ELECTRODES_H

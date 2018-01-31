@@ -18,17 +18,17 @@
 
 // Physical constants are placed inside PhysConstants namespace.
 
-#define SIMGRID 50
-#define SIMLENGTH 1.0e-6
-#define MAXERROR 5e-2
-#define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
+// #define SIMGRID 50
+// #define SIMLENGTH 1.0e-6
+// #define MAX_ERROR 5e-2
+// #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k //This assumes we know ns at compile time.
 #define FILENAME ((char*)"outfile.txt")
 #define RHOFILE ((char*) "outrho.txt")
 #define EPSFILE ((char*) "outeps.txt")
 #define CORRECTIONFILE ((char*) "outcorr.txt")
 
 
-void save_file2D(const int[], const double[], const double[], double*, char[], std::string, double, double, double);
+void save_file2D(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset);
 void save_fileXML(const int[], const double[], const double[], double*, char[], std::string, double, double, double, std::vector<Electrodes>);
 
 void check_solution(const int[], const double[], const double[], double*);
@@ -57,6 +57,9 @@ int main(int argc,char* argv[]){
   for(int i = 0; i < argc; i++){
     std::cout << argv[i] << std::endl;
   }
+
+  std::cout << SimParams::Ls[0] << " " << SimParams::Ls[1] << " " << SimParams::Ls[2] << std::endl;
+  std::cout << SimParams::ns[0] << " " << SimParams::ns[1] << " " << SimParams::ns[2] << std::endl;
 
   if(argc == 1){
     std::cout << "No path was passed to the solver program. Program terminating." << std::endl;
@@ -117,14 +120,14 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec, double* fin
   std::cout << "ymax: " << ymax << std::endl;
 
   //x-scaling to keep 10% buffer on each horizontal side.
-  if(xmin < 0.1*SIMLENGTH || xmax > 0.9*SIMLENGTH){
+  if(xmin < 0.1*SimParams::Ls[0] || xmax > 0.9*SimParams::Ls[0]){
     xlength = xmax - xmin;
-    xscale = 0.8*SIMLENGTH/xlength;
+    xscale = 0.8*SimParams::Ls[0]/xlength;
     std::cout << "xlength: " << xlength << std::endl;
   }
-  if(ymin < 0.1*SIMLENGTH || ymax > 0.9*SIMLENGTH){
+  if(ymin < 0.1*SimParams::Ls[1] || ymax > 0.9*SimParams::Ls[1]){
     ylength = ymax - ymin;
-    yscale = 0.8*SIMLENGTH/ylength;
+    yscale = 0.8*SimParams::Ls[1]/ylength;
     std::cout << "ylength: " << ylength << std::endl;
   }
   // std::cout << "xscale: " << xscale << std::endl;
@@ -167,19 +170,17 @@ std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec, double* fin
   std::cout << "ymin: " << ymin << std::endl;
   std::cout << "ymax: " << ymax << std::endl;
 
-  if(xmin < 0.1*SIMLENGTH){  //too far to the left, want positive offset to bring it right
+  if(xmin < 0.1*SimParams::Ls[0]){  //too far to the left, want positive offset to bring it right
     //find the offset
-    *xoffset = 0.1*SIMLENGTH - xmin;
-  }else if(xmax > 0.9*SIMLENGTH){ //too far right, want negative offset to bring it left.
-    // *xoffset = xmax - 0.9*SIMLENGTH;
-    *xoffset = 0.9*SIMLENGTH - xmax;
+    *xoffset = 0.1*SimParams::Ls[0] - xmin;
+  }else if(xmax > 0.9*SimParams::Ls[0]){ //too far right, want negative offset to bring it left.
+    *xoffset = 0.9*SimParams::Ls[0] - xmax;
   }
-  if(ymin < 0.1*SIMLENGTH){ //too far up
+  if(ymin < 0.1*SimParams::Ls[1]){ //too far up
     //find the offset in y
-    *yoffset = 0.1*SIMLENGTH - ymin;
-  }else if(ymax > 0.9*SIMLENGTH){ //too far down
-    // *yoffset = ymax - 0.9*SIMLENGTH;
-    *yoffset = 0.9*SIMLENGTH - ymax;
+    *yoffset = 0.1*SimParams::Ls[1] - ymin;
+  }else if(ymax > 0.9*SimParams::Ls[1]){ //too far down
+    *yoffset = 0.9*SimParams::Ls[1] - ymax;
   }
 
   std::cout << "X offset is: " << *xoffset << std::endl;
@@ -225,7 +226,7 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
                 potential = subtree2.get<double>(label);
                 std::cout << label << ":  " << potential << std::endl;
               }else if(label == "electrode_type"){ //electrode_type is the last one
-                elecs->push_back(Electrodes(pix_x1*SIMLENGTH, pix_x2*SIMLENGTH, pix_y1*SIMLENGTH, pix_y2*SIMLENGTH, 0.3e-6, 0.7e-6, potential, PhysConstants::WF_GOLD));
+                elecs->push_back(Electrodes(pix_x1*SimParams::Ls[0], pix_x2*SimParams::Ls[0], pix_y1*SimParams::Ls[1], pix_y2*SimParams::Ls[1], 0.3e-6, 0.7e-6, potential, PhysConstants::WF_GOLD));
               }else if(label != "<xmlattr>"){ //unexpected extras
                 std::string value = subtree2.get<std::string>(label);
                 std::cout << label << ":  " << value << std::endl;
@@ -243,20 +244,21 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
 void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, double finalscale, double xoffset, double yoffset){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
 
-
-  const double Ls[3] = {SIMLENGTH, SIMLENGTH, SIMLENGTH}; //x, y, z domain dimensions in MICROMETRE
-  const int ns[3] = {SIMGRID, SIMGRID, SIMGRID}; //x, y, z gridpoint numbers
-  double ds[3];  // distances between gridpoints
+  // const double Ls[3] = {SIMLENGTH, SIMLENGTH, SIMLENGTH}; //x, y, z domain dimensions in MICROMETRE
+  // Just pass SimParams::Ls instead
+  // const int ns[3] = {SIMGRID, SIMGRID, SIMGRID}; //x, y, z gridpoint numbers
+  // Just pass SimParams::ns instead
+  // double ds[3];  // distances between gridpoints
   double cycleErr;
   int* indexErr = new int;
 
-
-  const int BCs[6] = {PoisFFT::NEUMANN, PoisFFT::NEUMANN,  //boundary conditions
-                      PoisFFT::NEUMANN, PoisFFT::NEUMANN,
-                      PoisFFT::NEUMANN, PoisFFT::NEUMANN};
+  // Just pass SimParams::BCs instead
+  // const int BCs[6] = {PoisFFT::NEUMANN, PoisFFT::NEUMANN,  //boundary conditions
+  //                     PoisFFT::NEUMANN, PoisFFT::NEUMANN,
+  //                     PoisFFT::NEUMANN, PoisFFT::NEUMANN};
   int i;
   for (i = 0; i<3; i++){ // set the grid, depends on the boundary conditions
-    ds[i] = Ls[i] / ns[i];
+    SimParams::ds[i] = SimParams::Ls[i] / (double)SimParams::ns[i];
   }
   // const int numElectrodes = 4;
   // const int numElectrodes = 2;
@@ -274,39 +276,41 @@ void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, 
     std::cout << elecs[i].WF << std::endl;
   }
 
-  double *arr = new double[ns[0]*ns[1]*ns[2]];
-  double *arrOld = new double[ns[0]*ns[1]*ns[2]];
-  double *eps = new double[ns[0]*ns[1]*ns[2]]; //RELATIVE permittivity.
-  double *chi = new double[ns[0]*ns[1]*ns[2]]; //electron affinity or WF
-  double *RHS = new double[ns[0]*ns[1]*ns[2]]; // from which you can get a pointer to contiguous buffer, will contain rho.
-  double *correction = new double[ns[0]*ns[1]*ns[2]]; // correction used to update RHS
-  std::pair<int,double> *electrodemap = new std::pair<int,double>[ns[0]*ns[1]*ns[2]]; //stores electrode surface info and potentials.
+  const int nsize = SimParams::ns[0]*SimParams::ns[1]*SimParams::ns[2]; //array size
+  double *arr = new double[nsize];
+  double *arrOld = new double[nsize];
+  double *eps = new double[nsize]; //RELATIVE permittivity.
+  double *chi = new double[nsize]; //electron affinity or WF
+  double *RHS = new double[nsize]; // from which you can get a pointer to contiguous buffer, will contain rho.
+  double *correction = new double[nsize]; // correction used to update RHS
+  std::pair<int,double> *electrodemap = new std::pair<int,double>[nsize]; //stores electrode surface info and potentials.
   int cycleCount = 0;
   const std::clock_t begin_time = std::clock();
-  init_eps(ns, ds, Ls, eps); // set permittivity
-  init_rhs(ns, ds, Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  create_electrode(ns, ds, Ls, RHS, electrodemap, chi, numElectrodes, elecs);
-  PoisFFT::Solver<3, double> S(ns, Ls, BCs); //   create solver object, 3 dimensions, double precision
+  init_eps(SimParams::ns, SimParams::ds, SimParams::Ls, eps); // set permittivity
+  init_rhs(SimParams::ns, SimParams::ds, SimParams::Ls, chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
+  create_electrode(SimParams::ns, SimParams::ds, SimParams::Ls, RHS, electrodemap, chi, numElectrodes, elecs);
+  PoisFFT::Solver<3, double> S(SimParams::ns, SimParams::Ls, SimParams::BCs); //   create solver object, 3 dimensions, double precision
 
 
   std::cout << "Beginning solver" << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(ns, Ls, arr, correction, electrodemap, indexErr, arrOld, eps, BCs);
-    apply_correction(ns, ds, RHS, correction, electrodemap);
+    cycleErr = check_error(SimParams::ns, SimParams::Ls, arr, correction, electrodemap, indexErr, arrOld, eps, SimParams::BCs);
+    apply_correction(SimParams::ns, SimParams::ds, RHS, correction, electrodemap);
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
     cycleCount++;
-  }while(cycleErr > MAXERROR && cycleErr != 0);
+  }while(cycleErr > SimParams::MAX_ERROR && cycleErr != 0);
 
 
-  calc_charge(ns, Ls, RHS, numElectrodes, elecs);
+  calc_charge(SimParams::ns, SimParams::Ls, RHS, numElectrodes, elecs);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
 
 
-  save_file2D(ns, ds, Ls, RHS, RHOFILE, resultpath, finalscale, xoffset, yoffset);
-  save_file2D(ns, ds, Ls, arr, FILENAME, resultpath, finalscale, xoffset, yoffset); //solution is in arr
-  save_file2D(ns, ds, Ls, correction, CORRECTIONFILE, resultpath, finalscale, xoffset, yoffset);
-  save_fileXML(ns, ds, Ls, arr, "sim_result.xml", resultpath, finalscale, xoffset, yoffset, elec_vec);
+  save_file2D(RHS, RHOFILE, resultpath, finalscale, xoffset, yoffset);
+  save_file2D(arr, FILENAME, resultpath, finalscale, xoffset, yoffset); //solution is in arr
+  save_file2D(correction, CORRECTIONFILE, resultpath, finalscale, xoffset, yoffset);
+  // use char* to prevent compiler warning text
+  save_fileXML(SimParams::ns, SimParams::ds, SimParams::Ls, arr, (char*)"sim_result.xml", resultpath, finalscale, xoffset, yoffset, elec_vec);
 
 
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
@@ -336,7 +340,7 @@ void calc_charge( const int ns[3], const double Ls[3], double* RHS , const int n
     for(int i = (int) ns[0]*xmin/Ls[0]; i <= (int) ns[0]*xmax/Ls[0]; i++){ //xmin first, then xmax
       for(int j = (int) ns[1]*ymin/Ls[1]; j <= (int) ns[1]*ymax/Ls[1]; j++){
         for(int k = (int) ns[2]*zmin/Ls[2]; k <= (int) ns[2]*zmax/Ls[2]; k++){
-          sum += RHS[IND(i,j,k)];
+          sum += RHS[SimParams::IND(i,j,k)];
         }
       }
     }
@@ -389,8 +393,7 @@ double check_error(const int ns[3], const double Ls[3], double *arr, double *cor
   return err;
 }
 
-
-void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset){
+void save_file2D(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset){
   // std::string finalpath = fname;
   std::string temp = fname;
   std::string finalpath = pathname+"/"+temp;
@@ -400,11 +403,11 @@ void save_file2D(const int ns[3], const double ds[3], const double Ls[3], double
   // std::cout << temp << std::endl;
   outfile.open(finalpath.c_str(), std::ios_base::out | std::ios_base::trunc );
   std::cout << "Dumping to " << finalpath << std::endl;
-  const int k = ns[2]/2;
-  for (int i = 0; i < ns[0]; i++){
-    for (int j = 0; j < ns[1]; j++){
-      outfile << std::setprecision(5) << std::scientific << (i*ds[0]-xoffset)/finalscale << " "
-              << (j*ds[1]-yoffset)/finalscale << " " << arr[IND(i,j,k)] << std::endl;
+  const int k = SimParams::ns[2]/2;
+  for (int i = 0; i < SimParams::ns[0]; i++){
+    for (int j = 0; j < SimParams::ns[1]; j++){
+      outfile << std::setprecision(5) << std::scientific << (i*SimParams::ds[0]-xoffset)/finalscale << " "
+              << (j*SimParams::ds[1]-yoffset)/finalscale << " " << arr[SimParams::IND(i,j,k)] << std::endl;
     }
     outfile << std::endl;
   }
@@ -440,10 +443,10 @@ void save_fileXML(const int ns[3], const double ds[3], const double Ls[3], doubl
   // electrode
   for (auto elec : elec_vec) {
     boost::property_tree::ptree node_dim;
-    node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-xoffset)/finalscale/SIMLENGTH).c_str()));
-    node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-yoffset)/finalscale/SIMLENGTH).c_str()));
-    node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-xoffset)/finalscale/SIMLENGTH).c_str()));
-    node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-yoffset)/finalscale/SIMLENGTH).c_str()));
+    node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-xoffset)/finalscale/SimParams::Ls[0]).c_str()));
+    node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-yoffset)/finalscale/SimParams::Ls[1]).c_str()));
+    node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-xoffset)/finalscale/SimParams::Ls[0]).c_str()));
+    node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-yoffset)/finalscale/SimParams::Ls[1]).c_str()));
     node_electrode.add_child("dim", node_dim);
     boost::property_tree::ptree node_pot;
     node_pot.put("", std::to_string(elec.potential).c_str());
@@ -456,9 +459,9 @@ void save_fileXML(const int ns[3], const double ds[3], const double Ls[3], doubl
     for (int j = 0; j < ns[1]; j++){
       //create each entry
       boost::property_tree::ptree node_potential_val;
-      node_potential_val.put("<xmlattr>.x", (std::to_string((i*ds[0]-xoffset)/finalscale/SIMLENGTH)).c_str());
-      node_potential_val.put("<xmlattr>.y", (std::to_string((j*ds[1]-yoffset)/finalscale/SIMLENGTH)).c_str());
-      node_potential_val.put("<xmlattr>.val", std::to_string(arr[IND(i,j,k)]).c_str());
+      node_potential_val.put("<xmlattr>.x", (std::to_string((i*ds[0]-xoffset)/finalscale/SimParams::Ls[0])).c_str());
+      node_potential_val.put("<xmlattr>.y", (std::to_string((j*ds[1]-yoffset)/finalscale/SimParams::Ls[1])).c_str());
+      node_potential_val.put("<xmlattr>.val", std::to_string(arr[SimParams::IND(i,j,k)]).c_str());
       node_potential_map.add_child("potential_val", node_potential_val);
     }
   }
@@ -488,10 +491,10 @@ void init_eps(const int ns[3], const double ds[3], const double Ls[3], double* a
         double z = ds[2]*(k+0.5);
         if (y < Ls[1]/2){
           // a[IND(i,j,k)] = PhysConstants::EPS_SI; //Si relative permittivity
-          a[IND(i,j,k)] = 1;  //Free space
+          a[SimParams::IND(i,j,k)] = 1;  //Free space
         } else{
           // a[IND(i,j,k)] = PhysConstants::EPS_SI; //Si relative permittivity
-          a[IND(i,j,k)] = 1;  //Free space
+          a[SimParams::IND(i,j,k)] = 1;  //Free space
         }
       }
     }
@@ -509,8 +512,8 @@ void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* c
       for (k=0;k<ns[2];k++){
         double z = ds[2]*(k+0.5);
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
-        a[IND(i,j,k)] = 0; //in m^-3, scale by permittivity
-        chi[IND(i,j,k)] = PhysConstants::CHI_SI;
+        a[SimParams::IND(i,j,k)] = 0; //in m^-3, scale by permittivity
+        chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
       }
     }
   }

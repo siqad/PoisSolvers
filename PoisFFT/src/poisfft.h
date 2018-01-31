@@ -1,3 +1,7 @@
+#ifndef POISFFT_H
+#define POISFFT_H
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -96,3 +100,4 @@ namespace PoisFFT{
 
 }
 #endif
+#endif //POISFFT_H
