@@ -1,7 +1,23 @@
 #ifndef POISSOLVER_H
 #define POISSOLVER_H
 
+#include <cmath>
+#include <iostream>
 #include "poisfft.h"
+#include <stdlib.h>
+#include <iomanip>
+#include <fstream>
+#include <utility>
+#include <algorithm>
+#include <gperftools/profiler.h>
+#include <ctime>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
+#include "electrodes.h"
+#include <vector>
+#include <string>
+
 
 // Physical constants used for calculation
 namespace PhysConstants
@@ -22,6 +38,7 @@ namespace PhysConstants
 // ds needs to be reinitialised in source, since it depends on Ls and ns.
 namespace SimParams
 {
+  //stuff used during simulation
   double Ls[3] = {1e-6, 1e-6, 1e-6}; // simulation length in x, y, z
   int ns[3] = {50, 50, 50}; // resolution in x, y, z
   double ds[3]; // simulation length per resolution step, CALCULATED
@@ -30,6 +47,13 @@ namespace SimParams
                  PoisFFT::NEUMANN, PoisFFT::NEUMANN}; // boundary conditions for left, right, top, bottom, front, back.
   double MAX_ERROR = 5e-2;
   int IND(int i, int j, int k){ return (i)*(ns[1]*ns[2]) + (j)*(ns[2]) + k; };
+
+  //stuff used post-simulation
+  char* OUTFILE = (char*) "outfile.txt";
+  char* RHOFILE = (char*) "rhofile.txt";
+  char* EPSFILE = (char*) "epsfile.txt";
+  char* CORRFILE = (char*) "corrfile.txt";
+  char* RESXML = (char*) "sim_result.xml";
 };
 
 class Poissolver
@@ -45,5 +69,17 @@ class Poissolver
   //   double WF;
   //   void draw(const int[3], const double[3], const double[3], double*, std::pair<int,double>*, double*);
 };
+
+void save_file2D(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset);
+void save_fileXML(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset, std::vector<Electrodes> elec_vec);
+void init_eps(double* eps);
+void init_rhs(double* chi, double* eps, double* rhs);
+double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
+void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
+void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, const int numElectrodes, Electrodes elecs[]);
+void worker(int, std::vector<Electrodes>, std::string, double, double, double);
+void calc_charge(double* RHS , const int numElectrodes, Electrodes elecs[]);
+void parse_tree(std::vector<Electrodes>*, std::string);
+std::vector<Electrodes> set_buffer(std::vector<Electrodes>, double*, double*, double*);
 
 #endif //POISSOLVER_H

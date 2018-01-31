@@ -1,44 +1,4 @@
-#include <cmath>
-#include <iostream>
-#include "poisfft.h"
 #include "poissolver.h"
-#include <stdlib.h>
-#include <iomanip>
-#include <fstream>
-#include <utility>
-#include <algorithm>
-#include <gperftools/profiler.h>
-#include <ctime>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/foreach.hpp>
-#include "electrodes.h"
-#include <vector>
-#include <string>
-
-// Physical constants are placed inside PhysConstants namespace.
-// #define SIMGRID 50
-// #define SIMLENGTH 1.0e-6
-// #define MAX_ERROR 5e-2
-// #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k //This assumes we know ns at compile time.
-#define FILENAME ((char*)"outfile.txt")
-#define RHOFILE ((char*) "outrho.txt")
-#define EPSFILE ((char*) "outeps.txt")
-#define CORRECTIONFILE ((char*) "outcorr.txt")
-
-
-void save_file2D(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset);
-void save_fileXML(double* arr, char fname[], std::string pathname, double finalscale, double xoffset, double yoffset, std::vector<Electrodes> elec_vec);
-void init_eps(double* eps);
-void init_rhs(double* chi, double* eps, double* rhs);
-double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
-void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
-void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, const int numElectrodes, Electrodes elecs[]);
-void worker(int, std::vector<Electrodes>, std::string, double, double, double);
-void calc_charge(double* RHS , const int numElectrodes, Electrodes elecs[]);
-void parse_tree(std::vector<Electrodes>*, std::string);
-std::vector<Electrodes> set_buffer(std::vector<Electrodes>, double*, double*, double*);
-
 
 int main(int argc,char* argv[]){
   std::cout << "Number of command line arguments: " << argc << std::endl;
@@ -76,7 +36,6 @@ int main(int argc,char* argv[]){
       std::cout << "Path not detected. Problem XML path needs to be provided as first argument to binary. Terminating." << std::endl;
     }
   }
-
   return 0;
 }
 
@@ -284,15 +243,14 @@ void worker(int step, std::vector<Electrodes> elec_vec, std::string resultpath, 
 
   calc_charge(RHS, numElectrodes, elecs);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
-  save_file2D(RHS, RHOFILE, resultpath, finalscale, xoffset, yoffset);
-  save_file2D(arr, FILENAME, resultpath, finalscale, xoffset, yoffset); //solution is in arr
-  save_file2D(correction, CORRECTIONFILE, resultpath, finalscale, xoffset, yoffset);
-  // use char* to prevent compiler warning text
-  save_fileXML(arr, (char*)"sim_result.xml", resultpath, finalscale, xoffset, yoffset, elec_vec);
+
+  save_file2D(arr, SimParams::OUTFILE, resultpath, finalscale, xoffset, yoffset); //solution is in arr
+  save_file2D(RHS, SimParams::RHOFILE, resultpath, finalscale, xoffset, yoffset);
+  save_file2D(correction, SimParams::CORRFILE, resultpath, finalscale, xoffset, yoffset);
+  save_fileXML(arr, SimParams::RESXML, resultpath, finalscale, xoffset, yoffset, elec_vec);
 
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
-
 
   delete indexErr;
   delete[] eps;
