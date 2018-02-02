@@ -9,7 +9,6 @@
 #include <fstream>
 #include <utility>
 #include <algorithm>
-#include <gperftools/profiler.h>
 #include <ctime>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -23,7 +22,6 @@
 namespace PhysConstants
 {
    const double QE = 1.6021766208e-19; //elementary charge
-  //  const double PI = 3.14159265358979323846;
    const double EPS0 = 8.85418782e-12; //permittivity of free space
    const double WF_GOLD = 5.1; //workfunction for gold in eV
    const double WF_COPPER = 4.7; //workfunction for copper in eV
@@ -35,7 +33,6 @@ namespace PhysConstants
 };
 
 // Simulation parameters used for simulation control
-// ds needs to be reinitialised in source, since it depends on Ls and ns.
 namespace SimParams
 {
   // scaling and offset values
@@ -60,29 +57,25 @@ namespace SimParams
   char* RESXML = (char*) "sim_result.xml";
 };
 
-class Poissolver
+class PoisSolver
 {
-  // public:
-  //   Electrodes(); //default constructor
-  //   Electrodes(double, double, double, double, double, double, double, double); //parametrized constructor
-  //   ~Electrodes(); //destructor
-  //   double x[2]; //xmin (x[0]) and xmax (x[1])
-  //   double y[2]; //ymin and ymax
-  //   double z[2]; //zmin and zmax
-  //   double potential;   //pointer after conversion of vector
-  //   double WF;
-  //   void draw(const int[3], const double[3], const double[3], double*, std::pair<int,double>*, double*);
+  public:
+      PoisSolver(){} //default constructor
+      // PoisSolver();
+      ~PoisSolver(){} //destructor1
+      void helloWorld(void);
+      void worker(int step, std::vector<Electrodes> elec_vec);
+      void init_eps(double* eps);
+      void init_rhs(double* chi, double* eps, double* rhs);
+      void save_file2D(double* arr, char fname[]);
+      void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec);
+      double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
+      void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
+      void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
+      void calc_charge(double* RHS , std::vector<Electrodes> elecs);
 };
 
-void save_file2D(double* arr, char fname[]);
-void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec);
-void init_eps(double* eps);
-void init_rhs(double* chi, double* eps, double* rhs);
-double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
-void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
-void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
-void worker(int step, std::vector<Electrodes> elec_vec);
-void calc_charge(double* RHS , std::vector<Electrodes> elecs);
+// functions used by main
 void parse_tree(std::vector<Electrodes> *elecs, std::string path);
 std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
 

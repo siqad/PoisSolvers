@@ -1,10 +1,15 @@
 #include "poissolver.h"
 
+void PoisSolver::helloWorld(void){
+  std::cout << "@@@@@@@@@@@@@HELLO WORLD@@@@@@@@@@@@" << std::endl;
+}
+
 int main(int argc,char* argv[]){
   std::cout << "Number of command line arguments: " << argc << std::endl;
   std::vector<Electrodes> elec_vec;
   std::string arg1;
   std::string arg2;
+  PoisSolver *ps;
 
   if(argc == 1){
     std::cout << "No path was passed to the solver program. Program terminating." << std::endl;
@@ -22,7 +27,10 @@ int main(int argc,char* argv[]){
         SimParams::resultpath = arg2.substr(0, found);
         std::cout << SimParams::resultpath << std::endl;
         for(int i = 0; i < 1; i++){
-          worker(i, elec_vec); //where the magic happens
+          // All the relevant information is inside SimParams.
+          ps = new PoisSolver;
+          ps->helloWorld();
+          ps->worker(i, elec_vec); //where the magic happens
         }
       }else{
         std::cout << "Path not detected. Result XML path needs to be provided as second argument to binary. Terminating." << std::endl;
@@ -31,6 +39,7 @@ int main(int argc,char* argv[]){
       std::cout << "Path not detected. Problem XML path needs to be provided as first argument to binary. Terminating." << std::endl;
     }
   }
+  delete ps;
   return 0;
 }
 
@@ -148,7 +157,7 @@ void parse_tree(std::vector<Electrodes> *elecs, std::string path){
   std::cout << "Successfully read " << path << std::endl;
 }
 
-void worker(int step, std::vector<Electrodes> elec_vec){
+void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec){
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   double cycleErr;
   int* indexErr = new int;
@@ -200,7 +209,7 @@ void worker(int step, std::vector<Electrodes> elec_vec){
   delete[] correction;
 }
 
-void calc_charge(double* RHS , std::vector<Electrodes> elecs){
+void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs){
   //Want this to take in electrode location parameters, and spit out the charge on the conductor.
   double xmin, xmax, ymin, ymax, zmin, zmax, sum;
   for( int currElectrode = 0; currElectrode < elecs.size(); currElectrode++){
@@ -223,13 +232,13 @@ void calc_charge(double* RHS , std::vector<Electrodes> elecs){
   }
 }
 
-void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs){
+void PoisSolver::create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs){
   for(int i = 0; i < elecs.size(); i++){
     elecs[i].draw(SimParams::ns, SimParams::ds, SimParams::Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   }
 }
 
-void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap){
+void PoisSolver::apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap){
   for(int i = 0; i < SimParams::ns[0]*SimParams::ns[1]*SimParams::ns[2]; i++){
     if(electrodemap[i].first == true){ //only correct error at electrode surfaces.
       RHS[i] -= correction[i];
@@ -237,7 +246,7 @@ void apply_correction(double *RHS, double *correction, std::pair<int,double> *el
   }
 }
 
-double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps){
+double PoisSolver::check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps){
   double err = 0;
   double errOld;
   double correctionWeight;
@@ -264,7 +273,7 @@ double check_error(double *arr, double *correction, std::pair<int,double> *elect
   return err;
 }
 
-void save_file2D(double* arr, char fname[]){
+void PoisSolver::save_file2D(double* arr, char fname[]){
   std::string temp = fname;
   std::string finalpath = SimParams::resultpath + "/" + temp;
   std::ofstream outfile;
@@ -281,7 +290,7 @@ void save_file2D(double* arr, char fname[]){
 }
 
 
-void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec){
+void PoisSolver::save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec){
 
   // define major XML nodes
   boost::property_tree::ptree tree;
@@ -341,7 +350,7 @@ void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec){
 }
 
 
-void init_eps(double* eps){
+void PoisSolver::init_eps(double* eps){
   int i,j,k;
   std::cout << "Initialising eps" << std::endl;
   for (i=0;i<SimParams::ns[0];i++){
@@ -362,7 +371,7 @@ void init_eps(double* eps){
   std::cout << "Finished eps initialisation" << std::endl;
 }
 
-void init_rhs(double* chi, double* eps, double* rhs){
+void PoisSolver::init_rhs(double* chi, double* eps, double* rhs){
   int i,j,k;
   std::cout << "Initialising RHS" << std::endl;
   for (i=0;i<SimParams::ns[0];i++){
