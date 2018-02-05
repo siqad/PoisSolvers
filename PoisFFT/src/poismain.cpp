@@ -24,44 +24,99 @@ namespace SimParams
   char* RESXML = (char*) "sim_result.xml";
 };
 
+using namespace phys;
+
+// int main(int argc,char* argv[]){
+//   std::cout << "Number of command line arguments: " << argc << std::endl;
+//   std::vector<Electrodes> elec_vec;
+//   std::string arg1;
+//   std::string arg2;
+//
+//   if(argc == 1){
+//     std::cout << "No path was passed to the solver program. Program terminating." << std::endl;
+//   }else if(argc > 2){ //need at LEAST binary call, input path, output path.
+//     arg1 = argv[1];
+//     arg2 = argv[2];
+//     if(arg1.find(".xml") != std::string::npos){ //argv[1] is an xml path, assume it is the INPUT file.
+//       std::cout << "Input path detected." << std::endl;
+//       parse_tree(&elec_vec, argv[1]);
+//       elec_vec = set_buffer(elec_vec);
+//       std::cout << SimParams::finalscale << " " << SimParams::xoffset << " " << SimParams::yoffset << std::endl;
+//       if(arg2.find(".xml") != std::string::npos){ //argv[2] is an xml path, assume it is the OUTPUT file.
+//         std::cout << "Output path detected." << std::endl;
+//         std::size_t found = arg2.find_last_of("/\\");
+//         SimParams::resultpath = arg2.substr(0, found);
+//         std::cout << SimParams::resultpath << std::endl;
+//         for(int i = 0; i < 1; i++){
+//           // All the relevant information is inside SimParams.
+//           PoisSolver ps(arg1, arg2);
+//           // ps->helloWorld();
+//           // ps.worker(i, elec_vec); //where the magic happens
+//         }
+//       }else{
+//         std::cout << "Path not detected. Result XML path needs to be provided as second argument to binary. Terminating." << std::endl;
+//       }
+//     }else{
+//       std::cout << "Path not detected. Problem XML path needs to be provided as first argument to binary. Terminating." << std::endl;
+//     }
+//   }
+//   return 0;
+// }
+
 int main(int argc,char* argv[]){
   std::cout << "Number of command line arguments: " << argc << std::endl;
   std::vector<Electrodes> elec_vec;
-  std::string arg1;
-  std::string arg2;
-  PoisSolver *ps;
+  std::string in_path;
+  std::string out_path;
 
-  if(argc == 1){
-    std::cout << "No path was passed to the solver program. Program terminating." << std::endl;
-  }else if(argc > 2){ //need at LEAST binary call, input path, output path.
-    arg1 = argv[1];
-    arg2 = argv[2];
-    if(arg1.find(".xml") != std::string::npos){ //argv[1] is an xml path, assume it is the INPUT file.
-      std::cout << "Input path detected." << std::endl;
-      parse_tree(&elec_vec, argv[1]);
-      elec_vec = set_buffer(elec_vec);
-      std::cout << SimParams::finalscale << " " << SimParams::xoffset << " " << SimParams::yoffset << std::endl;
-      if(arg2.find(".xml") != std::string::npos){ //argv[2] is an xml path, assume it is the OUTPUT file.
-        std::cout << "Output path detected." << std::endl;
-        std::size_t found = arg2.find_last_of("/\\");
-        SimParams::resultpath = arg2.substr(0, found);
-        std::cout << SimParams::resultpath << std::endl;
-        for(int i = 0; i < 1; i++){
-          // All the relevant information is inside SimParams.
-          ps = new PoisSolver;
-          ps->helloWorld();
-          ps->worker(i, elec_vec); //where the magic happens
-        }
-      }else{
-        std::cout << "Path not detected. Result XML path needs to be provided as second argument to binary. Terminating." << std::endl;
-      }
-    }else{
-      std::cout << "Path not detected. Problem XML path needs to be provided as first argument to binary. Terminating." << std::endl;
+  if(argc < 3){
+    std::cout << "Insufficient inputs provided, program terminating." << std::endl;
+  }else{ //need at LEAST binary call, input path, output path.
+    in_path = argv[1];
+    out_path = argv[2];
+    // if(in_path.find(".xml") != std::string::npos){ //argv[1] is an xml path, assume it is the INPUT file.
+    //   std::cout << "Input path detected." << std::endl;
+    //   parse_tree(&elec_vec, argv[1]);
+    //   elec_vec = set_buffer(elec_vec);
+    //   std::cout << SimParams::finalscale << " " << SimParams::xoffset << " " << SimParams::yoffset << std::endl;
+    //   if(arg2.find(".xml") != std::string::npos){ //argv[2] is an xml path, assume it is the OUTPUT file.
+    //     std::cout << "Output path detected." << std::endl;
+    //     std::size_t found = arg2.find_last_of("/\\");
+    //     SimParams::resultpath = arg2.substr(0, found);
+    //     std::cout << SimParams::resultpath << std::endl;
+    //     for(int i = 0; i < 1; i++){
+    //       // All the relevant information is inside SimParams.
+    //       PoisSolver ps(arg1, arg2);
+    //       // ps->helloWorld();
+    //       // ps.worker(i, elec_vec); //where the magic happens
+    //     }
+    //   }else{
+    //     std::cout << "Path not detected. Result XML path needs to be provided as second argument to binary. Terminating." << std::endl;
+    //   }
+    // }else{
+    //   std::cout << "Path not detected. Problem XML path needs to be provided as first argument to binary. Terminating." << std::endl;
+    // }
+
+    // std::size_t found = out_path.find_last_of("/\\");
+    // SimParams::resultpath = out_path.substr(0, found);
+    std::cout << SimParams::resultpath << std::endl;
+
+
+    std::cout << std::endl << "*** Constructing Problem ***" << std::endl;
+    PoisSolver ps(in_path, out_path);
+
+    std::cout << std::endl << "*** Run Simulation ***" << std::endl;
+    if(!ps.runSim()) {
+      std::cout << "Simulation failed, aborting" << std::endl;
+      return 0;
     }
+
+    std::cout << std::endl << "*** Write Result to Output ***" << std::endl;
+    ps.writeResultsXml();
   }
-  delete ps;
   return 0;
 }
+
 
 std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec) {
   //want to scale electrodes down to fit the simulation space.

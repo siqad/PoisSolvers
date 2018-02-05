@@ -14,12 +14,167 @@ namespace PhysConstants
    const double EPS_SI = 11.7; //relative permittivity of silicon
 };
 
+using namespace phys;
 
-void PoisSolver::helloWorld(void){
+PoisSolver::PoisSolver(const std::string& i_path, const std::string& o_path)
+  : PhysicsEngine("PoisSolver", i_path, o_path)
+{
+  helloWorld();
+}
+
+std::vector<Electrodes> PoisSolver::set_buffer(std::vector<Electrodes> elec_vec) {
+  //want to scale electrodes down to fit the simulation space.
+  //First, find the (min, max) (x, y) values.
+  //Then, extend or contract so that 10% of the sim space is left on each edge as buffer space.
+  double xmin = 100;
+  double ymin = 100;
+  double xmax = 0;
+  double ymax = 0;
+  double xlength;
+  double ylength;
+  double xscale = 1;
+  double yscale = 1;
+  for(int i = 0; i < elec_vec.size(); i++){
+    xmin = std::min(xmin, elec_vec[i].x[0]);
+    ymin = std::min(ymin, elec_vec[i].y[0]);
+    xmax = std::max(xmax, elec_vec[i].x[1]);
+    ymax = std::max(ymax, elec_vec[i].y[1]);
+  }
+
+  //x-scaling to keep 10% buffer on each horizontal side.
+  if(xmin < 0.1*SimParams::Ls[0] || xmax > 0.9*SimParams::Ls[0]){
+    xlength = xmax - xmin;
+    xscale = 0.8*SimParams::Ls[0]/xlength;
+    std::cout << "xlength: " << xlength << std::endl;
+  }
+  if(ymin < 0.1*SimParams::Ls[1] || ymax > 0.9*SimParams::Ls[1]){
+    ylength = ymax - ymin;
+    yscale = 0.8*SimParams::Ls[1]/ylength;
+    std::cout << "ylength: " << ylength << std::endl;
+  }
+  //scale all elements by lowest scaling factor.
+  SimParams::finalscale = std::min(xscale, yscale);
+  // std::cout << "Final scaling factor is: " << SimParams::finalscale << std::endl;
+  for(int i = 0; i < elec_vec.size(); i++){
+    elec_vec[i].x[0] *= SimParams::finalscale;
+    elec_vec[i].x[1] *= SimParams::finalscale;
+    elec_vec[i].y[0] *= SimParams::finalscale;
+    elec_vec[i].y[1] *= SimParams::finalscale;
+  }
+  //now sample is sure to fit within simulation boundaries, with space for buffer.
+  //translate the violating part to the buffer boundary, once for x and once for y.
+  xmin = 100;
+  ymin = 100;
+  xmax = 0;
+  ymax = 0;
+  //find how far outside the boundary the shapes still sit.
+  for(int i = 0; i < elec_vec.size(); i++){
+    xmin = std::min(xmin, elec_vec[i].x[0]);
+    ymin = std::min(ymin, elec_vec[i].y[0]);
+    xmax = std::max(xmax, elec_vec[i].x[1]);
+    ymax = std::max(ymax, elec_vec[i].y[1]);
+  }
+  if(xmin < 0.1*SimParams::Ls[0]){  //too far to the left, want positive offset to bring it right
+    //find the offset
+    SimParams::xoffset = 0.1*SimParams::Ls[0] - xmin;
+  }else if(xmax > 0.9*SimParams::Ls[0]){ //too far right, want negative offset to bring it left.
+    SimParams::xoffset = 0.9*SimParams::Ls[0] - xmax;
+  }
+  if(ymin < 0.1*SimParams::Ls[1]){ //too far up
+    //find the offset in y
+    SimParams::yoffset = 0.1*SimParams::Ls[1] - ymin;
+  }else if(ymax > 0.9*SimParams::Ls[1]){ //too far down
+    SimParams::yoffset = 0.9*SimParams::Ls[1] - ymax;
+  }
+  //fix the offsets
+  for(int i = 0; i < elec_vec.size(); i++){ //move all points based on offset.
+    elec_vec[i].x[0] += SimParams::xoffset;
+    elec_vec[i].x[1] += SimParams::xoffset;
+    elec_vec[i].y[0] += SimParams::yoffset;
+    elec_vec[i].y[1] += SimParams::yoffset;
+  }
+  return elec_vec;
+}
+
+bool PoisSolver::runSim()
+{
+  std::cout << "PoisSolver::runSim()" << std::endl;
+  std::cout << "Grab all electrode locations..." << std::endl;
+  //parse electrodes into elec_vec
+  for(auto elec : problem) {
+    elec_vec.push_back(Electrodes(
+      elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
+      elec->y1*SimParams::Ls[1], elec->y2*SimParams::Ls[1],
+      0.3e-6, 0.7e-6, elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
+  }
+
+  //scale and offset electrodes in elec_vec
+  elec_vec = set_buffer(elec_vec);
+
+  for(int i = 0; i < elec_vec.size(); i++){
+    std::cout << "Electrode " << i << ": " << std::endl;
+    std::cout << "x1, y1:" << elec_vec[i].x[0] << ", " << elec_vec[i].y[0] << std::endl;
+    std::cout << "x2, y2:" << elec_vec[i].x[1] << ", " << elec_vec[i].y[1] << std::endl;
+    std::cout << "potential:" << elec_vec[i].y[1] << std::endl;
+  }
+
+  std::cout << "xoffset, yoffset, finalscale:" << SimParams::xoffset << ", " << SimParams::yoffset << ", " << SimParams::finalscale << std::endl;
+
+
+  for(int i = 0; i < 1; i++){
+    // All the relevant information is inside SimParams.
+    // PoisSolver ps(arg1, arg2);
+    helloWorld();
+    worker(i, elec_vec); //where the magic happens
+  }
+
+  //rescale electrodes and arr.
+
+  return true;
+}
+
+void PoisSolver::rescale(void)
+{
+  // for (auto elec : elec_vec) {
+  //   elec.x[0] = elec.x[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0];
+  //   elec.y[0] = elec.y[0]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1];
+  //   elec.x[1] = elec.x[1]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0];
+  //   elec.y[1] = elec.y[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1];
+  // }
+  // for (auto elec : elec_vec) {
+  //   boost::property_tree::ptree node_dim;
+  //   node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
+  //   node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
+  //   node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
+  //   node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
+  //   node_electrode.add_child("dim", node_dim);
+  //   boost::property_tree::ptree node_pot;
+  //   node_pot.put("", std::to_string(elec.potential).c_str());
+  //   node_electrode.add_child("potential", node_pot);
+  // }
+
+
+  //potential_map
+  // const int k = SimParams::ns[2]/2;
+  // for (int i = 0; i < SimParams::ns[0]; i++){
+  //   for (int j = 0; j < SimParams::ns[1]; j++){
+  //     //create each entry
+  //     boost::property_tree::ptree node_potential_val;
+  //     node_potential_val.put("<xmlattr>.x", (std::to_string((i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0])).c_str());
+  //     node_potential_val.put("<xmlattr>.y", (std::to_string((j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1])).c_str());
+  //     node_potential_val.put("<xmlattr>.val", std::to_string(arr[SimParams::IND(i,j,k)]).c_str());
+  //     node_potential_map.add_child("potential_val", node_potential_val);
+  //   }
+  // }
+}
+
+void PoisSolver::helloWorld(void)
+{
   std::cout << "@@@@@@@@@@@@@HELLO WORLD@@@@@@@@@@@@" << std::endl;
 }
 
-void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec){
+void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
+{
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
   double cycleErr;
   int* indexErr = new int;
@@ -29,7 +184,9 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec){
     SimParams::ds[i] = SimParams::Ls[i] / (double)SimParams::ns[i];
   }
   const int nsize = SimParams::ns[0]*SimParams::ns[1]*SimParams::ns[2]; //array size
-  double *arr = new double[nsize];
+  // double *arr = double[nsize];
+  double temp[nsize];
+  arr = temp;
   double *eps = new double[nsize]; //RELATIVE permittivity.
   double *chi = new double[nsize]; //electron affinity or WF
   double *RHS = new double[nsize]; // from which you can get a pointer to contiguous buffer, will contain rho.
@@ -54,10 +211,10 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec){
   calc_charge(RHS, elec_vec);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
 
-  save_file2D(arr, SimParams::OUTFILE); //solution is in arr
-  save_file2D(RHS, SimParams::RHOFILE);
-  save_file2D(correction, SimParams::CORRFILE);
-  save_fileXML(arr, SimParams::RESXML, elec_vec);
+  // save_file2D(arr, SimParams::OUTFILE); //solution is in arr
+  // save_file2D(RHS, SimParams::RHOFILE);
+  // save_file2D(correction, SimParams::CORRFILE);
+  // save_fileXML(arr, SimParams::RESXML, elec_vec);
 
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
@@ -65,13 +222,14 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec){
   delete indexErr;
   delete[] eps;
   delete[] RHS;
-  delete[] arr;
+  // delete[] arr;
   delete[] electrodemap;
   delete[] chi;
   delete[] correction;
 }
 
-void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs){
+void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs)
+{
   //Want this to take in electrode location parameters, and spit out the charge on the conductor.
   double xmin, xmax, ymin, ymax, zmin, zmax, sum;
   for( int currElectrode = 0; currElectrode < elecs.size(); currElectrode++){
@@ -94,13 +252,15 @@ void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs){
   }
 }
 
-void PoisSolver::create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs){
+void PoisSolver::create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs)
+{
   for(int i = 0; i < elecs.size(); i++){
     elecs[i].draw(SimParams::ns, SimParams::ds, SimParams::Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   }
 }
 
-void PoisSolver::apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap){
+void PoisSolver::apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap)
+{
   for(int i = 0; i < SimParams::ns[0]*SimParams::ns[1]*SimParams::ns[2]; i++){
     if(electrodemap[i].first == true){ //only correct error at electrode surfaces.
       RHS[i] -= correction[i];
@@ -108,7 +268,8 @@ void PoisSolver::apply_correction(double *RHS, double *correction, std::pair<int
   }
 }
 
-double PoisSolver::check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps){
+double PoisSolver::check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps)
+{
   double err = 0;
   double errOld;
   double correctionWeight;
@@ -135,7 +296,8 @@ double PoisSolver::check_error(double *arr, double *correction, std::pair<int,do
   return err;
 }
 
-void PoisSolver::save_file2D(double* arr, char fname[]){
+void PoisSolver::save_file2D(double* arr, char fname[])
+{
   std::string temp = fname;
   std::string finalpath = SimParams::resultpath + "/" + temp;
   std::ofstream outfile;
@@ -152,8 +314,8 @@ void PoisSolver::save_file2D(double* arr, char fname[]){
 }
 
 
-void PoisSolver::save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec){
-
+void PoisSolver::save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec)
+{
   // define major XML nodes
   boost::property_tree::ptree tree;
   boost::property_tree::ptree node_root;       // <sim_out>
@@ -200,6 +362,7 @@ void PoisSolver::save_fileXML(double* arr, char fname[], std::vector<Electrodes>
       node_potential_map.add_child("potential_val", node_potential_val);
     }
   }
+
   node_root.add_child("eng_info", node_eng_info);
   node_root.add_child("electrode", node_electrode);
   node_root.add_child("potential_map", node_potential_map);
@@ -212,7 +375,8 @@ void PoisSolver::save_fileXML(double* arr, char fname[], std::vector<Electrodes>
 }
 
 
-void PoisSolver::init_eps(double* eps){
+void PoisSolver::init_eps(double* eps)
+{
   int i,j,k;
   std::cout << "Initialising eps" << std::endl;
   for (i=0;i<SimParams::ns[0];i++){
@@ -233,7 +397,8 @@ void PoisSolver::init_eps(double* eps){
   std::cout << "Finished eps initialisation" << std::endl;
 }
 
-void PoisSolver::init_rhs(double* chi, double* eps, double* rhs){
+void PoisSolver::init_rhs(double* chi, double* eps, double* rhs)
+{
   int i,j,k;
   std::cout << "Initialising RHS" << std::endl;
   for (i=0;i<SimParams::ns[0];i++){

@@ -16,7 +16,7 @@
 #include "electrodes.h"
 #include <vector>
 #include <string>
-
+#include "phys_engine.h"
 
 // Physical constants used for calculation
 namespace PhysConstants
@@ -55,26 +55,29 @@ namespace SimParams
   extern char* RESXML;
 };
 
-class PoisSolver
-{
-  public:
-      PoisSolver(){} //default constructor
-      // PoisSolver();
-      ~PoisSolver(){} //destructor1
-      void helloWorld(void);
-      void worker(int step, std::vector<Electrodes> elec_vec);
-      void init_eps(double* eps);
-      void init_rhs(double* chi, double* eps, double* rhs);
-      void save_file2D(double* arr, char fname[]);
-      void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec);
-      double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
-      void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
-      void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
-      void calc_charge(double* RHS , std::vector<Electrodes> elecs);
-};
 
+namespace phys{
+  class PoisSolver: public PhysicsEngine
+  {
+    public:
+        PoisSolver(const std::string& i_path, const std::string& o_path);
+        ~PoisSolver(){} //destructor1
+        void helloWorld(void);
+        void worker(int step, std::vector<Electrodes> elec_vec);
+        void init_eps(double* eps);
+        void init_rhs(double* chi, double* eps, double* rhs);
+        void save_file2D(double* arr, char fname[]);
+        void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec);
+        double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
+        void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
+        void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
+        void calc_charge(double* RHS , std::vector<Electrodes> elecs);
+        bool runSim();
+        void rescale();
+        std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
+  };
+}
 // functions used by main
 void parse_tree(std::vector<Electrodes> *elecs, std::string path);
-std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
 
 #endif //POISSOLVER_H

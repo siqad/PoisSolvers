@@ -5,7 +5,7 @@
 class Electrodes{
   public:
     Electrodes(); //default constructor
-    Electrodes(double, double, double, double, double, double, double, double); //parametrized constructor
+    Electrodes(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, double pot, double wf);
     ~Electrodes(); //destructor
     double x[2]; //xmin (x[0]) and xmax (x[1])
     double y[2]; //ymin and ymax

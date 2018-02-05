@@ -51,29 +51,34 @@ namespace phys{
       DBDot(float in_x, float in_y, float in_e) : x(in_x), y(in_y), elec(in_e) {};
     };
 
+    // electrode TODO Nathan change at will
+    struct Electrode {
+      float x1,x2,y1,y2;      // pixel location of electrode.
+      // float dx,dy;    // width and height in angstroms
+      // float z;        // vertical distance from surface
+      float potential;  // voltage that the electrode is set to
+      Electrode(float in_x1, float in_x2, float in_y1, float in_y2, float in_potential)
+        : x1(in_x1), x2(in_x2), y1(in_y1), y2(in_y2), potential(in_potential) {};
+    };
+
     // aggregate
     class Aggregate
     {
     public:
       std::vector<std::shared_ptr<Aggregate>> aggs;
       std::vector<std::shared_ptr<DBDot>> dbs;
+      std::vector<std::shared_ptr<Electrode>> elecs;
 
       // Properties
       int size(); // returns the number of contained DBs, including those in children aggs
     };
 
-    // electrode TODO Nathan change at will
-    struct Electrode {
-      float x,y;      // physical location in angstroms (top left corner)
-      float dx,dy;    // width and height in angstroms
-      float z;        // vertical distance from surface
-      float voltage;  // voltage that the electrode is set to
-    };
 
 
 
     // ITERATOR
     typedef std::vector<std::shared_ptr<DBDot>>::const_iterator DBIter;
+    typedef std::vector<std::shared_ptr<Electrode>>::const_iterator ElecIter;
     typedef std::vector<std::shared_ptr<Aggregate>>::const_iterator AggIter;
 
     // a constant iterator that iterates through all dangling bonds in the problem
@@ -102,8 +107,38 @@ namespace phys{
       void pop();
     };
 
-    DBIterator begin() {return DBIterator(db_tree);}
-    DBIterator end() {return DBIterator(db_tree, false);}
+    // DBIterator begin() {return DBIterator(db_tree);}
+    // DBIterator end() {return DBIterator(db_tree, false);}
+
+
+    class ElecIterator
+    {
+    public:
+      explicit ElecIterator(std::shared_ptr<Aggregate> root, bool begin=true);
+
+      //~Iterator() {delete agg_stack;};
+
+      ElecIterator& operator++(); // recursive part here
+      bool operator==(const ElecIterator &other) {return other.elec_iter == elec_iter;}
+      bool operator!=(const ElecIterator &other) {return other.elec_iter != elec_iter;}
+      std::shared_ptr<Electrode> operator*() const {return *elec_iter;}
+
+    private:
+
+      ElecIter elec_iter;                   // points to the current electrode
+      std::shared_ptr<Aggregate> curr;  // current working Aggregate
+      std::stack<std::pair<std::shared_ptr<Aggregate>, AggIter>> agg_stack;
+
+      // add a new aggregate pair to the stack
+      void push(std::shared_ptr<Aggregate> agg);
+
+      // pop the aggregate stack
+      void pop();
+    };
+
+    ElecIterator begin() {return ElecIterator(db_tree);}
+    ElecIterator end() {return ElecIterator(db_tree, false);}
+
 
   private:
     bool readProgramProp(const bpt::ptree &);
@@ -112,6 +147,7 @@ namespace phys{
     bool readDesign(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent);
     bool readItemTree(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent);
     bool readDBDot(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent);
+    bool readElectrode(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent);
 
     // Variables
     std::shared_ptr<Aggregate> db_tree;
