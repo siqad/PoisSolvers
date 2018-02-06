@@ -2,7 +2,7 @@
 
 namespace SimParams
 {
-  // scaling and offset values
+  // scaling and offset values, populated in set_buffer
   double finalscale, xoffset, yoffset;
   std::string resultpath;
 

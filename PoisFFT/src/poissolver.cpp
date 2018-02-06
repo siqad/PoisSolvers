@@ -37,7 +37,7 @@ std::vector<Electrodes> PoisSolver::set_buffer(std::vector<Electrodes> elec_vec)
   double ylength;
   double xscale = 1;
   double yscale = 1;
-  for(int i = 0; i < elec_vec.size(); i++){
+  for(unsigned int i = 0; i < elec_vec.size(); i++){
     xmin = std::min(xmin, elec_vec[i].x[0]);
     ymin = std::min(ymin, elec_vec[i].y[0]);
     xmax = std::max(xmax, elec_vec[i].x[1]);
@@ -57,7 +57,7 @@ std::vector<Electrodes> PoisSolver::set_buffer(std::vector<Electrodes> elec_vec)
   }
   //scale all elements by lowest scaling factor.
   SimParams::finalscale = std::min(xscale, yscale);
-  for(int i = 0; i < elec_vec.size(); i++){
+  for(unsigned int i = 0; i < elec_vec.size(); i++){
     elec_vec[i].x[0] *= SimParams::finalscale;
     elec_vec[i].x[1] *= SimParams::finalscale;
     elec_vec[i].y[0] *= SimParams::finalscale;
@@ -70,7 +70,7 @@ std::vector<Electrodes> PoisSolver::set_buffer(std::vector<Electrodes> elec_vec)
   xmax = 0;
   ymax = 0;
   //find how far outside the boundary the shapes still sit.
-  for(int i = 0; i < elec_vec.size(); i++){
+  for(unsigned int i = 0; i < elec_vec.size(); i++){
     xmin = std::min(xmin, elec_vec[i].x[0]);
     ymin = std::min(ymin, elec_vec[i].y[0]);
     xmax = std::max(xmax, elec_vec[i].x[1]);
@@ -89,7 +89,7 @@ std::vector<Electrodes> PoisSolver::set_buffer(std::vector<Electrodes> elec_vec)
     SimParams::yoffset = 0.9*SimParams::Ls[1] - ymax;
   }
   //fix the offsets
-  for(int i = 0; i < elec_vec.size(); i++){ //move all points based on offset.
+  for(unsigned int i = 0; i < elec_vec.size(); i++){ //move all points based on offset.
     elec_vec[i].x[0] += SimParams::xoffset;
     elec_vec[i].x[1] += SimParams::xoffset;
     elec_vec[i].y[0] += SimParams::yoffset;
@@ -131,6 +131,7 @@ void PoisSolver::helloWorld(void)
 void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
 {
   std::cout << "Modified by Nathan Chiu. Code is offered as is, with no warranty. See LICENCE.GPL for licence info." << std::endl;
+  std::cout << "Current step: " << step << std::endl;
   double cycleErr;
   int* indexErr = new int;
 
@@ -181,7 +182,7 @@ void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs)
 {
   //Want this to take in electrode location parameters, and spit out the charge on the conductor.
   double xmin, xmax, ymin, ymax, zmin, zmax, sum;
-  for( int currElectrode = 0; currElectrode < elecs.size(); currElectrode++){
+  for(unsigned int currElectrode = 0; currElectrode < elecs.size(); currElectrode++){
     xmin = elecs[currElectrode].x[0];
     xmax = elecs[currElectrode].x[1];
     ymin = elecs[currElectrode].y[0];
@@ -204,8 +205,8 @@ void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs)
 
 void PoisSolver::create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs)
 {
-  for(int i = 0; i < elecs.size(); i++){
-    elecs[i].draw(SimParams::ns, SimParams::ds, SimParams::Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
+  for(unsigned int i = 0; i < elecs.size(); i++){
+    elecs[i].draw(SimParams::ns, SimParams::Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   }
 }
 
@@ -224,7 +225,7 @@ double PoisSolver::check_error(double *arr, double *correction, std::pair<int,do
 {
   double err = 0;
   double errOld;
-  double correctionWeight;
+  double correctionWeight = 0;
   if(SimParams::BCs[0] == PoisFFT::PERIODIC){
     correctionWeight = 1e-7*SimParams::ns[0]*PhysConstants::EPS0/PhysConstants::QE/SimParams::Ls[0]/SimParams::Ls[0]; //Periodic
   } else if(SimParams::BCs[0] == PoisFFT::DIRICHLET || SimParams::BCs[0] == PoisFFT::NEUMANN){
@@ -234,7 +235,7 @@ double PoisSolver::check_error(double *arr, double *correction, std::pair<int,do
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential. Looking at laplacian of potential doesn't allow snapping to electrode potentials.
-      correction[i] *= correctionWeight;
+      correction[i] *= correctionWeight/eps[i];
       if(electrodemap[i].second != 0){
         err = std::max(err, fabs((arr[i] - electrodemap[i].second)/electrodemap[i].second)); //get largest error value.
       } else {
@@ -254,11 +255,11 @@ void PoisSolver::init_eps(double* eps)
   int i,j,k;
   std::cout << "Initialising eps" << std::endl;
   for (i=0;i<SimParams::ns[0];i++){
-    double x = SimParams::ds[0]*(i+0.5);
+    // double x = SimParams::ds[0]*(i+0.5);
     for (j=0;j<SimParams::ns[1];j++){
       double y = SimParams::ds[1]*(j+0.5);
       for (k=0;k<SimParams::ns[2];k++){
-        double z = SimParams::ds[2]*(k+0.5);
+        // double z = SimParams::ds[2]*(k+0.5);
         if (y < SimParams::Ls[1]/2){
           // a[IND(i,j,k)] = PhysConstants::EPS_SI; //Si relative permittivity
           eps[SimParams::IND(i,j,k)] = 1;  //Free space
@@ -277,13 +278,13 @@ void PoisSolver::init_rhs(double* chi, double* eps, double* rhs)
   int i,j,k;
   std::cout << "Initialising RHS" << std::endl;
   for (i=0;i<SimParams::ns[0];i++){
-    double x = SimParams::ds[0]*(i+0.5);
+    // double x = SimParams::ds[0]*(i+0.5);
     for (j=0;j<SimParams::ns[1];j++){
-      double y = SimParams::ds[1]*(j+0.5);
+      // double y = SimParams::ds[1]*(j+0.5);
       for (k=0;k<SimParams::ns[2];k++){
-        double z = SimParams::ds[2]*(k+0.5);
+        // double z = SimParams::ds[2]*(k+0.5);
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
-        rhs[SimParams::IND(i,j,k)] = 0; //in m^-3, scale by permittivity
+        rhs[SimParams::IND(i,j,k)] = 0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
         chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
       }
     }

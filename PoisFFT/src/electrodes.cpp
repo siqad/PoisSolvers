@@ -23,7 +23,7 @@ int Electrodes::IND(int i, int j, int k, const int ns[]){
   return (i)*(ns[1]*ns[2]) + (j)*(ns[2]) + k;
 }
 
-void Electrodes::draw(const int ns[3], const double ds[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
+void Electrodes::draw(const int ns[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi){
   int i, j, k; //draw the electrode into an electrode map
   // set RHS inside electrodes to be 0, E field should be 0 inside metal.
   for(i = (int) ns[0]*x[0]/Ls[0]; i < (int) ns[0]*x[1]/Ls[0]; i++){

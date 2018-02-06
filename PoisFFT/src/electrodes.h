@@ -12,7 +12,7 @@ class Electrodes{
     double z[2]; //zmin and zmax
     double potential;   //pointer after conversion of vector
     double WF;
-    void draw(const int[3], const double[3], const double[3], double*, std::pair<int,double>*, double*);
+    void draw(const int ns[3], const double Ls[3], double* RHS, std::pair<int,double> *electrodemap, double* chi);
     int IND(int i, int j, int k, const int ns[]);
 };
 
