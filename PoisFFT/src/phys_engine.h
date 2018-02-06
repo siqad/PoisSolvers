@@ -17,7 +17,6 @@
 #include <boost/circular_buffer.hpp>
 
 
-
 // Physical constants used for calculation
 namespace PhysConstants
 {
@@ -31,6 +30,7 @@ namespace PhysConstants
    extern const double CHI_SI; //electron affinity for silicon in eV from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
    extern const double EPS_SI; //relative permittivity of silicon
 };
+
 
 // Simulation parameters used for simulation control
 namespace SimParams
@@ -55,6 +55,7 @@ namespace SimParams
   extern char* RESXML;
 };
 
+
 namespace phys{
 
   namespace bpt = boost::property_tree;
@@ -75,6 +76,8 @@ namespace phys{
     // variables
     Problem problem;
 
+
+    //stuff to be saved to XML
     std::vector<Electrodes> elec_vec; // location of elecs
     double *arr; //will contain the potential
 

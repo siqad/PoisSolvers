@@ -1,22 +1,18 @@
 #ifndef POISSOLVER_H
 #define POISSOLVER_H
 
-#include <cmath>
-#include <iostream>
-#include "poisfft.h"
-#include <stdlib.h>
-#include <iomanip>
-#include <fstream>
-#include <utility>
-#include <algorithm>
-#include <ctime>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/foreach.hpp>
-#include "electrodes.h"
-#include <vector>
-#include <string>
-#include "phys_engine.h"
+#include "poisfft.h" // all the Fortran stuff
+#include "phys_engine.h" // phys_engine inheritance
+#include "electrodes.h" // Electrodes
+#include <cmath> // fabs()
+#include <iostream> // cout
+#include <utility> // pair
+#include <algorithm> // min(), max()
+#include <ctime> // clock()
+#include <boost/property_tree/ptree.hpp> // XML stuff
+#include <boost/property_tree/xml_parser.hpp> // XML stuff
+#include <vector> // vector
+#include <string> // string
 
 // Physical constants used for calculation
 namespace PhysConstants
@@ -66,8 +62,6 @@ namespace phys{
         void worker(int step, std::vector<Electrodes> elec_vec);
         void init_eps(double* eps);
         void init_rhs(double* chi, double* eps, double* rhs);
-        void save_file2D(double* arr, char fname[]);
-        void save_fileXML(double* arr, char fname[], std::vector<Electrodes> elec_vec);
         double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
         void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
         void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
@@ -77,7 +71,5 @@ namespace phys{
         std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
   };
 }
-// functions used by main
-void parse_tree(std::vector<Electrodes> *elecs, std::string path);
 
 #endif //POISSOLVER_H
