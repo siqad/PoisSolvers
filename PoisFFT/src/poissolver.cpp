@@ -140,7 +140,7 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
     SimParams::ds[i] = SimParams::Ls[i] / (double)SimParams::ns[i];
   }
   const int nsize = SimParams::ns[0]*SimParams::ns[1]*SimParams::ns[2]; //array size
-  double temp[nsize];
+  double temp[nsize] = {0};
   arr = temp;
   double *eps = new double[nsize]; //RELATIVE permittivity.
   double *chi = new double[nsize]; //electron affinity or WF
@@ -235,7 +235,7 @@ double PoisSolver::check_error(double *arr, double *correction, std::pair<int,do
     if(electrodemap[i].first == true){ //only check error at electrodes.
       errOld = err;
       correction[i] = electrodemap[i].second-arr[i]; //intended potential - found potential. Looking at laplacian of potential doesn't allow snapping to electrode potentials.
-      correction[i] *= correctionWeight/eps[i];
+      correction[i] *= correctionWeight;
       if(electrodemap[i].second != 0){
         err = std::max(err, fabs((arr[i] - electrodemap[i].second)/electrodemap[i].second)); //get largest error value.
       } else {
@@ -249,6 +249,28 @@ double PoisSolver::check_error(double *arr, double *correction, std::pair<int,do
   return err;
 }
 
+
+void PoisSolver::init_correction(double* correction)
+{
+  int i,j,k;
+  std::cout << "Initialising correction" << std::endl;
+  for (i=0;i<SimParams::ns[0];i++){
+    // double x = SimParams::ds[0]*(i+0.5);
+    for (j=0;j<SimParams::ns[1];j++){
+      double y = SimParams::ds[1]*(j+0.5);
+      for (k=0;k<SimParams::ns[2];k++){
+        // double z = SimParams::ds[2]*(k+0.5);
+        if (y < SimParams::Ls[1]/2){
+          // a[IND(i,j,k)] = PhysConstants::EPS_SI; //Si relative permittivity
+          correction[SimParams::IND(i,j,k)] = 0;  //Free space
+        } else{
+          correction[SimParams::IND(i,j,k)] = 0;  //Free space
+        }
+      }
+    }
+  }
+  std::cout << "Finished eps initialisation" << std::endl;
+}
 
 void PoisSolver::init_eps(double* eps)
 {

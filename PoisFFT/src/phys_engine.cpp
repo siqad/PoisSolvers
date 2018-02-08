@@ -64,10 +64,11 @@ void PhysicsEngine::writeResultsXml()
   for (int i = 0; i < SimParams::ns[0]; i++){
     for (int j = 0; j < SimParams::ns[1]; j++){
       //create each entry
+      std::cout << arr[SimParams::IND(i,j,k)] << ", " << std::to_string(arr[SimParams::IND(i,j,k)]).c_str() << std::endl;
       boost::property_tree::ptree node_potential_val;
       node_potential_val.put("<xmlattr>.x", (std::to_string((i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0])).c_str());
       node_potential_val.put("<xmlattr>.y", (std::to_string((j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1])).c_str());
-      node_potential_val.put("<xmlattr>.val", std::to_string(arr[SimParams::IND(i,j,k)]).c_str());
+      node_potential_val.put("<xmlattr>.val", (std::to_string(arr[SimParams::IND(i,j,k)]).c_str()));
       node_potential_map.add_child("potential_val", node_potential_val);
     }
   }

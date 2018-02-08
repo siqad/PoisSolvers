@@ -67,7 +67,7 @@ namespace phys{
         void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
         void calc_charge(double* RHS , std::vector<Electrodes> elecs);
         bool runSim();
-        void rescale();
+        void init_correction(double* correction);
         std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
   };
 }
