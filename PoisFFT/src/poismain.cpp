@@ -39,10 +39,12 @@ int main(int argc,char* argv[]){
   }else{ //need at LEAST binary call, input path, output path.
     in_path = argv[1];
     out_path = argv[2];
-    std::cout << SimParams::resultpath << std::endl;
+    // std::cout << SimParams::resultpath << std::endl;
+
 
     std::cout << std::endl << "*** Constructing Problem ***" << std::endl;
     PoisSolver ps(in_path, out_path);
+    ps.initVars();
 
     std::cout << std::endl << "*** Run Simulation ***" << std::endl;
     if(!ps.runSim()) {

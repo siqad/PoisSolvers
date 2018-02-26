@@ -69,7 +69,13 @@ namespace phys{
         bool runSim();
         void init_correction(double* correction);
         std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
+        void initVars(void);
+        std::string bc;
+        float resolution;
+        float length;
+        float max_error;
   };
 }
+
 
 #endif //POISSOLVER_H
