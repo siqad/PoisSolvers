@@ -3,7 +3,7 @@ CXX_FLAGS = -std=c++11 -Wall -Wextra -g
 
 all: poissolver
 
-poissolver: problem.o phys_engine.o electrodes.o poissolver.o poismain.o
+poissolver: bin/objs/problem.o bin/objs/phys_engine.o bin/objs/electrodes.o bin/objs/poissolver.o bin/objs/poismain.o
 	$(CXX) $(CXXFLAGS) -o bin/objs/poissolver -fopenmp \
 	bin/gcc/precisions.o \
 	bin/gcc/parameters.o \
@@ -22,19 +22,20 @@ poissolver: problem.o phys_engine.o electrodes.o poissolver.o poismain.o
 	bin/objs/poismain.o \
 	-lm -lfftw3 -lfftw3f -lfftw3_omp -lprofiler -lgfortran
 
-poismain.o: src/poismain.cpp src/poissolver.h src/poisfft.h src/phys_engine.h src/electrodes.h
+bin/objs/poismain.o: src/poismain.cpp src/poissolver.h src/poisfft.h src/phys_engine.h src/electrodes.h
 	$(CXX) $(CXX_FLAGS) -o bin/objs/poismain.o -c -O3 src/poismain.cpp
 
-poissolver.o: src/poissolver.cpp src/poissolver.h
+bin/objs/poissolver.o: src/poissolver.cpp src/poissolver.h
 	$(CXX) $(CXX_FLAGS) -o bin/objs/poissolver.o -c -O3 src/poissolver.cpp
 
-electrodes.o: src/electrodes.cpp src/electrodes.h
+bin/objs/electrodes.o: src/electrodes.cpp src/electrodes.h
 	$(CXX) $(CXX_FLAGS) -o bin/objs/electrodes.o -c -O3 src/electrodes.cpp
 
-phys_engine.o: src/phys_engine.cpp src/phys_engine.h
+bin/objs/phys_engine.o: src/phys_engine.cpp src/phys_engine.h
 	$(CXX) $(CXX_FLAGS) -o bin/objs/phys_engine.o -c -O3 src/phys_engine.cpp
 
-problem.o: src/problem.cpp src/problem.h
+bin/objs/problem.o: src/problem.cpp src/problem.h
+	mkdir -p bin/objs
 	$(CXX) $(CXX_FLAGS) -o bin/objs/problem.o -c -O3 src/problem.cpp
 
 clean:

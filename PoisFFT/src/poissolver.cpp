@@ -154,7 +154,7 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   create_electrode(RHS, electrodemap, chi, elec_vec);
   PoisFFT::Solver<3, double> S(SimParams::ns, SimParams::Ls, SimParams::BCs); //   create solver object, 3 dimensions, double precision
 
-  std::cout << "Beginning solver loops" << std::endl;
+  std::cout << "Beginning solver loops." << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
     cycleErr = check_error(arr, correction, electrodemap, indexErr, eps);
