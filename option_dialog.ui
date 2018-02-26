@@ -13,6 +13,92 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QHBoxLayout" name="bcs_hl">
+     <item>
+      <widget class="QLabel" name="label_bcs">
+       <property name="text">
+        <string>Boundary Conditions:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="combo_bcs">
+       <item>
+        <property name="text">
+         <string>Dirichlet</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Neumann</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Periodic</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="resolution_hl">
+     <item>
+      <widget class="QLabel" name="label_resolution">
+       <property name="text">
+        <string>Resolution:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_resolution">
+       <property name="text">
+        <string>50</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="length_hl">
+     <item>
+      <widget class="QLabel" name="label_length">
+       <property name="text">
+        <string>Length:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_length">
+       <property name="text">
+        <string>1E-6</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="max_error_hl">
+     <item>
+      <widget class="QLabel" name="label_max_error">
+       <property name="text">
+        <string>Maximum Error:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_max_error">
+       <property name="text">
+        <string>5E-2</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
