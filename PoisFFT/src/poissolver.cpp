@@ -124,6 +124,7 @@ bool PoisSolver::runSim()
 
 void PoisSolver::initVars(void)
 {
+  std::cout << "PoisSolver::initVars" << std::endl;
   bc = problem.parameterExists("bcs") ?
                   problem.getParameter("bcs") : "Dirichlet";
   resolution = problem.parameterExists("resolution") ?
@@ -133,6 +134,9 @@ void PoisSolver::initVars(void)
   max_error = problem.parameterExists("max_error") ?
                   std::stoi(problem.getParameter("max_error")) : 5E-2;
   std::cout << bc << std::endl;
+  std::cout << resolution << std::endl;
+  std::cout << length << std::endl;
+  std::cout << max_error << std::endl;
 }
 
 
