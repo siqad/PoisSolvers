@@ -136,7 +136,7 @@ void PoisSolver::initVars(void)
 
   //Boundary conditions
   int bc_int;
-  std::cout << bc << std::endl;
+  // std::cout << bc << std::endl;
   if(bc == "Neumann"){
     bc_int = PoisFFT::NEUMANN;
   } else if(bc == "Periodic"){
@@ -154,10 +154,10 @@ void PoisSolver::initVars(void)
   SimParams::MAX_ERROR = max_error;
 
   std::cout << "Parameters initialized" << std::endl;
-  std::cout << "BCs: " << SimParams::BCs[0] << std::endl;
-  std::cout << "ns: " << SimParams::ns[0] << std::endl;
-  std::cout << "Ls: " << SimParams::Ls[0] << std::endl;
-  std::cout << "MAX_ERROR: " << SimParams::MAX_ERROR << std::endl;
+  // std::cout << "BCs: " << SimParams::BCs[0] << std::endl;
+  // std::cout << "ns: " << SimParams::ns[0] << std::endl;
+  // std::cout << "Ls: " << SimParams::Ls[0] << std::endl;
+  // std::cout << "MAX_ERROR: " << SimParams::MAX_ERROR << std::endl;
 }
 
 
