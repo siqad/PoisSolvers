@@ -130,9 +130,9 @@ void PoisSolver::initVars(void)
   resolution = problem.parameterExists("resolution") ?
                   std::stoi(problem.getParameter("resolution")) : 50;
   length = problem.parameterExists("length") ?
-                  std::stoi(problem.getParameter("length")) : 1E-6;
+                  std::stod(problem.getParameter("length")) : 1e-6;
   max_error = problem.parameterExists("max_error") ?
-                  std::stoi(problem.getParameter("max_error")) : 5E-2;
+                  std::stod(problem.getParameter("max_error")) : 5e-2;
 
   //Boundary conditions
   int bc_int;
@@ -155,7 +155,7 @@ void PoisSolver::initVars(void)
   std::cout << "BCs: " << SimParams::BCs[0] << std::endl;
   std::cout << "ns: " << SimParams::ns[0] << std::endl;
   std::cout << "Ls: " << SimParams::Ls[0] << std::endl;
-  std::cout << "MAX_ERROR: " << SimParams::MAX_ERROR << std::endl; 
+  std::cout << "MAX_ERROR: " << SimParams::MAX_ERROR << std::endl;
 }
 
 

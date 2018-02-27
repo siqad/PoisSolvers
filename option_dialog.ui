@@ -74,7 +74,7 @@
      <item>
       <widget class="QLineEdit" name="le_length">
        <property name="text">
-        <string>1E-6</string>
+        <string>1e-6</string>
        </property>
       </widget>
      </item>
@@ -92,7 +92,7 @@
      <item>
       <widget class="QLineEdit" name="le_max_error">
        <property name="text">
-        <string>5E-2</string>
+        <string>5e-2</string>
        </property>
       </widget>
      </item>
