@@ -70,10 +70,11 @@ namespace phys{
         void init_correction(double* correction);
         std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
         void initVars(void);
+
         std::string bc;
-        float resolution;
-        float length;
-        float max_error;
+        int resolution;
+        double length;
+        double max_error;
   };
 }
 

@@ -133,10 +133,29 @@ void PoisSolver::initVars(void)
                   std::stoi(problem.getParameter("length")) : 1E-6;
   max_error = problem.parameterExists("max_error") ?
                   std::stoi(problem.getParameter("max_error")) : 5E-2;
-  std::cout << bc << std::endl;
-  std::cout << resolution << std::endl;
-  std::cout << length << std::endl;
-  std::cout << max_error << std::endl;
+
+  //Boundary conditions
+  int bc_int;
+  if (bc == "Neumann")
+    bc_int = POISFFT_NEUMANN;
+  else if (bc == "Periodic")
+    bc_int = POISFFT_PERIODIC;
+  else
+    bc_int = POISFFT_DIRICHLET;
+  for (int i = 0; i < 6; i++){
+    SimParams::BCs[i] = bc_int;
+  }
+  for (int i = 0; i < 3; i++){
+    SimParams::ns[i] = resolution;
+    SimParams::Ls[i] = length;
+  }
+  SimParams::MAX_ERROR = max_error;
+
+  std::cout << "Parameters initialized" << std::endl;
+  std::cout << "BCs: " << SimParams::BCs[0] << std::endl;
+  std::cout << "ns: " << SimParams::ns[0] << std::endl;
+  std::cout << "Ls: " << SimParams::Ls[0] << std::endl;
+  std::cout << "MAX_ERROR: " << SimParams::MAX_ERROR << std::endl; 
 }
 
 
