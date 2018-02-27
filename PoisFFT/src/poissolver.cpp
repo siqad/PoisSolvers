@@ -136,12 +136,13 @@ void PoisSolver::initVars(void)
 
   //Boundary conditions
   int bc_int;
-  if (bc == "Neumann")
-    bc_int = POISFFT_NEUMANN;
-  else if (bc == "Periodic")
-    bc_int = POISFFT_PERIODIC;
-  else
-    bc_int = POISFFT_DIRICHLET;
+  if(bc == "Neumann"){
+    bc_int = PoisFFT::NEUMANN;
+  } else if(bc == "Periodic"){
+    bc_int = PoisFFT::PERIODIC;
+  } else {
+    bc_int = PoisFFT::DIRICHLET;
+  }
   for (int i = 0; i < 6; i++){
     SimParams::BCs[i] = bc_int;
   }
