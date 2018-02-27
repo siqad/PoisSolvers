@@ -136,6 +136,7 @@ void PoisSolver::initVars(void)
 
   //Boundary conditions
   int bc_int;
+  std::cout << bc << std::endl;
   if(bc == "Neumann"){
     bc_int = PoisFFT::NEUMANN;
   } else if(bc == "Periodic"){
