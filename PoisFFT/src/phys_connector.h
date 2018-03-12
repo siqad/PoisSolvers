@@ -29,13 +29,15 @@ namespace phys{
     PhysicsConnector(const std::string &eng_name_in, const std::string &input_path_in, const std::string &output_path_in);
     //DESTRUCTOR
     ~PhysicsConnector(){};
-    helloWorld(void);
+    void helloWorld(void);
   private:
     std::string eng_name;
     std::string input_path;
     std::string output_path;
-  }
+  };
 
 
 
 }//end namespace phys
+
+#endif

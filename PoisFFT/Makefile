@@ -3,7 +3,7 @@ CXX_FLAGS = -std=c++11 -Wall -Wextra -g
 
 all: poissolver
 
-poissolver: bin/objs/problem.o bin/objs/phys_engine.o bin/objs/electrodes.o bin/objs/poissolver.o bin/objs/poismain.o
+poissolver: bin/objs/phys_connector.o bin/objs/problem.o bin/objs/phys_engine.o bin/objs/electrodes.o bin/objs/poissolver.o bin/objs/poismain.o
 	$(CXX) $(CXXFLAGS) -o bin/objs/poissolver -fopenmp \
 	bin/gcc/precisions.o \
 	bin/gcc/parameters.o \
@@ -15,6 +15,7 @@ poissolver: bin/objs/problem.o bin/objs/phys_engine.o bin/objs/electrodes.o bin/
 	bin/gcc/f_mpi_comm_c2f.o \
 	bin/gcc/c_binding.o \
 	bin/gcc/c_binding_c.o \
+	bin/objs/phys_connector.o \
 	bin/objs/problem.o \
 	bin/objs/phys_engine.o \
 	bin/objs/electrodes.o \
@@ -35,8 +36,11 @@ bin/objs/phys_engine.o: src/phys_engine.cpp src/phys_engine.h
 	$(CXX) $(CXX_FLAGS) -o bin/objs/phys_engine.o -c -O3 src/phys_engine.cpp
 
 bin/objs/problem.o: src/problem.cpp src/problem.h
-	mkdir -p bin/objs
 	$(CXX) $(CXX_FLAGS) -o bin/objs/problem.o -c -O3 src/problem.cpp
+
+bin/objs/phys_connector.o: src/phys_connector.cpp src/phys_connector.h
+	mkdir -p bin/objs
+	$(CXX) $(CXX_FLAGS) -o bin/objs/phys_connector.o -c -O3 src/phys_connector.cpp
 
 clean:
 	rm bin/objs/*

@@ -15,8 +15,8 @@ using namespace phys;
 
 
 //CONSTRUCTOR
-PhysicsConnector::PhysicsConnector(const std::string eng_name_in,
-  const std::string input_path_in, const std::string output_path_in)
+PhysicsConnector::PhysicsConnector(const std::string &eng_name_in,
+  const std::string &input_path_in, const std::string &output_path_in)
 {
   eng_name = eng_name_in;
   input_path = input_path_in;
@@ -24,7 +24,7 @@ PhysicsConnector::PhysicsConnector(const std::string eng_name_in,
 }
 
 
-PhysicsConnector::helloWorld(void)
+void PhysicsConnector::helloWorld(void)
 {
   std::cout << eng_name << ", " << input_path << ", " << output_path << std::endl;
 }
