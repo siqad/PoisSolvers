@@ -21,8 +21,8 @@ PhysicsConnector::PhysicsConnector(const std::string &eng_name_in,
   eng_name = eng_name_in;
   input_path = input_path_in;
   output_path = output_path_in;
-  initProblem();
-  readProblem(input_path);
+  // initProblem();
+  // readProblem(input_path);
 }
 
 
@@ -235,6 +235,7 @@ bool PhysicsConnector::readElectrode(const bpt::ptree &subtree, const std::share
 //what used to be physeng
 void PhysicsConnector::helloWorld(void)
 {
+  std::cout << "PhysicsConnector instantiated." << std::endl;
   std::cout << eng_name << ", " << input_path << ", " << output_path << std::endl;
 }
 

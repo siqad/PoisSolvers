@@ -56,7 +56,7 @@ namespace SimParams
 
 
 namespace phys{
-  class PoisSolver: public PhysicsEngine
+  class PoisSolver
   {
     public:
         PoisSolver(const std::string& i_path, const std::string& o_path);
@@ -74,10 +74,13 @@ namespace phys{
         std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
         void initVars(void);
 
+        std::vector<Electrodes> elec_vec; // location of elecs
+        double *arr; //will contain the potential
         std::string bc;
         int resolution;
         double length;
         double max_error;
+        PhysicsConnector* phys_con;
   };
 }
 

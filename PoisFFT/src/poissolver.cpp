@@ -19,9 +19,10 @@ using namespace phys;
 
 
 PoisSolver::PoisSolver(const std::string& i_path, const std::string& o_path)
-  : PhysicsEngine("PoisSolver", i_path, o_path)
 {
   helloWorld();
+  phys_con = new PhysicsConnector(std::string("PoisSolver"), i_path, o_path);
+  phys_con->helloWorld();
 }
 
 
@@ -105,7 +106,7 @@ bool PoisSolver::runSim()
   std::cout << "Grab all electrode locations..." << std::endl;
 
   //parse electrodes into elec_vec
-  for(auto elec : problem) {
+  for(auto elec : *phys_con) {
     elec_vec.push_back(Electrodes(
       elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
       elec->y1*SimParams::Ls[1], elec->y2*SimParams::Ls[1],
@@ -125,14 +126,14 @@ bool PoisSolver::runSim()
 void PoisSolver::initVars(void)
 {
   std::cout << "PoisSolver::initVars" << std::endl;
-  bc = problem.parameterExists("bcs") ?
-                  problem.getParameter("bcs") : "Dirichlet";
-  resolution = problem.parameterExists("resolution") ?
-                  std::stoi(problem.getParameter("resolution")) : 50;
-  length = problem.parameterExists("length") ?
-                  std::stod(problem.getParameter("length")) : 1e-6;
-  max_error = problem.parameterExists("max_error") ?
-                  std::stod(problem.getParameter("max_error")) : 5e-2;
+  bc = phys_con->parameterExists("bcs") ?
+                  phys_con->getParameter("bcs") : "Dirichlet";
+  resolution = phys_con->parameterExists("resolution") ?
+                  std::stoi(phys_con->getParameter("resolution")) : 50;
+  length = phys_con->parameterExists("length") ?
+                  std::stod(phys_con->getParameter("length")) : 1e-6;
+  max_error = phys_con->parameterExists("max_error") ?
+                  std::stod(phys_con->getParameter("max_error")) : 5e-2;
 
   //Boundary conditions
   int bc_int;
@@ -214,6 +215,9 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   delete[] electrodemap;
   delete[] chi;
   delete[] correction;
+
+  std::cout << std::endl << "*** Write Result to Output ***" << std::endl;
+  phys_con->writeResultsXml();
 }
 
 

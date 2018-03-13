@@ -41,8 +41,7 @@ int main(int argc,char* argv[]){
     out_path = argv[2];
     // std::cout << SimParams::resultpath << std::endl;
 
-    // PhysicsConnector phys_con(std::string("PoisSolver"), std::string("In example"), std::string("Out example"));
-    // phys_con.helloWorld();
+
     std::cout << std::endl << "*** Constructing Problem ***" << std::endl;
     PoisSolver ps(in_path, out_path);
     ps.initVars();
@@ -53,8 +52,6 @@ int main(int argc,char* argv[]){
       return 0;
     }
 
-    std::cout << std::endl << "*** Write Result to Output ***" << std::endl;
-    ps.writeResultsXml();
   }
   return 0;
 }
