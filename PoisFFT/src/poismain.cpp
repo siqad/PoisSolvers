@@ -51,6 +51,7 @@ int main(int argc,char* argv[]){
       std::cout << "Simulation failed, aborting" << std::endl;
       return 0;
     }
+    //writing to XML taken care of inside poissolver
 
   }
   return 0;

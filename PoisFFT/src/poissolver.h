@@ -60,7 +60,7 @@ namespace phys{
     public:
         PoisSolver(const std::string& i_path, const std::string& o_path);
         ~PoisSolver(){} //destructor1
-        void helloWorld(void);
+        void initSolver(void);
         void worker(int step, std::vector<Electrodes> elec_vec);
         void init_eps(double* eps);
         void init_rhs(double* chi, double* eps, double* rhs);

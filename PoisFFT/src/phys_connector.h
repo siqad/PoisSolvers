@@ -73,7 +73,10 @@ namespace phys{
     PhysicsConnector(const std::string &eng_name_in, const std::string &input_path_in, const std::string &output_path_in);
     //DESTRUCTOR
     ~PhysicsConnector(){};
+
+    //salutations
     void helloWorld(void);
+    //write results to xml, based on the export flags
     void writeResultsXml();
 
     // Constructor
@@ -83,6 +86,10 @@ namespace phys{
     bool readProblem(const std::string &fname);
 
     // Accessors
+    //set a parameter as required for the simulation.
+    void setRequiredSimParam(std::string param_name);
+    //get the required simulation parameter vector.
+    std::vector<std::string> getRequiredSimParam(void){return req_params;}
     //! Checks if a parameter exists given the parameter key.
     bool parameterExists(const std::string &key) {return sim_params.find(key) != sim_params.end();}
     //! Getter for a parameter, given a parameter key.
@@ -165,6 +172,7 @@ namespace phys{
     std::string eng_name;
     std::string input_path;
     std::string output_path;
+    std::vector<std::string> req_params;
   };
 
 

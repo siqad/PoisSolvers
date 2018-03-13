@@ -20,11 +20,24 @@ using namespace phys;
 
 PoisSolver::PoisSolver(const std::string& i_path, const std::string& o_path)
 {
-  helloWorld();
   phys_con = new PhysicsConnector(std::string("PoisSolver"), i_path, o_path);
-  phys_con->helloWorld();
+  initSolver();
 }
 
+void PoisSolver::initSolver(void)
+{
+  std::cout << "PoisSolver instantiated." << std::endl;
+  phys_con->helloWorld();
+  phys_con->setRequiredSimParam("bcs");
+  phys_con->setRequiredSimParam("resolution");
+  phys_con->setRequiredSimParam("length");
+  phys_con->setRequiredSimParam("max_error");
+  for (auto& iter : phys_con->getRequiredSimParam()) {
+    if(!phys_con->parameterExists(iter)){
+      std::cout << "Parameter " << iter << " not found." << std::endl;
+    }
+  }
+}
 
 std::vector<Electrodes> PoisSolver::set_buffer(std::vector<Electrodes> elec_vec) {
   //want to scale electrodes down to fit the simulation space.
@@ -159,12 +172,6 @@ void PoisSolver::initVars(void)
   // std::cout << "ns: " << SimParams::ns[0] << std::endl;
   // std::cout << "Ls: " << SimParams::Ls[0] << std::endl;
   // std::cout << "MAX_ERROR: " << SimParams::MAX_ERROR << std::endl;
-}
-
-
-void PoisSolver::helloWorld(void)
-{
-  std::cout << "PoisSolver instantiated." << std::endl;
 }
 
 
