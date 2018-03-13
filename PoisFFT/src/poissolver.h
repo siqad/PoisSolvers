@@ -5,7 +5,6 @@
 
 #include "phys_connector.h"
 #include "poisfft.h" // all the Fortran stuff
-#include "phys_engine.h" // phys_engine inheritance
 #include "electrodes.h" // Electrodes
 #include <cmath> // fabs()
 #include <iostream> // cout

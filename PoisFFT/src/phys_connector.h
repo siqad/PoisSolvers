@@ -13,7 +13,7 @@
 #ifndef _POIS_SOLVER_PHYS_PHYS_CONNECTOR_H_
 #define _POIS_SOLVER_PHYS_PHYS_CONNECTOR_H_
 
-#include "problem.h"
+// #include "problem.h"
 #include "electrodes.h"
 
 #include <stack>
