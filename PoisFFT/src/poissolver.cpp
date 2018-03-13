@@ -217,6 +217,8 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   delete[] correction;
 
   std::cout << std::endl << "*** Write Result to Output ***" << std::endl;
+  phys_con->arr = arr;
+  phys_con->elec_vec = elec_vec;
   phys_con->writeResultsXml();
 }
 

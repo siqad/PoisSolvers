@@ -21,8 +21,8 @@ PhysicsConnector::PhysicsConnector(const std::string &eng_name_in,
   eng_name = eng_name_in;
   input_path = input_path_in;
   output_path = output_path_in;
-  // initProblem();
-  // readProblem(input_path);
+  initProblem();
+  readProblem(input_path);
 }
 
 
