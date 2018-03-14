@@ -79,7 +79,7 @@ public:
     double* init_val( double, double*);
     std::pair<double, double>* init_val( double, std::pair<double, double>*);
     void init_rho(void);
-    void init_eps(void);
+    void initEPS(void);
     void solve(void);
     void poisson3DSOR_BLAS(void);
     void poisson3DSOR_gen(void);

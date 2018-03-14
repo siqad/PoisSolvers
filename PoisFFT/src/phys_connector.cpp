@@ -269,9 +269,9 @@ void PhysicsConnector::writeResultsXml()
     }
     node_root.add_child("electrode", node_electrode);
 
+  //electric potentials
   if (export_elec_potential){
     std::cout << "Exporting electric potential data..." << std::endl;
-    //potential_map
     const int k = SimParams::ns[2]/2;
     for (int i = 0; i < SimParams::ns[0]; i++){
       for (int j = 0; j < SimParams::ns[1]; j++){
@@ -286,7 +286,7 @@ void PhysicsConnector::writeResultsXml()
     }
     node_root.add_child("potential_map", node_potential_map);
   }
-  
+
   tree.add_child("sim_out", node_root);
   // write to file
   boost::property_tree::write_xml(output_path, tree, std::locale(), boost::property_tree::xml_writer_make_settings<std::string>(' ',4));

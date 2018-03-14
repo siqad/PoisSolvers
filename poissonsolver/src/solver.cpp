@@ -86,8 +86,8 @@ void Solver::init_rho( void ){
   }
 }
 
-//init_eps, initializes eps with values.
-void Solver::init_eps( void ){
+//initEPS, initializes eps with values.
+void Solver::initEPS( void ){
   std::cout << "Initialising eps..." << std::endl;
   double x, y, z;
   for( int i = 0; i < N[0]; i++){

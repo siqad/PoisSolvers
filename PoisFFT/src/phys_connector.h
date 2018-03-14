@@ -186,7 +186,6 @@ namespace phys{
     std::string output_path;
     std::vector<std::string> req_params;
 
-
     bool expect_electrode;
     bool expect_db;
     bool expect_afm_path;

@@ -41,7 +41,7 @@ void workingcall( double t ){
       s->eps = s->init_val( 0, s->eps );
   //REQUIRE CONSISTENT L/N IN ALL X, Y, Z
       s->init_rho( );
-      s->init_eps( );
+      s->initEPS( );
   //initialize electrodes
       for( int index = 0; index < numelectrodes; index++){
         elec[index].init_elec(); //init all electrodes
