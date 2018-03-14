@@ -250,7 +250,7 @@ void PhysicsConnector::writeResultsXml()
   // eng_info
   node_eng_info.put("engine", "PoisSolver");
   node_eng_info.put("version", "TBD"); // TODO real version
-
+  node_root.add_child("eng_info", node_eng_info);
   // sim_params
   // TODO
 
@@ -267,7 +267,7 @@ void PhysicsConnector::writeResultsXml()
       node_pot.put("", std::to_string(elec.potential).c_str());
       node_electrode.add_child("potential", node_pot);
     }
-
+    node_root.add_child("electrode", node_electrode);
 
   if (export_elec_potential){
     std::cout << "Exporting electric potential data..." << std::endl;
@@ -284,12 +284,10 @@ void PhysicsConnector::writeResultsXml()
         node_potential_map.add_child("potential_val", node_potential_val);
       }
     }
-    node_root.add_child("eng_info", node_eng_info);
-    node_root.add_child("electrode", node_electrode);
     node_root.add_child("potential_map", node_potential_map);
-    tree.add_child("sim_out", node_root);
   }
-
+  
+  tree.add_child("sim_out", node_root);
   // write to file
   boost::property_tree::write_xml(output_path, tree, std::locale(), boost::property_tree::xml_writer_make_settings<std::string>(' ',4));
 
