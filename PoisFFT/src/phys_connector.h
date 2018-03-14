@@ -83,11 +83,15 @@ namespace phys{
     void initProblem();
 
     // File Handling
-    bool readProblem(const std::string &fname);
+    bool readProblem();
 
     // Accessors
     //set a parameter as required for the simulation.
     void setRequiredSimParam(std::string param_name);
+
+    void setExpectElectrode(bool set_val){isExpectElectrode = set_val;}
+    void setExpectDB(bool set_val){isExpectDB = set_val;}
+    void setExpectAFMPath(bool set_val){isExpectAFMPath = set_val;}
     //get the required simulation parameter vector.
     std::vector<std::string> getRequiredSimParam(void){return req_params;}
     //! Checks if a parameter exists given the parameter key.
@@ -172,6 +176,9 @@ namespace phys{
     std::string eng_name;
     std::string input_path;
     std::string output_path;
+    bool isExpectElectrode;
+    bool isExpectDB;
+    bool isExpectAFMPath;
     std::vector<std::string> req_params;
   };
 

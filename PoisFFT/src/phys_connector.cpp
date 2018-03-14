@@ -22,7 +22,7 @@ PhysicsConnector::PhysicsConnector(const std::string &eng_name_in,
   input_path = input_path_in;
   output_path = output_path_in;
   initProblem();
-  readProblem(input_path);
+  // readProblem(input_path);
 }
 
 void PhysicsConnector::setRequiredSimParam(std::string param_name)
@@ -37,6 +37,9 @@ void PhysicsConnector::setRequiredSimParam(std::string param_name)
 void PhysicsConnector::initProblem(void)
 {
   elec_tree = std::make_shared<PhysicsConnector::Aggregate>();
+  isExpectElectrode = false;
+  isExpectDB = false;
+  isExpectAFMPath = false;
 }
 
 // aggregate
@@ -102,12 +105,12 @@ void PhysicsConnector::ElecIterator::pop()
 
 // FILE HANDLING
 // parse problem XML, return true if successful
-bool PhysicsConnector::readProblem(const std::string &fname)
+bool PhysicsConnector::readProblem(void)
 {
-  std::cout << "Reading problem file: " << fname << std::endl;
+  std::cout << "Reading problem file: " << input_path << std::endl;
 
   bpt::ptree tree; // create empty property tree object
-  bpt::read_xml(fname, tree, bpt::xml_parser::no_comments); // parse the input file into property tree
+  bpt::read_xml(input_path, tree, bpt::xml_parser::no_comments); // parse the input file into property tree
   // TODO catch read error exception
 
   // parse XML
@@ -159,12 +162,14 @@ bool PhysicsConnector::readSimulationParam(const bpt::ptree &sim_params_tree)
 bool PhysicsConnector::readDesign(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
 {
   std::cout << "Beginning to read design" << std::endl;
+  std::cout << isExpectElectrode << isExpectDB << isExpectAFMPath << std::endl;
   for (bpt::ptree::value_type const &layer_tree : subtree) {
     std::string layer_type = layer_tree.second.get<std::string>("<xmlattr>.type");
-    if (!layer_type.compare("DB")) {
+    if ((!layer_type.compare("DB")) && (isExpectDB)) {
       std::cout << "Encountered node " << layer_tree.first << " with type " << layer_type << ", entering" << std::endl;
       readItemTree(layer_tree.second, agg_parent);
-    } else if (!layer_type.compare("Electrode")) {
+    } else if ( (!layer_type.compare("Electrode")) && (isExpectElectrode) ) {
+    // } else if (!layer_type.compare("Electrode")) {
     // if (!layer_type.compare("Electrode")) {
       // std::cout << "TODO write code for parsing electrodes" << std::endl;
       std::cout << "Encountered node " << layer_tree.first << " with type " << layer_type << ", entering" << std::endl;

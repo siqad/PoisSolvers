@@ -32,6 +32,8 @@ void PoisSolver::initSolver(void)
   phys_con->setRequiredSimParam("resolution");
   phys_con->setRequiredSimParam("length");
   phys_con->setRequiredSimParam("max_error");
+  phys_con->setExpectElectrode(true);
+  phys_con->readProblem();
   for (auto& iter : phys_con->getRequiredSimParam()) {
     if(!phys_con->parameterExists(iter)){
       std::cout << "Parameter " << iter << " not found." << std::endl;
