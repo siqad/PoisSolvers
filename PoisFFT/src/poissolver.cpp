@@ -120,7 +120,7 @@ bool PoisSolver::runSim()
   std::cout << "PoisSolver::runSim()" << std::endl;
   std::cout << "Grab all electrode locations..." << std::endl;
 
-  //parse electrodes into elec_vec
+  //parse electrodes into elec_vec, different for every structure.
   for(auto elec : *phys_con) {
     elec_vec.push_back(Electrodes(
       elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
@@ -225,9 +225,16 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   delete[] chi;
   delete[] correction;
 
+
+  exportData();
+}
+
+void PoisSolver::exportData(void){
   std::cout << std::endl << "*** Write Result to Output ***" << std::endl;
+  //set export data into the phys_connector
   phys_con->arr = arr;
   phys_con->elec_vec = elec_vec;
+  phys_con->setExportElecPotential(true);
   phys_con->writeResultsXml();
 }
 

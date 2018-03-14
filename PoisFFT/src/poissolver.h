@@ -72,6 +72,7 @@ namespace phys{
         void init_correction(double* correction);
         std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
         void initVars(void);
+        void exportData(void);
 
         std::vector<Electrodes> elec_vec; // location of elecs
         double *arr; //will contain the potential

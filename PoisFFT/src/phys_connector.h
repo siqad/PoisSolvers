@@ -89,9 +89,14 @@ namespace phys{
     //set a parameter as required for the simulation.
     void setRequiredSimParam(std::string param_name);
 
-    void setExpectElectrode(bool set_val){isExpectElectrode = set_val;}
-    void setExpectDB(bool set_val){isExpectDB = set_val;}
-    void setExpectAFMPath(bool set_val){isExpectAFMPath = set_val;}
+    //For flags
+    void setExpectElectrode(bool set_val){expect_electrode = set_val;}
+    void setExpectDB(bool set_val){expect_db = set_val;}
+    void setExpectAFMPath(bool set_val){expect_afm_path = set_val;}
+
+
+    void setExportElecPotential(bool set_val){export_elec_potential = set_val;}
+    void setExportDBElecConfig(bool set_val){export_db_elec_config = set_val;}
     //get the required simulation parameter vector.
     std::vector<std::string> getRequiredSimParam(void){return req_params;}
     //! Checks if a parameter exists given the parameter key.
@@ -176,10 +181,15 @@ namespace phys{
     std::string eng_name;
     std::string input_path;
     std::string output_path;
-    bool isExpectElectrode;
-    bool isExpectDB;
-    bool isExpectAFMPath;
     std::vector<std::string> req_params;
+
+
+    bool expect_electrode;
+    bool expect_db;
+    bool expect_afm_path;
+
+    bool export_elec_potential;
+    bool export_db_elec_config;
   };
 
 

@@ -37,9 +37,9 @@ void PhysicsConnector::setRequiredSimParam(std::string param_name)
 void PhysicsConnector::initProblem(void)
 {
   elec_tree = std::make_shared<PhysicsConnector::Aggregate>();
-  isExpectElectrode = false;
-  isExpectDB = false;
-  isExpectAFMPath = false;
+  expect_electrode = false;
+  expect_db = false;
+  expect_afm_path = false;
 }
 
 // aggregate
@@ -162,13 +162,13 @@ bool PhysicsConnector::readSimulationParam(const bpt::ptree &sim_params_tree)
 bool PhysicsConnector::readDesign(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
 {
   std::cout << "Beginning to read design" << std::endl;
-  std::cout << isExpectElectrode << isExpectDB << isExpectAFMPath << std::endl;
+  std::cout << expect_electrode << expect_db << expect_afm_path << std::endl;
   for (bpt::ptree::value_type const &layer_tree : subtree) {
     std::string layer_type = layer_tree.second.get<std::string>("<xmlattr>.type");
-    if ((!layer_type.compare("DB")) && (isExpectDB)) {
+    if ((!layer_type.compare("DB")) && (expect_db)) {
       std::cout << "Encountered node " << layer_tree.first << " with type " << layer_type << ", entering" << std::endl;
       readItemTree(layer_tree.second, agg_parent);
-    } else if ( (!layer_type.compare("Electrode")) && (isExpectElectrode) ) {
+    } else if ( (!layer_type.compare("Electrode")) && (expect_electrode) ) {
     // } else if (!layer_type.compare("Electrode")) {
     // if (!layer_type.compare("Electrode")) {
       // std::cout << "TODO write code for parsing electrodes" << std::endl;
@@ -224,25 +224,6 @@ bool PhysicsConnector::readElectrode(const bpt::ptree &subtree, const std::share
   return true;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //what used to be physeng
 void PhysicsConnector::helloWorld(void)
 {
@@ -274,35 +255,40 @@ void PhysicsConnector::writeResultsXml()
   // TODO
 
   // electrode
-  for (auto elec : elec_vec) {
-    boost::property_tree::ptree node_dim;
-    node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
-    node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
-    node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
-    node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
-    node_electrode.add_child("dim", node_dim);
-    boost::property_tree::ptree node_pot;
-    node_pot.put("", std::to_string(elec.potential).c_str());
-    node_electrode.add_child("potential", node_pot);
-  }
-
-  //potential_map
-  const int k = SimParams::ns[2]/2;
-  for (int i = 0; i < SimParams::ns[0]; i++){
-    for (int j = 0; j < SimParams::ns[1]; j++){
-      //create each entry
-      // std::cout << arr[SimParams::IND(i,j,k)] << ", " << std::to_string(arr[SimParams::IND(i,j,k)]).c_str() << std::endl;
-      boost::property_tree::ptree node_potential_val;
-      node_potential_val.put("<xmlattr>.x", (std::to_string((i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0])).c_str());
-      node_potential_val.put("<xmlattr>.y", (std::to_string((j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1])).c_str());
-      node_potential_val.put("<xmlattr>.val", (std::to_string(arr[SimParams::IND(i,j,k)]).c_str()));
-      node_potential_map.add_child("potential_val", node_potential_val);
+    std::cout << "Exporting electrode data..." << std::endl;
+    for (auto elec : elec_vec) {
+      boost::property_tree::ptree node_dim;
+      node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
+      node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
+      node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
+      node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
+      node_electrode.add_child("dim", node_dim);
+      boost::property_tree::ptree node_pot;
+      node_pot.put("", std::to_string(elec.potential).c_str());
+      node_electrode.add_child("potential", node_pot);
     }
+
+
+  if (export_elec_potential){
+    std::cout << "Exporting electric potential data..." << std::endl;
+    //potential_map
+    const int k = SimParams::ns[2]/2;
+    for (int i = 0; i < SimParams::ns[0]; i++){
+      for (int j = 0; j < SimParams::ns[1]; j++){
+        //create each entry
+        // std::cout << arr[SimParams::IND(i,j,k)] << ", " << std::to_string(arr[SimParams::IND(i,j,k)]).c_str() << std::endl;
+        boost::property_tree::ptree node_potential_val;
+        node_potential_val.put("<xmlattr>.x", (std::to_string((i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0])).c_str());
+        node_potential_val.put("<xmlattr>.y", (std::to_string((j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1])).c_str());
+        node_potential_val.put("<xmlattr>.val", (std::to_string(arr[SimParams::IND(i,j,k)]).c_str()));
+        node_potential_map.add_child("potential_val", node_potential_val);
+      }
+    }
+    node_root.add_child("eng_info", node_eng_info);
+    node_root.add_child("electrode", node_electrode);
+    node_root.add_child("potential_map", node_potential_map);
+    tree.add_child("sim_out", node_root);
   }
-  node_root.add_child("eng_info", node_eng_info);
-  node_root.add_child("electrode", node_electrode);
-  node_root.add_child("potential_map", node_potential_map);
-  tree.add_child("sim_out", node_root);
 
   // write to file
   boost::property_tree::write_xml(output_path, tree, std::locale(), boost::property_tree::xml_writer_make_settings<std::string>(' ',4));
