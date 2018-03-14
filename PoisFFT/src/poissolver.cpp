@@ -41,7 +41,7 @@ void PoisSolver::initSolver(void)
   }
 }
 
-std::vector<Electrodes> PoisSolver::set_buffer(std::vector<Electrodes> elec_vec) {
+std::vector<Electrodes> PoisSolver::setBuffer(std::vector<Electrodes> elec_vec) {
   //want to scale electrodes down to fit the simulation space.
   //First, find the (min, max) (x, y) values.
   //Then, extend or contract so that 10% of the sim space is left on each edge as buffer space.
@@ -128,7 +128,7 @@ bool PoisSolver::runSim()
       0.3e-6, 0.7e-6, elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
   }
   //scale and offset electrodes in elec_vec
-  elec_vec = set_buffer(elec_vec);
+  elec_vec = setBuffer(elec_vec);
   std::cout << "Beginning solver." << std::endl;
   for(int i = 0; i < 1; i++){
     // All the relevant information is inside SimParams.
@@ -170,10 +170,6 @@ void PoisSolver::initVars(void)
   SimParams::MAX_ERROR = max_error;
 
   std::cout << "Parameters initialized" << std::endl;
-  // std::cout << "BCs: " << SimParams::BCs[0] << std::endl;
-  // std::cout << "ns: " << SimParams::ns[0] << std::endl;
-  // std::cout << "Ls: " << SimParams::Ls[0] << std::endl;
-  // std::cout << "MAX_ERROR: " << SimParams::MAX_ERROR << std::endl;
 }
 
 
@@ -198,21 +194,21 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   std::pair<int,double> *electrodemap = new std::pair<int,double>[nsize]; //stores electrode surface info and potentials.
   int cycleCount = 0;
   const std::clock_t begin_time = std::clock();
-  init_eps(eps); // set permittivity
-  init_rhs(chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
-  create_electrode(RHS, electrodemap, chi, elec_vec);
+  initEPS(eps); // set permittivity
+  initRHS(chi, eps, RHS); // set rho and apply relative permittivity, also save electron affinity for bulk.
+  createElectrode(RHS, electrodemap, chi, elec_vec);
   PoisFFT::Solver<3, double> S(SimParams::ns, SimParams::Ls, SimParams::BCs); //   create solver object, 3 dimensions, double precision
 
   std::cout << "Beginning solver loops." << std::endl;
   do{
     S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = check_error(arr, correction, electrodemap, indexErr, eps);
-    apply_correction(RHS, correction, electrodemap);
+    cycleErr = checkError(arr, correction, electrodemap, indexErr, eps);
+    applyCorrection(RHS, correction, electrodemap);
     std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
     cycleCount++;
   }while(cycleErr > SimParams::MAX_ERROR && cycleErr != 0);
 
-  calc_charge(RHS, elec_vec);
+  calcCharge(RHS, elec_vec);
   std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
 
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
@@ -239,7 +235,7 @@ void PoisSolver::exportData(void){
 }
 
 
-void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs)
+void PoisSolver::calcCharge(double* RHS , std::vector<Electrodes> elecs)
 {
   //Want this to take in electrode location parameters, and spit out the charge on the conductor.
   double xmin, xmax, ymin, ymax, zmin, zmax, sum;
@@ -264,7 +260,7 @@ void PoisSolver::calc_charge(double* RHS , std::vector<Electrodes> elecs)
 }
 
 
-void PoisSolver::create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs)
+void PoisSolver::createElectrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs)
 {
   for(unsigned int i = 0; i < elecs.size(); i++){
     elecs[i].draw(SimParams::ns, SimParams::Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
@@ -272,7 +268,7 @@ void PoisSolver::create_electrode(double* RHS, std::pair<int,double> *electrodem
 }
 
 
-void PoisSolver::apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap)
+void PoisSolver::applyCorrection(double *RHS, double *correction, std::pair<int,double> *electrodemap)
 {
   for(int i = 0; i < SimParams::ns[0]*SimParams::ns[1]*SimParams::ns[2]; i++){
     if(electrodemap[i].first == true){ //only correct error at electrode surfaces.
@@ -282,7 +278,7 @@ void PoisSolver::apply_correction(double *RHS, double *correction, std::pair<int
 }
 
 
-double PoisSolver::check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps)
+double PoisSolver::checkError(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps)
 {
   double err = 0;
   double errOld;
@@ -311,7 +307,7 @@ double PoisSolver::check_error(double *arr, double *correction, std::pair<int,do
 }
 
 
-void PoisSolver::init_correction(double* correction)
+void PoisSolver::initCorrection(double* correction)
 {
   int i,j,k;
   std::cout << "Initialising correction" << std::endl;
@@ -333,7 +329,7 @@ void PoisSolver::init_correction(double* correction)
   std::cout << "Finished eps initialisation" << std::endl;
 }
 
-void PoisSolver::init_eps(double* eps)
+void PoisSolver::initEPS(double* eps)
 {
   int i,j,k;
   std::cout << "Initialising eps" << std::endl;
@@ -356,7 +352,7 @@ void PoisSolver::init_eps(double* eps)
 }
 
 
-void PoisSolver::init_rhs(double* chi, double* eps, double* rhs)
+void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
 {
   int i,j,k;
   std::cout << "Initialising RHS" << std::endl;

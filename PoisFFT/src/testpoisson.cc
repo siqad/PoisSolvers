@@ -7,7 +7,7 @@ const double pi = 3.14159265358979323846;
 
 #define IND(i,j,k) (i)*(ns[1]*ns[2])+(j)*(ns[2])+k
 
-void init_rhs(const int ns[3], const double ds[3], const double Ls[3], double* a){
+void initRHS(const int ns[3], const double ds[3], const double Ls[3], double* a){
   int i,j,k;
   for (i=0;i<ns[0];i++){
     for (j=0;j<ns[1];j++){
@@ -77,7 +77,7 @@ int main(){
   double *RHS = new double[ns[0]*ns[1]*ns[2]];
   
   // set the right-hand side
-  init_rhs(ns, ds, Ls, RHS);
+  initRHS(ns, ds, Ls, RHS);
   
   // create solver object, 3 dimensions, double precision
   PoisFFT::Solver<3, double> S(ns, Ls, BCs);

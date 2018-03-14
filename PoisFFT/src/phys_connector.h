@@ -89,18 +89,21 @@ namespace phys{
     //set a parameter as required for the simulation.
     void setRequiredSimParam(std::string param_name);
 
-    //For flags
+    //Input flags
     void setExpectElectrode(bool set_val){expect_electrode = set_val;}
     void setExpectDB(bool set_val){expect_db = set_val;}
     void setExpectAFMPath(bool set_val){expect_afm_path = set_val;}
 
-
+    //Output flags
     void setExportElecPotential(bool set_val){export_elec_potential = set_val;}
     void setExportDBElecConfig(bool set_val){export_db_elec_config = set_val;}
+
     //get the required simulation parameter vector.
     std::vector<std::string> getRequiredSimParam(void){return req_params;}
+
     //! Checks if a parameter exists given the parameter key.
     bool parameterExists(const std::string &key) {return sim_params.find(key) != sim_params.end();}
+
     //! Getter for a parameter, given a parameter key.
     std::string getParameter(const std::string &key) {return sim_params.find(key) != sim_params.end() ? sim_params.at(key) : "";}
 

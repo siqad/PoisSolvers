@@ -62,15 +62,15 @@ namespace phys{
         ~PoisSolver(){} //destructor1
         void initSolver(void);
         void worker(int step, std::vector<Electrodes> elec_vec);
-        void init_eps(double* eps);
-        void init_rhs(double* chi, double* eps, double* rhs);
-        double check_error(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
-        void apply_correction(double *RHS, double *correction, std::pair<int,double> *electrodemap);
-        void create_electrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
-        void calc_charge(double* RHS , std::vector<Electrodes> elecs);
+        void initEPS(double* eps);
+        void initRHS(double* chi, double* eps, double* rhs);
+        double checkError(double *arr, double *correction, std::pair<int,double> *electrodemap, int *indexErr, double *eps);
+        void applyCorrection(double *RHS, double *correction, std::pair<int,double> *electrodemap);
+        void createElectrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs);
+        void calcCharge(double* RHS , std::vector<Electrodes> elecs);
         bool runSim();
-        void init_correction(double* correction);
-        std::vector<Electrodes> set_buffer(std::vector<Electrodes> elec_vec);
+        void initCorrection(double* correction);
+        std::vector<Electrodes> setBuffer(std::vector<Electrodes> elec_vec);
         void initVars(void);
         void exportData(void);
 
