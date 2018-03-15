@@ -27,43 +27,6 @@
 #include <vector>
 #include <boost/circular_buffer.hpp>
 
-// Physical constants used for calculation
-namespace PhysConstants
-{
-   extern const double QE; //elementary charge
-   extern const double EPS0; //permittivity of free space
-   extern const double WF_GOLD; //workfunction for gold in eV
-   extern const double WF_COPPER; //workfunction for copper in eV
-   extern const double WF_ZINC; //workfunction for zinc in eV
-   extern const double WF_CESIUM; //workfunction for cesium in eV
-   extern const double WF_NICKEL; //workfunction for nickel in eV
-   extern const double CHI_SI; //electron affinity for silicon in eV from http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html
-   extern const double EPS_SI; //relative permittivity of silicon
-};
-
-// Simulation parameters used for simulation control
-namespace SimParams
-{
-  // scaling and offset values
-  extern double finalscale, xoffset, yoffset;
-  extern std::string resultpath;
-
-  //stuff used during simulation
-  extern double Ls[3]; // simulation length in x, y, z
-  extern int ns[3]; // resolution in x, y, z
-  extern double ds[3]; // simulation length per resolution step, CALCULATED
-  extern int BCs[6]; // boundary conditions for left, right, top, bottom, front, back.
-  extern double MAX_ERROR;
-  extern int IND(int i, int j, int k);
-
-  //stuff used post-simulation
-  extern char* OUTFILE;
-  extern char* RHOFILE;
-  extern char* EPSFILE;
-  extern char* CORRFILE;
-  extern char* RESXML;
-};
-
 namespace phys{
   namespace bpt = boost::property_tree;
   class PhysicsConnector
@@ -98,6 +61,12 @@ namespace phys{
     void setExportElecPotential(bool set_val){export_elec_potential = set_val;}
     void setExportDBElecConfig(bool set_val){export_db_elec_config = set_val;}
 
+    //set vector of strings as potential data
+    void setElecPotentialData(std::vector<std::vector<std::string>> &data_in){pot_data = data_in;}
+
+    //set vector of strings as electrode data
+    void setElectrodeData(std::vector<std::vector<std::string>> &data_in){elec_data = data_in;}
+
     //get the required simulation parameter vector.
     std::vector<std::string> getRequiredSimParam(void){return req_params;}
 
@@ -108,8 +77,9 @@ namespace phys{
     std::string getParameter(const std::string &key) {return sim_params.find(key) != sim_params.end() ? sim_params.at(key) : "";}
 
     //simulation inputs and outputs
-    std::vector<Electrodes> elec_vec;
-    double *arr;
+    std::vector<std::vector<std::string>> pot_data;
+    std::vector<std::vector<std::string>> elec_data;
+
     std::vector<std::pair<float,float>> db_locs;
     boost::circular_buffer<std::vector<int>> db_charges;
 

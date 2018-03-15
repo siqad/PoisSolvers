@@ -30,8 +30,6 @@ void PhysicsConnector::setRequiredSimParam(std::string param_name)
   req_params.push_back(param_name);
 }
 
-
-
 //What used to be problem
 
 void PhysicsConnector::initProblem(void)
@@ -231,7 +229,6 @@ void PhysicsConnector::helloWorld(void)
   std::cout << eng_name << ", " << input_path << ", " << output_path << std::endl;
 }
 
-
 void PhysicsConnector::writeResultsXml()
 {
   std::cout << "PhysicsConnector::writeResultsXML()" << std::endl;
@@ -256,31 +253,30 @@ void PhysicsConnector::writeResultsXml()
 
   // electrode
     std::cout << "Exporting electrode data..." << std::endl;
-    for (auto elec : elec_vec) {
+    for (unsigned int i = 0; i < elec_data.size(); i++){
       boost::property_tree::ptree node_dim;
-      node_dim.put("<xmlattr>.x1", (std::to_string((elec.x[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
-      node_dim.put("<xmlattr>.y1", (std::to_string((elec.y[0]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
-      node_dim.put("<xmlattr>.x2", (std::to_string((elec.x[1]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0]).c_str()));
-      node_dim.put("<xmlattr>.y2", (std::to_string((elec.y[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1]).c_str()));
+      node_dim.put("<xmlattr>.x1", elec_data[i][0].c_str());
+      node_dim.put("<xmlattr>.y1", elec_data[i][1].c_str());
+      node_dim.put("<xmlattr>.x2", elec_data[i][2].c_str());
+      node_dim.put("<xmlattr>.y2", elec_data[i][3].c_str());
       node_electrode.add_child("dim", node_dim);
       boost::property_tree::ptree node_pot;
-      node_pot.put("", std::to_string(elec.potential).c_str());
+      node_pot.put("", elec_data[i][4].c_str());
       node_electrode.add_child("potential", node_pot);
     }
     node_root.add_child("electrode", node_electrode);
 
   //electric potentials
+  int resolution = std::stoi(getParameter("resolution"));
   if (export_elec_potential){
     std::cout << "Exporting electric potential data..." << std::endl;
-    const int k = SimParams::ns[2]/2;
-    for (int i = 0; i < SimParams::ns[0]; i++){
-      for (int j = 0; j < SimParams::ns[1]; j++){
+    for (int i = 0; i < resolution; i++){
+      for (int j = 0; j < resolution; j++){
         //create each entry
-        // std::cout << arr[SimParams::IND(i,j,k)] << ", " << std::to_string(arr[SimParams::IND(i,j,k)]).c_str() << std::endl;
         boost::property_tree::ptree node_potential_val;
-        node_potential_val.put("<xmlattr>.x", (std::to_string((i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0])).c_str());
-        node_potential_val.put("<xmlattr>.y", (std::to_string((j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1])).c_str());
-        node_potential_val.put("<xmlattr>.val", (std::to_string(arr[SimParams::IND(i,j,k)]).c_str()));
+        node_potential_val.put("<xmlattr>.x", pot_data[i*resolution+j][0].c_str());
+        node_potential_val.put("<xmlattr>.y", pot_data[i*resolution+j][1].c_str());
+        node_potential_val.put("<xmlattr>.val", pot_data[i*resolution+j][2].c_str());
         node_potential_map.add_child("potential_val", node_potential_val);
       }
     }
