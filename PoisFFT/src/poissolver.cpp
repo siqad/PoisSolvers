@@ -27,7 +27,6 @@ PoisSolver::PoisSolver(const std::string& i_path, const std::string& o_path)
 void PoisSolver::initSolver(void)
 {
   std::cout << "PoisSolver instantiated." << std::endl;
-  phys_con->helloWorld();
   phys_con->setRequiredSimParam("bcs");
   phys_con->setRequiredSimParam("resolution");
   phys_con->setRequiredSimParam("length");
@@ -264,6 +263,7 @@ void PoisSolver::exportData(void){
     elec_data[i][4] = std::to_string(pot);
   }
 
+  phys_con->setExportElectrode(true);
   phys_con->setElectrodeData(elec_data);
 
   std::cout << std::endl << "*** Write Result to Output ***" << std::endl;

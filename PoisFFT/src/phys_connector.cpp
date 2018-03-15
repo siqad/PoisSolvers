@@ -22,7 +22,6 @@ PhysicsConnector::PhysicsConnector(const std::string &eng_name_in,
   input_path = input_path_in;
   output_path = output_path_in;
   initProblem();
-  // readProblem(input_path);
 }
 
 void PhysicsConnector::setRequiredSimParam(std::string param_name)
@@ -222,13 +221,6 @@ bool PhysicsConnector::readElectrode(const bpt::ptree &subtree, const std::share
   return true;
 }
 
-//what used to be physeng
-void PhysicsConnector::helloWorld(void)
-{
-  std::cout << "PhysicsConnector instantiated." << std::endl;
-  std::cout << eng_name << ", " << input_path << ", " << output_path << std::endl;
-}
-
 void PhysicsConnector::writeResultsXml()
 {
   std::cout << "PhysicsConnector::writeResultsXML()" << std::endl;
@@ -245,13 +237,14 @@ void PhysicsConnector::writeResultsXml()
   // for now, only export charge config
 
   // eng_info
-  node_eng_info.put("engine", "PoisSolver");
+  node_eng_info.put("engine", eng_name);
   node_eng_info.put("version", "TBD"); // TODO real version
   node_root.add_child("eng_info", node_eng_info);
   // sim_params
   // TODO
 
   // electrode
+  if (export_electrode){
     std::cout << "Exporting electrode data..." << std::endl;
     for (unsigned int i = 0; i < elec_data.size(); i++){
       boost::property_tree::ptree node_dim;
@@ -265,6 +258,7 @@ void PhysicsConnector::writeResultsXml()
       node_electrode.add_child("potential", node_pot);
     }
     node_root.add_child("electrode", node_electrode);
+  }
 
   //electric potentials
   int resolution = std::stoi(getParameter("resolution"));

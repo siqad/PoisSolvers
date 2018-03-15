@@ -37,8 +37,6 @@ namespace phys{
     //DESTRUCTOR
     ~PhysicsConnector(){};
 
-    //salutations
-    void helloWorld(void);
     //write results to xml, based on the export flags
     void writeResultsXml();
 
@@ -57,9 +55,10 @@ namespace phys{
     void setExpectDB(bool set_val){expect_db = set_val;}
     void setExpectAFMPath(bool set_val){expect_afm_path = set_val;}
 
-    //Output flags
+    //Set output flags
     void setExportElecPotential(bool set_val){export_elec_potential = set_val;}
     void setExportDBElecConfig(bool set_val){export_db_elec_config = set_val;}
+    void setExportElectrode(bool set_val){export_electrode = set_val;}
 
     //set vector of strings as potential data
     void setElecPotentialData(std::vector<std::vector<std::string>> &data_in){pot_data = data_in;}
@@ -111,9 +110,6 @@ namespace phys{
     {
     public:
       explicit ElecIterator(std::shared_ptr<Aggregate> root, bool begin=true);
-
-      //~Iterator() {delete agg_stack;};
-
       ElecIterator& operator++(); // recursive part here
       bool operator==(const ElecIterator &other) {return other.elec_iter == elec_iter;}
       bool operator!=(const ElecIterator &other) {return other.elec_iter != elec_iter;}
@@ -145,7 +141,6 @@ namespace phys{
     // std::map<std::string, std::string> material_props; TODO probably need a different structure for this
     std::map<std::string, std::string> sim_params;
 
-
     ElecIter elec_iter;                   // points to the current electrode
     std::shared_ptr<Aggregate> curr;  // current working Aggregate
     std::stack<std::pair<std::shared_ptr<Aggregate>, AggIter>> agg_stack;
@@ -162,9 +157,8 @@ namespace phys{
 
     bool export_elec_potential;
     bool export_db_elec_config;
+    bool export_electrode;
   };
-
-
 
 }//end namespace phys
 
