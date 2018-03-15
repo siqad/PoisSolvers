@@ -29,17 +29,17 @@ void PhysicsConnector::setRequiredSimParam(std::string param_name)
   req_params.push_back(param_name);
 }
 
-void PhysicsConnector::initElectrodeCollection()
+void PhysicsConnector::initCollections()
 {
-  elec_col = new ElectrodeCollection(elec_tree);
+  elec_col = new ElectrodeCollection(item_tree);
+  db_col = new DBCollection(item_tree);
 }
-
 
 //What used to be problem
 
 void PhysicsConnector::initProblem(void)
 {
-  elec_tree = std::make_shared<PhysicsConnector::Aggregate>();
+  item_tree = std::make_shared<PhysicsConnector::Aggregate>();
   expect_electrode = false;
   expect_db = false;
   expect_afm_path = false;
@@ -54,6 +54,60 @@ int PhysicsConnector::Aggregate::size()
       n_elecs += agg->size();
   return n_elecs;
 }
+
+//DB ITERATOR
+
+PhysicsConnector::DBIterator::DBIterator(std::shared_ptr<Aggregate> root, bool begin)
+{
+  if(begin){
+    // keep finding deeper aggregates until one that contains dbs is found
+    while(root->dbs.empty() && !root->aggs.empty()) {
+      push(root);
+      root = root->aggs.front();
+    }
+    push(root);
+  }
+  else{
+    db_iter = root->dbs.cend();
+  }
+}
+
+PhysicsConnector::DBIterator& PhysicsConnector::DBIterator::operator++()
+{
+  // exhaust the current Aggregate DBs first
+  if(db_iter != curr->dbs.cend())
+    return ++db_iter != curr->dbs.cend() ? *this : ++(*this);
+
+  // if available, push the next aggregate onto the stack
+  if(agg_stack.top().second != curr->aggs.cend()){
+    push(*agg_stack.top().second);
+    return db_iter != curr->dbs.cend() ? *this : ++(*this);
+  }
+
+  // aggregate is complete, pop off stack
+  pop();
+  return agg_stack.size() == 0 ? *this : ++(*this);
+}
+
+void PhysicsConnector::DBIterator::push(std::shared_ptr<Aggregate> agg)
+{
+  if(!agg_stack.empty())
+    ++agg_stack.top().second;
+  agg_stack.push(std::make_pair(agg, agg->aggs.cbegin()));
+  db_iter = agg->dbs.cbegin();
+  curr = agg;
+}
+
+void PhysicsConnector::DBIterator::pop()
+{
+  agg_stack.pop();              // pop complete aggregate off stack
+  if(agg_stack.size() > 0){
+    curr = agg_stack.top().first; // update current to new top
+    db_iter = curr->dbs.cend();   // don't reread dbs
+  }
+}
+
+
 
 // ELEC ITERATOR
 PhysicsConnector::ElecIterator::ElecIterator(std::shared_ptr<Aggregate> root, bool begin)
@@ -131,7 +185,7 @@ bool PhysicsConnector::readProblem(void)
 
   // read items
   std::cout << "Read items tree" << std::endl;
-  if(!readDesign(tree.get_child("dbdesigner.design"), elec_tree))
+  if(!readDesign(tree.get_child("dbdesigner.design"), item_tree))
     return false;
 
   //return true;
@@ -172,17 +226,12 @@ bool PhysicsConnector::readDesign(const bpt::ptree &subtree, const std::shared_p
       std::cout << "Encountered node " << layer_tree.first << " with type " << layer_type << ", entering" << std::endl;
       readItemTree(layer_tree.second, agg_parent);
     } else if ( (!layer_type.compare("Electrode")) && (expect_electrode) ) {
-    // } else if (!layer_type.compare("Electrode")) {
-    // if (!layer_type.compare("Electrode")) {
-      // std::cout << "TODO write code for parsing electrodes" << std::endl;
       std::cout << "Encountered node " << layer_tree.first << " with type " << layer_type << ", entering" << std::endl;
       readItemTree(layer_tree.second, agg_parent);
     } else {
       std::cout << "Encountered node " << layer_tree.first << " with type " << layer_type << ", no defined action for this layer. Skipping." << std::endl;
     }
   }
-  // std::cout << "Hi" << std::endl;
-  // temp->elec_tree_inner = elec_tree;
   return true;
 }
 
@@ -195,9 +244,9 @@ bool PhysicsConnector::readItemTree(const bpt::ptree &subtree, const std::shared
       // add aggregate child to tree
       agg_parent->aggs.push_back(std::make_shared<Aggregate>());
       readItemTree(item_tree.second, agg_parent->aggs.back());
-    // } else if (!item_name.compare("dbdot")) {
-    //   // add DBDot to tree
-    //   readDBDot(item_tree.second, agg_parent);
+    } else if (!item_name.compare("dbdot")) {
+      // add DBDot to tree
+      readDBDot(item_tree.second, agg_parent);
     } else if (!item_name.compare("electrode")) {
       // add Electrode to tree
       readElectrode(item_tree.second, agg_parent);
@@ -225,6 +274,22 @@ bool PhysicsConnector::readElectrode(const bpt::ptree &subtree, const std::share
   std::cout << "Electrode created with x1=" << agg_parent->elecs.back()->x1 << ", y1=" << agg_parent->elecs.back()->y1 <<
     ", x2=" << agg_parent->elecs.back()->x2 << ", y2=" << agg_parent->elecs.back()->y2 <<
     ", potential=" << agg_parent->elecs.back()->potential << std::endl;
+
+  return true;
+}
+
+bool PhysicsConnector::readDBDot(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
+{
+  float x, y, elec;
+
+  // read x and y from XML stream
+  elec = subtree.get<float>("elec");
+  x = subtree.get<float>("physloc.<xmlattr>.x");
+  y = subtree.get<float>("physloc.<xmlattr>.y");
+
+  agg_parent->dbs.push_back(std::make_shared<DBDot>(x,y,elec));
+
+  std::cout << "DBDot created with x=" << agg_parent->dbs.back()->x << ", y=" << agg_parent->dbs.back()->y << ", elec=" << agg_parent->dbs.back()->elec << std::endl;
 
   return true;
 }

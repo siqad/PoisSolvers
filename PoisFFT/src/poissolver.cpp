@@ -120,7 +120,7 @@ bool PoisSolver::runSim()
   std::cout << "Grab all electrode locations..." << std::endl;
 
   //parse electrodes into elec_vec, different for every structure.
-  phys_con->initElectrodeCollection();
+  phys_con->initCollections();
   for(auto elec : *(phys_con->elec_col)) {
     elec_vec.push_back(Electrodes(
       elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
