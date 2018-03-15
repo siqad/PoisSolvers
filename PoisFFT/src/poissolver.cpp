@@ -228,43 +228,43 @@ void PoisSolver::exportData(void){
 
   //create the vector of [x, y, val] that will be sent to setElecPotentialData
   //number of data points is n*n
-  std::vector<std::vector<std::string>> pot_data(SimParams::ns[0]*SimParams::ns[0]);
+  std::vector<std::vector<std::string>> elec_pot_data(SimParams::ns[0]*SimParams::ns[0]);
   double x, y, val;
   const int k = SimParams::ns[2]/2;
   for (int i = 0; i < SimParams::ns[0]; i++){
     for (int j = 0; j < SimParams::ns[1]; j++){
       //resize so we don't assign into empty vectors
-      pot_data[i*SimParams::ns[0]+j].resize(3);
+      elec_pot_data[i*SimParams::ns[0]+j].resize(3);
       x = (i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0];
       y = (j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1];
       val = arr[SimParams::IND(i,j,k)];
-      pot_data[i*SimParams::ns[0]+j][0] = std::to_string(x);
-      pot_data[i*SimParams::ns[0]+j][1] = std::to_string(y);
-      pot_data[i*SimParams::ns[0]+j][2] = std::to_string(val);
+      elec_pot_data[i*SimParams::ns[0]+j][0] = std::to_string(x);
+      elec_pot_data[i*SimParams::ns[0]+j][1] = std::to_string(y);
+      elec_pot_data[i*SimParams::ns[0]+j][2] = std::to_string(val);
     }
   }
-  //set pot_data into the phys_connector
+  //set elec_pot_data into the phys_connector
   phys_con->setExportElecPotential(true);
-  phys_con->setElecPotentialData(pot_data);
+  phys_con->setElecPotentialData(elec_pot_data);
 
-  std::vector<std::vector<std::string>> elec_data(elec_vec.size());
+  std::vector<std::vector<std::string>> electrode_data(elec_vec.size());
   double x1, x2, y1, y2, pot;
   for (unsigned int i = 0; i < elec_vec.size(); i++){
-    elec_data[i].resize(5);
+    electrode_data[i].resize(5);
     x1 = (elec_vec[i].x[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0];
     x2 = (elec_vec[i].x[1]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0];
     y1 = (elec_vec[i].y[0]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1];
     y2 = (elec_vec[i].y[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1];
     pot = elec_vec[i].potential;
-    elec_data[i][0] = std::to_string(x1);
-    elec_data[i][1] = std::to_string(y1);
-    elec_data[i][2] = std::to_string(x2);
-    elec_data[i][3] = std::to_string(y2);
-    elec_data[i][4] = std::to_string(pot);
+    electrode_data[i][0] = std::to_string(x1);
+    electrode_data[i][1] = std::to_string(y1);
+    electrode_data[i][2] = std::to_string(x2);
+    electrode_data[i][3] = std::to_string(y2);
+    electrode_data[i][4] = std::to_string(pot);
   }
 
   phys_con->setExportElectrode(true);
-  phys_con->setElectrodeData(elec_data);
+  phys_con->setElectrodeData(electrode_data);
 
   std::cout << std::endl << "*** Write Result to Output ***" << std::endl;
   phys_con->writeResultsXml();

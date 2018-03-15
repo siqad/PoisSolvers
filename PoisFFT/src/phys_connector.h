@@ -32,6 +32,9 @@ namespace phys{
   class PhysicsConnector
   {
   public:
+    class Electrode;
+    class Aggregate;
+    class ElecIterator;
     //CONSTRUCTOR
     PhysicsConnector(const std::string &eng_name_in, const std::string &input_path_in, const std::string &output_path_in);
     //DESTRUCTOR
@@ -81,14 +84,21 @@ namespace phys{
 
     std::vector<std::pair<float,float>> db_locs;
     boost::circular_buffer<std::vector<int>> db_charges;
+    // Electrode* temp;
 
     // STRUCTS
     // electrode
-    struct Electrode {
-      float x1,x2,y1,y2;      // pixel location of electrode.
-      float potential;  // voltage that the electrode is set to
+    struct Electrode
+    {
+    public:
       Electrode(float in_x1, float in_x2, float in_y1, float in_y2, float in_potential)
         : x1(in_x1), x2(in_x2), y1(in_y1), y2(in_y2), potential(in_potential) {};
+      // ~Electrode(){};
+      float x1,x2,y1,y2;      // pixel location of electrode.
+      float potential;  // voltage that the electrode is set to
+      // std::shared_ptr<Aggregate> elec_tree_inner;
+      // ElecIterator begin() {return ElecIterator(elec_tree_inner);}
+      // ElecIterator end() {return ElecIterator(elec_tree_inner, false);}
     };
 
     // aggregate

@@ -175,6 +175,8 @@ bool PhysicsConnector::readDesign(const bpt::ptree &subtree, const std::shared_p
       std::cout << "Encountered node " << layer_tree.first << " with type " << layer_type << ", no defined action for this layer. Skipping." << std::endl;
     }
   }
+  // std::cout << "Hi" << std::endl;
+  // temp->elec_tree_inner = elec_tree;
   return true;
 }
 
