@@ -74,7 +74,7 @@ namespace phys{
 
     //! Checks if a parameter exists given the parameter key.
     bool parameterExists(const std::string &key) {return sim_params.find(key) != sim_params.end();}
-
+    void initElectrodeCollection();
     //! Getter for a parameter, given a parameter key.
     std::string getParameter(const std::string &key) {return sim_params.find(key) != sim_params.end() ? sim_params.at(key) : "";}
 
@@ -84,11 +84,10 @@ namespace phys{
 
     std::vector<std::pair<float,float>> db_locs;
     boost::circular_buffer<std::vector<int>> db_charges;
-    // Electrode* temp;
 
     // STRUCTS
     // electrode
-    struct Electrode
+    class Electrode
     {
     public:
       Electrode(float in_x1, float in_x2, float in_y1, float in_y2, float in_potential)
@@ -96,9 +95,16 @@ namespace phys{
       // ~Electrode(){};
       float x1,x2,y1,y2;      // pixel location of electrode.
       float potential;  // voltage that the electrode is set to
-      // std::shared_ptr<Aggregate> elec_tree_inner;
-      // ElecIterator begin() {return ElecIterator(elec_tree_inner);}
-      // ElecIterator end() {return ElecIterator(elec_tree_inner, false);}
+    };
+
+    class ElectrodeCollection
+    {
+    public:
+      ElectrodeCollection(std::shared_ptr<Aggregate> elec_tree_in)
+        : elec_tree_inner(elec_tree_in) {};
+      ElecIterator begin() {return ElecIterator(elec_tree_inner);}
+      ElecIterator end() {return ElecIterator(elec_tree_inner, false);}
+      std::shared_ptr<Aggregate> elec_tree_inner;
     };
 
     // aggregate
@@ -133,9 +139,10 @@ namespace phys{
       // pop the aggregate stack
       void pop();
     };
-    ElecIterator begin() {return ElecIterator(elec_tree);}
-    ElecIterator end() {return ElecIterator(elec_tree, false);}
 
+    ElectrodeCollection* elec_col;
+    // ElecIterator begin() {return ElecIterator(elec_tree);}
+    // ElecIterator end() {return ElecIterator(elec_tree, false);}
   private:
 
     bool readProgramProp(const bpt::ptree &);

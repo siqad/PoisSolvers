@@ -29,6 +29,12 @@ void PhysicsConnector::setRequiredSimParam(std::string param_name)
   req_params.push_back(param_name);
 }
 
+void PhysicsConnector::initElectrodeCollection()
+{
+  elec_col = new ElectrodeCollection(elec_tree);
+}
+
+
 //What used to be problem
 
 void PhysicsConnector::initProblem(void)
