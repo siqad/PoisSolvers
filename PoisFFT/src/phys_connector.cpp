@@ -219,7 +219,6 @@ bool PhysicsConnector::readSimulationParam(const bpt::ptree &sim_params_tree)
 bool PhysicsConnector::readDesign(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
 {
   std::cout << "Beginning to read design" << std::endl;
-  std::cout << expect_electrode << expect_db << expect_afm_path << std::endl;
   for (bpt::ptree::value_type const &layer_tree : subtree) {
     std::string layer_type = layer_tree.second.get<std::string>("<xmlattr>.type");
     if ((!layer_type.compare("DB")) && (expect_db)) {
