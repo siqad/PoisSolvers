@@ -201,18 +201,20 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   createElectrode(RHS, electrodemap, chi, elec_vec);
   PoisFFT::Solver<3, double> S(SimParams::ns, SimParams::Ls, SimParams::BCs); //   create solver object, 3 dimensions, double precision
 
-  std::cout << "Beginning solver loops." << std::endl;
-  do{
-    S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
-    cycleErr = checkError(arr, correction, electrodemap, indexErr, eps);
-    applyCorrection(RHS, correction, electrodemap);
-    std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
-    cycleCount++;
-  }while(cycleErr > SimParams::MAX_ERROR && cycleErr != 0);
-
-  calcCharge(RHS, elec_vec);
-  std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
-
+  if( elec_vec.size() == 0 ){
+    S.execute(arr, RHS);
+  } else {
+    std::cout << "Beginning solver loops." << std::endl;
+    do{
+      S.execute(arr, RHS); //run the solver, can be run many times for different right-hand side
+      cycleErr = checkError(arr, correction, electrodemap, indexErr, eps);
+      applyCorrection(RHS, correction, electrodemap);
+      std::cout << "On cycle " << cycleCount << " with error " << cycleErr << " at index " << *indexErr << ". " << arr[*indexErr] << " " << electrodemap[*indexErr].second << std::endl;
+      cycleCount++;
+    }while(cycleErr > SimParams::MAX_ERROR && cycleErr != 0);
+    calcCharge(RHS, elec_vec);
+    std::cout << "Finished on cycle " << cycleCount << " with error " << cycleErr << std::endl;
+  }
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
 
@@ -312,6 +314,7 @@ void PoisSolver::applyCorrection(double *RHS, double *correction, std::pair<int,
       RHS[i] -= correction[i];
     }
   }
+
 }
 
 
@@ -400,7 +403,7 @@ void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
       for (k=0;k<SimParams::ns[2];k++){
         // double z = SimParams::ds[2]*(k+0.5);
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
-        rhs[SimParams::IND(i,j,k)] = 0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
+        rhs[SimParams::IND(i,j,k)] = 1*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
         chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
       }
     }
