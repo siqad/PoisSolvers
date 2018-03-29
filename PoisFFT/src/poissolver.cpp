@@ -125,7 +125,7 @@ bool PoisSolver::runSim()
     elec_vec.push_back(Electrodes(
       elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
       elec->y1*SimParams::Ls[1], elec->y2*SimParams::Ls[1],
-      0.3e-6, 0.7e-6, elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
+      0.2e-6, 0.4e-6, elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
   }
   //scale and offset electrodes in elec_vec
   elec_vec = setBuffer(elec_vec);
@@ -377,12 +377,12 @@ void PoisSolver::initEPS(double* eps)
   for (i=0;i<SimParams::ns[0];i++){
     // double x = SimParams::ds[0]*(i+0.5);
     for (j=0;j<SimParams::ns[1];j++){
-      double y = SimParams::ds[1]*(j+0.5);
+      // double y = SimParams::ds[1]*(j+0.5);
       for (k=0;k<SimParams::ns[2];k++){
         // double z = SimParams::ds[2]*(k+0.5);
-        if (y < SimParams::Ls[1]/2){
+        if (k < SimParams::Ls[2]/2){
           // a[IND(i,j,k)] = PhysConstants::EPS_SI; //Si relative permittivity
-          eps[SimParams::IND(i,j,k)] = 1;  //Free space
+          eps[SimParams::IND(i,j,k)] = PhysConstants::EPS_SI;  //Free space
         } else{
           eps[SimParams::IND(i,j,k)] = 1;  //Free space
         }
@@ -405,8 +405,13 @@ void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
         // double z = SimParams::ds[2]*(k+0.5);
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
         // rhs[SimParams::IND(i,j,k)] = 0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
-        rhs[SimParams::IND(i,j,k)] = 1.0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
-        chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
+        if (k < SimParams::Ls[2]/2){
+          rhs[SimParams::IND(i,j,k)] = 1.0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
+          chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
+        } else {
+          rhs[SimParams::IND(i,j,k)] = 0; //Air
+          chi[SimParams::IND(i,j,k)] = 0; //Air
+        }
       }
     }
   }
