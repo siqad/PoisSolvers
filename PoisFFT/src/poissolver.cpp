@@ -301,6 +301,7 @@ void PoisSolver::calcCharge(double* RHS , std::vector<Electrodes> elecs)
 
 void PoisSolver::createElectrode(double* RHS, std::pair<int,double> *electrodemap, double* chi, std::vector<Electrodes> elecs)
 {
+  std::cout << "createElectrode" << std::endl;
   for(unsigned int i = 0; i < elecs.size(); i++){
     elecs[i].draw(SimParams::ns, SimParams::Ls, RHS, electrodemap, chi); //separately call draw for each electrode.
   }
@@ -403,7 +404,8 @@ void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
       for (k=0;k<SimParams::ns[2];k++){
         // double z = SimParams::ds[2]*(k+0.5);
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
-        rhs[SimParams::IND(i,j,k)] = 1*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
+        // rhs[SimParams::IND(i,j,k)] = 0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
+        rhs[SimParams::IND(i,j,k)] = 1.0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
         chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
       }
     }

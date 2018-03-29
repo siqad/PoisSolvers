@@ -20,3 +20,4 @@ ubuff/cmake-build-debug
 *.idea*
 *cmake-build-debug*
 *.png
+*.xml
