@@ -414,7 +414,7 @@ void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
         // rhs[SimParams::IND(i,j,k)] = 0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
         if (k <= SimParams::ns[2]/2){
-          rhs[SimParams::IND(i,j,k)] = 1.0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
+          rhs[SimParams::IND(i,j,k)] = 1.0e16*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
           chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
         } else {
           rhs[SimParams::IND(i,j,k)] = 0; //Air
