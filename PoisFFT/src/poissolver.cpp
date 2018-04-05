@@ -363,19 +363,19 @@ void PoisSolver::initCorrection(double* correction)
   for (i=0;i<SimParams::ns[0];i++){
     // double x = SimParams::ds[0]*(i+0.5);
     for (j=0;j<SimParams::ns[1];j++){
-      double y = SimParams::ds[1]*(j+0.5);
+      // double y = SimParams::ds[1]*(j+0.5);
       for (k=0;k<SimParams::ns[2];k++){
         // double z = SimParams::ds[2]*(k+0.5);
-        if (y < SimParams::Ls[1]/2){
+        // if (y < SimParams::Ls[1]/2){
           // a[IND(i,j,k)] = PhysConstants::EPS_SI; //Si relative permittivity
+          // correction[SimParams::IND(i,j,k)] = 0;  //Free space
+        // } else{
           correction[SimParams::IND(i,j,k)] = 0;  //Free space
-        } else{
-          correction[SimParams::IND(i,j,k)] = 0;  //Free space
-        }
+        // }
       }
     }
   }
-  std::cout << "Finished eps initialisation" << std::endl;
+  std::cout << "Finished correction initialisation" << std::endl;
 }
 
 void PoisSolver::initEPS(double* eps)
@@ -388,7 +388,7 @@ void PoisSolver::initEPS(double* eps)
       // double y = SimParams::ds[1]*(j+0.5);
       for (k=0;k<SimParams::ns[2];k++){
         // double z = SimParams::ds[2]*(k+0.5);
-        if (k < SimParams::Ls[2]/2){
+        if (k <= SimParams::ns[2]/2){
           // a[IND(i,j,k)] = PhysConstants::EPS_SI; //Si relative permittivity
           eps[SimParams::IND(i,j,k)] = PhysConstants::EPS_SI;  //Free space
         } else{
@@ -410,10 +410,10 @@ void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
     for (j=0;j<SimParams::ns[1];j++){
       // double y = SimParams::ds[1]*(j+0.5);
       for (k=0;k<SimParams::ns[2];k++){
-        double z = SimParams::ds[2]*(k);
+        // double z = SimParams::ds[2]*(k);
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
         // rhs[SimParams::IND(i,j,k)] = 0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
-        if (z < SimParams::Ls[2]/2){
+        if (k <= SimParams::ns[2]/2){
           rhs[SimParams::IND(i,j,k)] = 1.0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
           chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
         } else {
