@@ -160,6 +160,18 @@ void PhysicsConnector::ElecIterator::pop()
   }
 }
 
+std::map<std::string, std::string> PhysicsConnector::getProperty(const std::string identifier)
+{
+  if (identifier == "Metal"){
+    return metal_props;
+  } else if (identifier == "Program"){
+    return program_props;
+  } else {
+    std::map<std::string, std::string> empty;
+    return empty;
+  }
+}
+
 // FILE HANDLING
 // parse problem XML, return true if successful
 bool PhysicsConnector::readProblem(void)
@@ -178,6 +190,8 @@ bool PhysicsConnector::readProblem(void)
   // read material properties
   // TODO read material_prop node
 
+
+
   // read simulation parameters
   std::cout << "Read simulation parameters" << std::endl;
   if(!readSimulationParam(tree.get_child("dbdesigner.sim_params")))
@@ -186,6 +200,11 @@ bool PhysicsConnector::readProblem(void)
   // read items
   std::cout << "Read items tree" << std::endl;
   if(!readDesign(tree.get_child("dbdesigner.design"), item_tree))
+    return false;
+
+  // read layer properties
+  std::cout << "Read layer properties" << std::endl;
+  if(!readLayerProp(tree.get_child("dbdesigner")))
     return false;
 
   //return true;
@@ -197,6 +216,30 @@ bool PhysicsConnector::readProgramProp(const bpt::ptree &program_prop_tree)
   for (bpt::ptree::value_type const &v : program_prop_tree) {
     program_props.insert(std::map<std::string, std::string>::value_type(v.first, v.second.data()));
     std::cout << "ProgramProp: Key=" << v.first << ", Value=" << program_props[v.first] << std::endl;
+  }
+  return true;
+}
+
+bool PhysicsConnector::readLayerProp(const bpt::ptree &top_tree)
+{
+  // if this were structured the same way as readDesign, then only the first layer_prop subtree would be read.
+  // TODO: make this more general. 
+  for (bpt::ptree::value_type const &v : top_tree) {
+    if(v.first == "layer_prop"){
+      bool active = false;
+      for (bpt::ptree::value_type const &layer_prop_tree : v.second) {
+        // active will be true if we are in the Metal layer prop.
+        if (layer_prop_tree.second.data() == "Metal") {
+          active = true;
+        } else if (layer_prop_tree.first == "name" && layer_prop_tree.second.data() != "Metal"){
+          active = false;
+        }
+        if (active == true) {
+          metal_props.insert(std::map<std::string, std::string>::value_type(layer_prop_tree.first, layer_prop_tree.second.data()));
+          std::cout << "MetalProp: Key=" << layer_prop_tree.first << ", Value=" << metal_props[layer_prop_tree.first] << std::endl;
+        }
+      }
+    }
   }
   return true;
 }

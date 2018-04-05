@@ -125,7 +125,7 @@ bool PoisSolver::runSim()
     elec_vec.push_back(Electrodes(
       elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
       elec->y1*SimParams::Ls[1], elec->y2*SimParams::Ls[1],
-      0.2e-6, 0.4e-6, elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
+      z_offset, z_offset+z_thickness, elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
   }
   //scale and offset electrodes in elec_vec
   elec_vec = setBuffer(elec_vec);
@@ -151,6 +151,13 @@ void PoisSolver::initVars(void)
                   std::stod(phys_con->getParameter("length")) : 1e-6;
   max_error = phys_con->parameterExists("max_error") ?
                   std::stod(phys_con->getParameter("max_error")) : 5e-2;
+
+  std::map<std::string, std::string> metal_props = phys_con->getProperty("Metal");
+
+  //metal layer properties
+  z_offset = std::stod((std::string)(metal_props["zoffset"]));
+  z_thickness = std::stod((std::string)(metal_props["zheight"]));
+
 
   //Boundary conditions
   int bc_int;

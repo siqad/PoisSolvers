@@ -85,6 +85,8 @@ namespace phys{
     //! Getter for a parameter, given a parameter key.
     std::string getParameter(const std::string &key) {return sim_params.find(key) != sim_params.end() ? sim_params.at(key) : "";}
 
+
+    std::map<std::string, std::string> getProperty(const std::string identifier);
     void initCollections();
     //simulation inputs and outputs
     std::vector<std::vector<std::string>> pot_data;
@@ -206,6 +208,7 @@ namespace phys{
 
     bool readProgramProp(const bpt::ptree &);
     bool readMaterialProp(const bpt::ptree &);
+    bool readLayerProp(const bpt::ptree &top_tree);
     bool readSimulationParam(const bpt::ptree &sim_params_tree);
     bool readDesign(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent);
     bool readItemTree(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent);
@@ -217,6 +220,7 @@ namespace phys{
     std::shared_ptr<Aggregate> db_tree;
     std::shared_ptr<Aggregate> elec_tree;
     std::map<std::string, std::string> program_props;
+    std::map<std::string, std::string> metal_props;
     // std::map<std::string, std::string> material_props; TODO probably need a different structure for this
     std::map<std::string, std::string> sim_params;
 

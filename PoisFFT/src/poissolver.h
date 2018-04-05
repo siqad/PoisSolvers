@@ -80,6 +80,8 @@ namespace phys{
         int resolution;
         double length;
         double max_error;
+        double z_offset;
+        double z_thickness;
         PhysicsConnector* phys_con;
   };
 }
