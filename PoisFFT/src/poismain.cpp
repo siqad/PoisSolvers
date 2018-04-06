@@ -3,7 +3,7 @@
 namespace SimParams
 {
   // scaling and offset values, populated in setBuffer
-  double finalscale, xoffset, yoffset;
+  double finalscale, xoffset, yoffset, zoffset;
   std::string resultpath;
 
   //stuff used during simulation

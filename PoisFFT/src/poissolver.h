@@ -34,7 +34,7 @@ namespace PhysConstants
 namespace SimParams
 {
   // scaling and offset values
-  extern double finalscale, xoffset, yoffset;
+  extern double finalscale, xoffset, yoffset, zoffset;
   extern std::string resultpath;
 
   //stuff used during simulation
