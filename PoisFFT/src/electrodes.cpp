@@ -45,7 +45,10 @@ void Electrodes::draw(const int ns[3], const double Ls[3], double* RHS, std::pai
         electrodemap[IND(i,j,k,ns)].second = potential;
         if((x[0]!=0 && iter==0) || (x[1]!=ns[0]-1 && iter==1)){
           electrodemap[IND(i-1+2*iter,j,k,ns)].first = true;
-          electrodemap[IND(i-1+2*iter,j,k,ns)].second = potential - (WF-chi[IND(i-1+2*iter,j,k,ns)]);
+          electrodemap[IND(i-1+2*iter,j,k,ns)].second = potential + (WF-chi[IND(i-1+2*iter,j,k,ns)]);
+          // std::cout << chi[IND(i-1+2*iter,j,k,ns)] << std::endl;
+          // std::cout << i << " " << j << " " << k << std::endl;
+          // std::cout << electrodemap[IND(i-1+2*iter,j,k,ns)].second << std::endl;
         }
       }
     }
@@ -56,7 +59,7 @@ void Electrodes::draw(const int ns[3], const double Ls[3], double* RHS, std::pai
         electrodemap[IND(i,j,k,ns)].second = potential; //set electrode potential
         if((y[0]!=0 && iter==0) || (y[1]!=ns[1]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j-1+2*iter,k,ns)].first = true;
-          electrodemap[IND(i,j-1+2*iter,k,ns)].second = potential - (WF-chi[IND(i,j-1+2*iter,k,ns)]);
+          electrodemap[IND(i,j-1+2*iter,k,ns)].second = potential + (WF-chi[IND(i,j-1+2*iter,k,ns)]);
         }
       }
     }
@@ -67,7 +70,7 @@ void Electrodes::draw(const int ns[3], const double Ls[3], double* RHS, std::pai
         electrodemap[IND(i,j,k,ns)].second = potential; //set electrode potential
         if((z[0]!=0 && iter==0) || (z[1]!=ns[2]-1 && iter==1)){ //set potential of adjacent silicon with WF.
           electrodemap[IND(i,j,k-1+2*iter,ns)].first = true;
-          electrodemap[IND(i,j,k-1+2*iter,ns)].second = potential - (WF-chi[IND(i,j,k-1+2*iter,ns)]);
+          electrodemap[IND(i,j,k-1+2*iter,ns)].second = potential + (WF-chi[IND(i,j,k-1+2*iter,ns)]);
         }
       }
     }

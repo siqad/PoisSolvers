@@ -46,17 +46,23 @@ std::vector<Electrodes> PoisSolver::setBuffer(std::vector<Electrodes> elec_vec) 
   //Then, extend or contract so that 10% of the sim space is left on each edge as buffer space.
   double xmin = 100;
   double ymin = 100;
+  double zmin = 100;
   double xmax = 0;
   double ymax = 0;
+  double zmax = 0;
   double xlength;
   double ylength;
+  double zlength;
   double xscale = 1;
   double yscale = 1;
+  double zscale = 1;
   for(unsigned int i = 0; i < elec_vec.size(); i++){
     xmin = std::min(xmin, elec_vec[i].x[0]);
     ymin = std::min(ymin, elec_vec[i].y[0]);
+    zmin = std::min(xmin, elec_vec[i].z[0]);
     xmax = std::max(xmax, elec_vec[i].x[1]);
     ymax = std::max(ymax, elec_vec[i].y[1]);
+    zmax = std::max(xmax, elec_vec[i].z[1]);
   }
 
   //x-scaling to keep 10% buffer on each horizontal side.
@@ -70,26 +76,38 @@ std::vector<Electrodes> PoisSolver::setBuffer(std::vector<Electrodes> elec_vec) 
     yscale = 0.8*SimParams::Ls[1]/ylength;
     std::cout << "ylength: " << ylength << std::endl;
   }
+  if(zmin < 0.1*SimParams::Ls[2] || zmax > 0.9*SimParams::Ls[2]){
+    zlength = zmax - zmin;
+    zscale = 0.8*SimParams::Ls[2]/zlength;
+    std::cout << "zlength: " << zlength << std::endl;
+  }
   //scale all elements by lowest scaling factor.
   SimParams::finalscale = std::min(xscale, yscale);
+  SimParams::finalscale = std::min(SimParams::finalscale, zscale);
   for(unsigned int i = 0; i < elec_vec.size(); i++){
     elec_vec[i].x[0] *= SimParams::finalscale;
     elec_vec[i].x[1] *= SimParams::finalscale;
     elec_vec[i].y[0] *= SimParams::finalscale;
     elec_vec[i].y[1] *= SimParams::finalscale;
+    elec_vec[i].z[0] *= SimParams::finalscale;
+    elec_vec[i].z[1] *= SimParams::finalscale;
   }
   //now sample is sure to fit within simulation boundaries, with space for buffer.
   //translate the violating part to the buffer boundary, once for x and once for y.
   xmin = 100;
   ymin = 100;
+  zmin = 100;
   xmax = 0;
   ymax = 0;
+  zmax = 0;
   //find how far outside the boundary the shapes still sit.
   for(unsigned int i = 0; i < elec_vec.size(); i++){
     xmin = std::min(xmin, elec_vec[i].x[0]);
     ymin = std::min(ymin, elec_vec[i].y[0]);
+    zmin = std::min(zmin, elec_vec[i].z[0]);
     xmax = std::max(xmax, elec_vec[i].x[1]);
     ymax = std::max(ymax, elec_vec[i].y[1]);
+    zmax = std::max(zmax, elec_vec[i].z[1]);
   }
   if(xmin < 0.1*SimParams::Ls[0]){  //too far to the left, want positive offset to bring it right
     //find the offset
@@ -103,12 +121,20 @@ std::vector<Electrodes> PoisSolver::setBuffer(std::vector<Electrodes> elec_vec) 
   }else if(ymax > 0.9*SimParams::Ls[1]){ //too far down
     SimParams::yoffset = 0.9*SimParams::Ls[1] - ymax;
   }
+  if(zmin < 0.1*SimParams::Ls[2]){ //too far up
+    //find the offset in z
+    SimParams::zoffset = 0.1*SimParams::Ls[2] - zmin;
+  }else if(zmax > 0.9*SimParams::Ls[2]){ //too far down
+    SimParams::zoffset = 0.9*SimParams::Ls[2] - zmax;
+  }
   //fix the offsets
   for(unsigned int i = 0; i < elec_vec.size(); i++){ //move all points based on offset.
     elec_vec[i].x[0] += SimParams::xoffset;
     elec_vec[i].x[1] += SimParams::xoffset;
     elec_vec[i].y[0] += SimParams::yoffset;
     elec_vec[i].y[1] += SimParams::yoffset;
+    elec_vec[i].z[0] += SimParams::zoffset;
+    elec_vec[i].z[1] += SimParams::zoffset;
   }
   return elec_vec;
 }
@@ -416,6 +442,7 @@ void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
         if (k <= SimParams::ns[2]/2){
           rhs[SimParams::IND(i,j,k)] = 1.0e16*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
           chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
+          // std::cout << SimParams::IND(i,j,k) << std::endl;
         } else {
           rhs[SimParams::IND(i,j,k)] = 0; //Air
           chi[SimParams::IND(i,j,k)] = 0; //Air
