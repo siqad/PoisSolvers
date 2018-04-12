@@ -100,16 +100,24 @@ Line Loop(23) = {10,6,-11,-2};
 Plane Surface(24) = {23};
 
 //CRACKS
-Point(9) = {0.1, 0.1, z_min, mesh_resolution};
-Point(10) = {x_max, y_max, z_min, mesh_resolution}; 
-Line(25) = {9, 10};
-Physical Line(1) = {25};
-Line{25} In Surface{22};
+Point(9) = {0.1, 0.1, 0.1, mesh_resolution};
+Point(10) = {0.2, 0.2, 0.1, mesh_resolution}; 
+Point(11) = {0.3, 0.1, 0.1, mesh_resolution};
+Line(25) = {9,10};
+Line(26) = {10,11};
+Line(27) = {11,9};
+Line Loop(28) = {25, 26, 27};
+Plane Surface(29) = {28}
+//Physical Surface(1) = {29};
 
 //Volume
-Surface Loop(26) = {14,16,18,20,22,24};
-Volume(27) = {26};
-Physical Volume(2) = {27};
+Surface Loop(30) = {14,16,18,20,22,24};
+Volume(31) = {30};
+Physical Volume(1) = {31};
+Surface{29} In Volume{1}
+
+
+
 """
 
 # Point(1) = {x_max,y_max,z_max,mesh_resolution};
