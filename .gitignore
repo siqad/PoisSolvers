@@ -15,6 +15,9 @@ poissonsolver/*.svg
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
 ubuff/cmake-build-debug
 
+#FEM data
+FEM/data
+
 #ignore all object files
 *.o
 *.idea*
