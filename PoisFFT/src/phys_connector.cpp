@@ -346,6 +346,7 @@ void PhysicsConnector::writeResultsXml()
   boost::property_tree::ptree node_sim_params; // <sim_params>
   boost::property_tree::ptree node_electrode;  // <electrode>
   boost::property_tree::ptree node_potential_map;  // <potential>
+  boost::property_tree::ptree node_db_potential;  // <potential>
 
   std::cout << "Write results to XML..." << std::endl;
   // NOTE in the future, there's probably a range of stuff that can be exported.
@@ -390,6 +391,17 @@ void PhysicsConnector::writeResultsXml()
       }
     }
     node_root.add_child("potential_map", node_potential_map);
+  }
+
+  //db_potentials
+  if (export_db_pot){
+    std::cout << "Exporting DB potential data..." << std::endl;
+    for(auto db_pot : db_pot_data){
+      boost::property_tree::ptree node_db_potential_val;
+      node_db_potential_val.put("<xmlattr>.val", db_pot[0].c_str());
+      node_db_potential.add_child("db_potential_val", node_db_potential_val);
+    }
+    node_root.add_child("db_potential", node_db_potential);
   }
 
   tree.add_child("sim_out", node_root);

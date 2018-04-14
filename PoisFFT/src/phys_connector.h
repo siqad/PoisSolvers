@@ -66,6 +66,7 @@ namespace phys{
     void setExportDBElecConfig(bool set_val){export_db_elec_config = set_val;}
     void setExportElectrode(bool set_val){export_electrode = set_val;}
     void setExportDBLoc(bool set_val){export_db_loc = set_val;}
+    void setExportDBPot(bool set_val){export_db_pot = set_val;}
 
     //set vector of strings as potential data
     void setElecPotentialData(std::vector<std::vector<std::string>> &data_in){pot_data = data_in;}
@@ -75,6 +76,8 @@ namespace phys{
     void setDBLocData(std::vector<std::vector<std::string>> &data_in){dbl_data = data_in;}
     //set vector of strings as db data
     void setDBElecData(std::vector<std::vector<std::string>> &data_in){db_elec_data = data_in;}
+    //set vector of strings as db data
+    void setDBPotData(std::vector<std::vector<std::string>> &data_in){db_pot_data = data_in;}
 
     //get the required simulation parameter vector.
     std::vector<std::string> getRequiredSimParam(void){return req_params;}
@@ -93,6 +96,7 @@ namespace phys{
     std::vector<std::vector<std::string>> elec_data;
     std::vector<std::vector<std::string>> dbl_data;
     std::vector<std::vector<std::string>> db_elec_data;
+    std::vector<std::vector<std::string>> db_pot_data;
 
 
     std::vector<std::pair<float,float>> db_locs;
@@ -242,6 +246,7 @@ namespace phys{
     bool export_db_elec_config;
     bool export_electrode;
     bool export_db_loc;
+    bool export_db_pot;
   };
 
 }//end namespace phys

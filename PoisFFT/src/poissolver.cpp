@@ -31,7 +31,12 @@ void PoisSolver::initSolver(void)
   phys_con->setRequiredSimParam("resolution");
   phys_con->setRequiredSimParam("length");
   phys_con->setRequiredSimParam("max_error");
+  phys_con->setRequiredSimParam("mode");
+  phys_con->setRequiredSimParam("high_pot");
+  phys_con->setRequiredSimParam("low_pot");
+  phys_con->setRequiredSimParam("steps");
   phys_con->setExpectElectrode(true);
+  phys_con->setExpectDB(true);
   phys_con->readProblem();
   for (auto& iter : phys_con->getRequiredSimParam()) {
     if(!phys_con->parameterExists(iter)){
@@ -66,6 +71,7 @@ std::vector<Electrodes> PoisSolver::setBuffer(std::vector<Electrodes> elec_vec) 
   }
 
   //x-scaling to keep 10% buffer on each horizontal side.
+  std::cout << xmin << ymin << zmin << std::endl;
   if(xmin < 0.1*SimParams::Ls[0] || xmax > 0.9*SimParams::Ls[0]){
     xlength = xmax - xmin;
     xscale = 0.8*SimParams::Ls[0]/xlength;
@@ -92,6 +98,7 @@ std::vector<Electrodes> PoisSolver::setBuffer(std::vector<Electrodes> elec_vec) 
     elec_vec[i].z[0] *= SimParams::finalscale;
     elec_vec[i].z[1] *= SimParams::finalscale;
   }
+  std::cout << SimParams::finalscale << std::endl;
   //now sample is sure to fit within simulation boundaries, with space for buffer.
   //translate the violating part to the buffer boundary, once for x and once for y.
   xmin = 100;
@@ -140,26 +147,81 @@ std::vector<Electrodes> PoisSolver::setBuffer(std::vector<Electrodes> elec_vec) 
 }
 
 
-bool PoisSolver::runSim()
+bool PoisSolver::runSim(void)
 {
   std::cout << "PoisSolver::runSim()" << std::endl;
   std::cout << "Grab all electrode locations..." << std::endl;
 
+  if(mode == "Clock"){
+    std::cout << "Assume that there is only 1 electrode for clock mode" << std::endl;
+  }
   //parse electrodes into elec_vec, different for every structure.
   phys_con->initCollections();
-  for(auto elec : *(phys_con->elec_col)) {
-    elec_vec.push_back(Electrodes(
-      elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
-      elec->y1*SimParams::Ls[1], elec->y2*SimParams::Ls[1],
-      SimParams::Ls[2]/2.0 - z_offset, SimParams::Ls[2]/2.0 - z_offset + z_thickness,
-      elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
+  
+  for(auto db : *(phys_con->db_col)) {
+    std::cout << "x, y: " << db->x << " " << db->y << std::endl; 
+    db_locs.push_back(std::make_pair(db->x, db->y));
   }
   //scale and offset electrodes in elec_vec
   elec_vec = setBuffer(elec_vec);
   std::cout << "Beginning solver." << std::endl;
-  for(int i = 0; i < 1; i++){
-    // All the relevant information is inside SimParams.
-    worker(i, elec_vec); //where the magic happens
+  db_potential_accu.clear();
+  if(mode == "Clock"){
+    std::vector<double> clock_potentials;
+    clock_potentials.clear();
+    for(int i = 0; i < steps; i++){
+      clock_potentials.push_back(low_pot + (double)i*(high_pot-low_pot)/(double)(steps-1) );
+    }
+    for(int i = 0; i < steps; i++){
+      elec_vec.clear();
+      for(auto elec : *(phys_con->elec_col)) {
+        elec_vec.push_back(Electrodes(
+          elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
+          elec->y1*SimParams::Ls[1], elec->y2*SimParams::Ls[1],
+          SimParams::Ls[2]/2.0 + z_offset, SimParams::Ls[2]/2.0 + z_offset + z_thickness,
+          clock_potentials[i], PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
+      }
+      // All the relevant information is inside SimParams.
+      elec_vec = setBuffer(elec_vec);
+      worker(i, elec_vec); //where the magic happens
+      db_potential_accu.push_back(db_potential_data);
+    }  
+    
+    
+    //Print the stuff to file
+    std::ofstream testfile ("example.txt");
+    if (testfile.is_open())
+    {
+      // int i = 0;
+      testfile << "Voltage set:\n";
+      for(auto pot: clock_potentials){
+        testfile << pot << " ";        
+      }
+      testfile << "\nDB Positions (x, y):\n";
+      for(auto db : db_locs) {
+        testfile << db.first << " " << db.second << "\n";
+      }  
+      int i = 0;
+      testfile << "Potentials (Step, V_DB1, V_DB2,...)\n";
+      for(auto db_pot_vec : db_potential_accu) {
+        testfile << i << " ";
+        for(auto db_pot: db_pot_vec) {
+          testfile << db_pot[0] << " ";
+        }
+        i++;
+        testfile << "\n";
+      }  
+    }
+  } else if (mode == "Standard"){
+    for(auto elec : *(phys_con->elec_col)) {
+      elec_vec.push_back(Electrodes(
+        elec->x1*SimParams::Ls[0], elec->x2*SimParams::Ls[0],
+        elec->y1*SimParams::Ls[1], elec->y2*SimParams::Ls[1],
+        SimParams::Ls[2]/2.0 + z_offset, SimParams::Ls[2]/2.0 + z_offset + z_thickness,
+        elec->potential, PhysConstants::WF_GOLD)); //elec_vec is part of phys_engine
+    }
+    elec_vec = setBuffer(elec_vec);
+    worker(0, elec_vec); //where the magic happens    
   }
   return true;
 }
@@ -178,13 +240,20 @@ void PoisSolver::initVars(void)
                   std::stod(phys_con->getParameter("length")) : 1e-6;
   max_error = phys_con->parameterExists("max_error") ?
                   std::stod(phys_con->getParameter("max_error")) : 5e-2;
+  mode = phys_con->parameterExists("mode") ?
+                  phys_con->getParameter("mode") : "Standard";
+  high_pot = phys_con->parameterExists("high_pot") ?
+                  std::stod(phys_con->getParameter("high_pot")) : 0;
+  low_pot = phys_con->parameterExists("low_pot") ?
+                  std::stod(phys_con->getParameter("low_pot")) : 0;
+  steps = phys_con->parameterExists("steps") ?
+                std::stod(phys_con->getParameter("steps")) : 20;
 
   std::map<std::string, std::string> metal_props = phys_con->getProperty("Metal");
 
   //metal layer properties
   z_offset = std::stod((std::string)(metal_props["zoffset"]));
   z_thickness = std::stod((std::string)(metal_props["zheight"]));
-
 
   //Boundary conditions
   int bc_int;
@@ -251,7 +320,7 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   }
   std::cout << "Time elapsed: " << float(clock()-begin_time)/CLOCKS_PER_SEC << " seconds" << std::endl;
   std::cout << "Ending, deleting variables" << std::endl;
-
+  
   exportData();
   delete indexErr;
   delete[] eps;
@@ -267,7 +336,8 @@ void PoisSolver::exportData(void){
   //number of data points is n*n
   std::vector<std::vector<std::string>> elec_pot_data(SimParams::ns[0]*SimParams::ns[0]);
   double x, y, val;
-  const int k = SimParams::ns[2]/2;
+  const int k = 24;
+  // const int k = SimParams::ns[2]/2.0;
   for (int i = 0; i < SimParams::ns[0]; i++){
     for (int j = 0; j < SimParams::ns[1]; j++){
       //resize so we don't assign into empty vectors
@@ -303,10 +373,76 @@ void PoisSolver::exportData(void){
   phys_con->setExportElectrode(true);
   phys_con->setElectrodeData(electrode_data);
 
+  //set DB potential data into phys_connector
+  // std::vector<std::vector<std::string>> db_potential_data(db_locs.size());
+  db_potential_data.clear();
+  for(auto db : db_locs) {
+    std::cout << "x, y: " << db.first << " " << db.second << std::endl; 
+    double db_x = db.first;
+    double db_y = db.second;
+    double x_right = -db_x;
+    double x_left = 0;
+    double y_up = -db_y;
+    double y_down = 0;
+    
+    //find left and right x
+    int i = -1;
+    do{
+      i++;
+      x_right = (i*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0];
+      x_left = ((i-1)*SimParams::ds[0]-SimParams::xoffset)/SimParams::finalscale/SimParams::Ls[0];
+    }while(x_right < db_x);
+
+    //find up and down y
+    int j = -1;
+    do{
+      j++;
+      y_up = (j*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1];
+      y_down = ((j-1)*SimParams::ds[1]-SimParams::yoffset)/SimParams::finalscale/SimParams::Ls[1];
+    }while(y_up < db_y);
+
+    //get values at corners and interpolate
+    double q11 = arr[SimParams::IND(i-1,j-1,k)];
+    double q12 = arr[SimParams::IND(i-1,j,k)];
+    double q21 = arr[SimParams::IND(i,j-1,k)];
+    double q22 = arr[SimParams::IND(i,j,k)];    
+    double voltage = interpolate(q11, q12, q21, q22, x_left, x_right, y_down, y_up, db_x, db_y);
+    std::cout << "q11, q12, q21, q22" << " " << q11 << " " << q12 << " " << q21 << " " << q22 << " " << std::endl;      
+    std::cout << "x1, x2, y1, y2" << " " << x_left << " " << x_right << " " << y_down << " " << y_up << " " << std::endl;
+    std::cout << "Interpolated Voltage: " << voltage << std::endl;
+    std::vector<std::string> db_pot_value;
+    db_pot_value.clear();
+    db_pot_value.push_back(std::to_string(voltage));
+    db_potential_data.push_back(db_pot_value);
+  }
+  
+  phys_con->setExportDBPot(true);
+  phys_con->setDBPotData(db_potential_data);
+  
   std::cout << std::endl << "*** Write Result to Output ***" << std::endl;
   phys_con->writeResultsXml();
+  
+  
+  
+  
 }
 
+double interpolate(double q11, double q12, double q21, double q22, double x1, double x2, double y1, double y2, double x, double y) 
+{
+    double x2x1, y2y1, x2x, y2y, yy1, xx1;
+    x2x1 = x2 - x1;
+    y2y1 = y2 - y1;
+    x2x = x2 - x;
+    y2y = y2 - y;
+    yy1 = y - y1;
+    xx1 = x - x1;
+    return 1.0 / (x2x1 * y2y1) * (
+        q11 * x2x * y2y +
+        q21 * xx1 * y2y +
+        q12 * x2x * yy1 +
+        q22 * xx1 * yy1
+    );
+}
 
 void PoisSolver::calcCharge(double* RHS , std::vector<Electrodes> elecs)
 {
@@ -440,9 +576,8 @@ void PoisSolver::initRHS(double* chi, double* eps, double* rhs)
         // a[IND(i,j,k)] = 1e16*PhysConstants::QE/PhysConstants::EPS0/eps[IND(i,j,k)]; //in m^-3, scale by permittivity
         // rhs[SimParams::IND(i,j,k)] = 0*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
         if (k <= SimParams::ns[2]/2){
-          rhs[SimParams::IND(i,j,k)] = 1.0e16*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
+          rhs[SimParams::IND(i,j,k)] = -1.0e16*PhysConstants::QE/PhysConstants::EPS0/eps[SimParams::IND(i,j,k)]; //in m^-3, scale by permittivity
           chi[SimParams::IND(i,j,k)] = PhysConstants::CHI_SI;
-          // std::cout << SimParams::IND(i,j,k) << std::endl;
         } else {
           rhs[SimParams::IND(i,j,k)] = 0; //Air
           chi[SimParams::IND(i,j,k)] = 0; //Air

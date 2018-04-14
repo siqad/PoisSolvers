@@ -15,6 +15,7 @@
 #include <boost/property_tree/xml_parser.hpp> // XML stuff
 #include <vector> // vector
 #include <string> // string
+#include <fstream>
 
 // Physical constants used for calculation
 namespace PhysConstants
@@ -72,9 +73,13 @@ namespace phys{
         void initCorrection(double* correction);
         std::vector<Electrodes> setBuffer(std::vector<Electrodes> elec_vec);
         void initVars(void);
-        void exportData(void);
-
+        void exportData(void);        
+        
+        std::vector<std::vector<std::vector<std::string>>> db_potential_accu;
+        std::vector<std::vector<std::string>> db_potential_data;
+        std::vector<std::pair<double, double>> db_locs; // location of elecs in x, y
         std::vector<Electrodes> elec_vec; // location of elecs
+        std::vector<double> clock_potentials; //vector of potentials used for electrodes when clocking
         double *arr; //will contain the potential
         std::string bc;
         int resolution;
@@ -82,9 +87,14 @@ namespace phys{
         double max_error;
         double z_offset;
         double z_thickness;
+        std::string mode;
+        double high_pot;
+        double low_pot;
+        int steps;
         PhysicsConnector* phys_con;
   };
 }
 
+double interpolate(double q11, double q12, double q21,  double q22, double x1, double x2, double y1, double y2, double x, double y);
 
 #endif //POISSOLVER_H

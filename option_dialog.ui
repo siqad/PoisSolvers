@@ -27,12 +27,12 @@
       <widget class="QComboBox" name="combo_bcs">
        <item>
         <property name="text">
-         <string>Dirichlet</string>
+         <string>Neumann</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Neumann</string>
+         <string>Dirichlet</string>
         </property>
        </item>
        <item>
@@ -93,6 +93,81 @@
       <widget class="QLineEdit" name="le_max_error">
        <property name="text">
         <string>5e-2</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="mode_hl">
+     <item>
+      <widget class="QLabel" name="label_mode">
+       <property name="text">
+        <string>Mode: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="combo_mode">
+       <item>
+        <property name="text">
+         <string>Standard</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Clock</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="range_hl">
+     <item>
+      <widget class="QLabel" name="label_range">
+       <property name="text">
+        <string>Range:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_low_pot">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_dash">
+       <property name="text">
+        <string>-</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_high_pot">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="steps_hl">
+     <item>
+      <widget class="QLabel" name="label_steps">
+       <property name="text">
+        <string>Steps: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_steps">
+       <property name="text">
+        <string>20</string>
        </property>
       </widget>
      </item>

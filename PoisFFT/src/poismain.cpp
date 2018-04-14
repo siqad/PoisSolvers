@@ -41,12 +41,11 @@ int main(int argc,char* argv[]){
     out_path = argv[2];
     // std::cout << SimParams::resultpath << std::endl;
 
-
     std::cout << std::endl << "*** Constructing Problem ***" << std::endl;
     PoisSolver ps(in_path, out_path);
     ps.initVars();
 
-    std::cout << std::endl << "*** Run Simulation ***" << std::endl;
+    std::cout << std::endl << "*** Run Simulation in " << ps.mode << " mode***" << std::endl;
     if(!ps.runSim()) {
       std::cout << "Simulation failed, aborting" << std::endl;
       return 0;

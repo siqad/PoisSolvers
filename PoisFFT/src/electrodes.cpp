@@ -39,6 +39,8 @@ void Electrodes::draw(const int ns[3], const double Ls[3], double* RHS, std::pai
   // Repeat for all dimensions.
   for( int iter = 0; iter < 2; iter++){
     i = (int) ns[0]*x[iter]/Ls[0]; //xmin first, then xmax
+    std::cout << "xiter:" << x[iter] << std::endl;
+    std::cout << "x:" << i << std::endl;
     for(j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
       for(k = (int) ns[2]*z[0]/Ls[2]; k <= (int) ns[2]*z[1]/Ls[2]; k++){
         electrodemap[IND(i,j,k,ns)].first = true;
@@ -46,13 +48,12 @@ void Electrodes::draw(const int ns[3], const double Ls[3], double* RHS, std::pai
         if((x[0]!=0 && iter==0) || (x[1]!=ns[0]-1 && iter==1)){
           electrodemap[IND(i-1+2*iter,j,k,ns)].first = true;
           electrodemap[IND(i-1+2*iter,j,k,ns)].second = potential + (WF-chi[IND(i-1+2*iter,j,k,ns)]);
-          // std::cout << chi[IND(i-1+2*iter,j,k,ns)] << std::endl;
-          // std::cout << i << " " << j << " " << k << std::endl;
-          // std::cout << electrodemap[IND(i-1+2*iter,j,k,ns)].second << std::endl;
         }
       }
     }
     j = (int) ns[1]*y[iter]/Ls[1]; //ymin first, then ymax
+    std::cout << "yiter:" << y[iter] << std::endl;
+    std::cout << "y:" << j << std::endl;
     for(i = (int) ns[0]*x[0]/Ls[0]; i <= (int) ns[0]*x[1]/Ls[0]; i++){
       for(k = (int) ns[2]*z[0]/Ls[2]; k <= (int) ns[2]*z[1]/Ls[2]; k++){
         electrodemap[IND(i,j,k,ns)].first = true; //set true for electrode surface.
@@ -64,6 +65,8 @@ void Electrodes::draw(const int ns[3], const double Ls[3], double* RHS, std::pai
       }
     }
     k = (int) ns[2]*z[iter]/Ls[2]; //zmin
+    std::cout << "ziter:" << z[iter] << std::endl;
+    std::cout << "z:" << k << std::endl;
     for(i = (int) ns[0]*x[0]/Ls[0]; i <= (int) ns[0]*x[1]/Ls[0]; i++){
       for(j = (int) ns[1]*y[0]/Ls[1]; j <= (int) ns[1]*y[1]/Ls[1]; j++){
         electrodemap[IND(i,j,k,ns)].first = true; //set true for electrode surface.
