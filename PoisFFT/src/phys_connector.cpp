@@ -344,9 +344,11 @@ void PhysicsConnector::writeResultsXml()
   boost::property_tree::ptree node_root;       // <sim_out>
   boost::property_tree::ptree node_eng_info;   // <eng_info>
   boost::property_tree::ptree node_sim_params; // <sim_params>
+  boost::property_tree::ptree node_clock_pot;  // <electrode>
   boost::property_tree::ptree node_electrode;  // <electrode>
   boost::property_tree::ptree node_potential_map;  // <potential>
   boost::property_tree::ptree node_db_potential;  // <potential>
+  boost::property_tree::ptree node_db_potential_accu;  // <potential>
 
   std::cout << "Write results to XML..." << std::endl;
   // NOTE in the future, there's probably a range of stuff that can be exported.
@@ -358,6 +360,19 @@ void PhysicsConnector::writeResultsXml()
   node_root.add_child("eng_info", node_eng_info);
   // sim_params
   // TODO
+
+
+  //clock_pot
+  if(export_clock_pot){
+    std::cout << "Exporting Clock data..." << std::endl;
+    for (unsigned int i = 0; i < clock_pot_data.size(); i++){
+      boost::property_tree::ptree node_clock_pot_val;
+      node_clock_pot_val.put("<xmlattr>.clock_potential", clock_pot_data[i][0].c_str());
+      node_clock_pot.add_child("potential", node_clock_pot_val);
+    }
+  }
+  node_root.add_child("clock_potentials", node_clock_pot);
+
 
   // electrode
   if (export_electrode){
@@ -393,17 +408,32 @@ void PhysicsConnector::writeResultsXml()
     node_root.add_child("potential_map", node_potential_map);
   }
 
-  //db_potentials
-  if (export_db_pot){
-    std::cout << "Exporting DB potential data..." << std::endl;
-    for(auto db_pot : db_pot_data){
-      boost::property_tree::ptree node_db_potential_val;
-      node_db_potential_val.put("<xmlattr>.val", db_pot[0].c_str());
-      node_db_potential.add_child("db_potential_val", node_db_potential_val);
-    }
-    node_root.add_child("db_potential", node_db_potential);
-  }
+  // //db_potentials
+  // if (export_db_pot){
+  //   std::cout << "Exporting DB potential data..." << std::endl;
+  //   for(auto db_pot : db_pot_data){
+  //     boost::property_tree::ptree node_db_potential_val;
+  //     node_db_potential_val.put("<xmlattr>.db_potential", db_pot[0].c_str());
+  //     node_db_potential.add_child("db_potential_val", node_db_potential_val);
+  //   }
+  //   node_root.add_child("db_potential", node_db_potential);
+  // }
 
+  //db_potentials
+  if (export_db_pot_accu){
+    std::cout << "Exporting accumulated DB potential data..." << std::endl;
+    for(auto db_pots : db_pot_accu_data){
+      boost::property_tree::ptree node_db_pot_accu_val;
+      std::string potentials_string = "";
+      for(auto db_pot: db_pots){
+        potentials_string += db_pot + ", ";
+      }
+      node_db_pot_accu_val.put("db_potential_vals", potentials_string.c_str());        
+      node_db_potential_accu.add_child("db_potentials", node_db_pot_accu_val);
+    }
+    node_root.add_child("db_potential", node_db_potential_accu);
+  }
+  
   tree.add_child("sim_out", node_root);
   // write to file
   boost::property_tree::write_xml(output_path, tree, std::locale(), boost::property_tree::xml_writer_make_settings<std::string>(' ',4));

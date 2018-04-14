@@ -166,8 +166,8 @@ bool PoisSolver::runSim(void)
   elec_vec = setBuffer(elec_vec);
   std::cout << "Beginning solver." << std::endl;
   db_potential_accu.clear();
+  
   if(mode == "Clock"){
-    std::vector<double> clock_potentials;
     clock_potentials.clear();
     for(int i = 0; i < steps; i++){
       clock_potentials.push_back(low_pot + (double)i*(high_pot-low_pot)/(double)(steps-1) );
@@ -185,33 +185,8 @@ bool PoisSolver::runSim(void)
       elec_vec = setBuffer(elec_vec);
       worker(i, elec_vec); //where the magic happens
       db_potential_accu.push_back(db_potential_data);
-    }  
-    
-    
-    //Print the stuff to file
-    std::ofstream testfile ("example.txt");
-    if (testfile.is_open())
-    {
-      // int i = 0;
-      testfile << "Voltage set:\n";
-      for(auto pot: clock_potentials){
-        testfile << pot << " ";        
-      }
-      testfile << "\nDB Positions (x, y):\n";
-      for(auto db : db_locs) {
-        testfile << db.first << " " << db.second << "\n";
-      }  
-      int i = 0;
-      testfile << "Potentials (Step, V_DB1, V_DB2,...)\n";
-      for(auto db_pot_vec : db_potential_accu) {
-        testfile << i << " ";
-        for(auto db_pot: db_pot_vec) {
-          testfile << db_pot[0] << " ";
-        }
-        i++;
-        testfile << "\n";
-      }  
-    }
+    }      
+    exportClockData();
   } else if (mode == "Standard"){
     for(auto elec : *(phys_con->elec_col)) {
       elec_vec.push_back(Electrodes(
@@ -225,7 +200,6 @@ bool PoisSolver::runSim(void)
   }
   return true;
 }
-
 
 void PoisSolver::initVars(void)
 {
@@ -330,8 +304,77 @@ void PoisSolver::worker(int step, std::vector<Electrodes> elec_vec)
   delete[] correction;
 }
 
-void PoisSolver::exportData(void){
 
+void PoisSolver::exportClockData(void)
+{
+  
+  phys_con->setExportElecPotential(false);
+  phys_con->setExportDBElecConfig(false);
+  phys_con->setExportElectrode(false);
+  phys_con->setExportDBLoc(false);
+  phys_con->setExportDBPot(false);
+
+  phys_con->setOutputPath(std::string("example.xml"));
+
+  // //Print the stuff to file
+  // std::ofstream testfile ("example.txt");
+  // if (testfile.is_open())
+  // {
+  //   // int i = 0;
+  //   testfile << "Voltage set:\n";
+  //   for(auto pot: clock_potentials){
+  //     testfile << pot << " ";        
+  //   }
+  //   testfile << "\nDB Positions (x, y):\n";
+  //   for(auto db : db_locs) {
+  //     testfile << db.first << " " << db.second << "\n";
+  //   }  
+  //   int i = 0;
+  //   testfile << "Potentials (Step, V_DB1, V_DB2,...)\n";
+  //   for(auto db_pot_vec : db_potential_accu) {
+  //     testfile << i << " ";
+  //     for(auto db_pot: db_pot_vec) {
+  //       testfile << db_pot[0] << " ";
+  //     }
+  //     i++;
+  //     testfile << "\n";
+  //   }  
+  // }
+  std::vector<std::vector<std::string>> clock_pot_data(clock_potentials.size());
+  std::vector<std::string> datum(1);
+  clock_pot_data.clear();
+  for(auto pot: clock_potentials){
+    datum.clear();
+    datum.push_back(std::to_string(pot));
+    clock_pot_data.push_back(datum);        
+  }
+    //set elec_pot_data into the phys_connector
+  phys_con->setExportClockPot(true);
+  phys_con->setClockPotData(clock_pot_data);
+  
+  std::vector<std::vector<std::string>> db_pot_accu_data(db_potential_accu.size());
+  db_pot_accu_data.clear();
+  for(auto db_pot_vec: db_potential_accu){
+    datum.clear();
+    for(auto db_pots: db_pot_vec){
+      for(auto db_pot: db_pots){
+        datum.push_back(db_pot);        
+        // std::cout << db_pot << std::endl;
+      }
+    }
+    db_pot_accu_data.push_back(datum);
+    std::cout << "datum size" << datum.size() << std::endl;
+  }  
+  phys_con->setExportDBPotAccu(true);
+  phys_con->setDBPotAccuData(db_pot_accu_data);
+
+  phys_con->writeResultsXml();
+  
+  
+}
+
+
+void PoisSolver::exportData(void){
   //create the vector of [x, y, val] that will be sent to setElecPotentialData
   //number of data points is n*n
   std::vector<std::vector<std::string>> elec_pot_data(SimParams::ns[0]*SimParams::ns[0]);

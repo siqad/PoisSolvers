@@ -74,6 +74,7 @@ namespace phys{
         std::vector<Electrodes> setBuffer(std::vector<Electrodes> elec_vec);
         void initVars(void);
         void exportData(void);        
+        void exportClockData(void);
         
         std::vector<std::vector<std::vector<std::string>>> db_potential_accu;
         std::vector<std::vector<std::string>> db_potential_data;
