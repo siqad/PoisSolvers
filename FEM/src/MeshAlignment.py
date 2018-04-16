@@ -20,21 +20,18 @@ import matplotlib.pyplot as plt
 # // Cracks are locations that the mesh is forced to align to
 # 
 # // 1
-# Point(5) = {0.25, 0.25, 0, mesh_resolution};
-# Point(6) = {0.5, 0.75, 0, mesh_resolution}; 
+# Point(5) = {0.01, 0.2, 0, mesh_resolution};
+# Point(6) = {0.99, 0.2, 0, mesh_resolution}; 
 # Line(7) = {5, 6};
 # Physical Line(1) = {7};
 # Line{7} In Surface{6};
 # 
 # // 2
-# Point(7) = {0.75, 0.25, 0, mesh_resolution};
-# Line(8) = {6, 7};
+# Point(7) = {0.01, 0.8, 0, mesh_resolution};
+# Point(8) = {0.99, 0.8, 0, mesh_resolution};
+# Line(8) = {7, 8};
 # Physical Line(2) = {8};
 # Line{8} In Surface{6};
-# 
-# Line(9) = {7, 5};
-# Physical Line(3) = {9};
-# Line{9} In Surface{6};
 # 
 # Physical Surface(1) = {6};
 # '''
@@ -107,16 +104,12 @@ Line(25) = {9,10};
 Line(26) = {10,11};
 Line(27) = {11,9};
 Line Loop(28) = {25, 26, 27};
-Plane Surface(29) = {28}
-//Physical Surface(1) = {29};
-
+Plane Surface(29) = {28};
 //Volume
-Surface Loop(30) = {14,16,18,20,22,24};
+Surface Loop(30) = {14,18,22,16,20,24};
 Volume(31) = {30};
-Physical Volume(1) = {31};
-Surface{29} In Volume{1}
-
-
+Surface{29} In Volume{31};
+//Physical Volume(1) = {31};
 
 """
 
@@ -158,10 +151,11 @@ Surface{29} In Volume{1}
 # Physical Volume(0) = {26};
 # 
 # """
-with open('/home/nathan/git/PoisSolvers/FEM/data/domain.geo', 'w') as f: f.write(domain)
+with open('../data/domain.geo', 'w') as f: f.write(domain)
 
-subprocess.call(['gmsh -3 /home/nathan/git/PoisSolvers/FEM/data/domain.geo'], shell=True)
-subprocess.call(['dolfin-convert /home/nathan/git/PoisSolvers/FEM/data/domain.msh domain.xml'], shell=True)
+# subprocess.call(['gmsh -2 ../data/domain.geo'], shell=True)
+subprocess.call(['gmsh -3 ../data/domain.geo'], shell=True)
+subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
 
 mesh = Mesh('domain.xml')
 # facet_f = MeshFunction('size_t', mesh, 'domain_facet_region.xml')

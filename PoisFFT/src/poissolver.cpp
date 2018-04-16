@@ -379,7 +379,7 @@ void PoisSolver::exportData(void){
   //number of data points is n*n
   std::vector<std::vector<std::string>> elec_pot_data(SimParams::ns[0]*SimParams::ns[0]);
   double x, y, val;
-  const int k = 24;
+  const int k = 26;
   // const int k = SimParams::ns[2]/2.0;
   for (int i = 0; i < SimParams::ns[0]; i++){
     for (int j = 0; j < SimParams::ns[1]; j++){
