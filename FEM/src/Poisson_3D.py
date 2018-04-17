@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import mshr
 import subprocess
 from paraview import simple as pvs
+import numpy as np
 
 # Create classes for defining parts of the boundaries and the interior
 # of the domain
@@ -56,7 +57,7 @@ obstacle2 = Obstacle2()
 # Define mesh
 domain = """
 //PARAMETERS
-mesh_resolution = 0.025;
+mesh_resolution = 0.05;
 x_max = 1.0;
 x_min = 0.0;
 y_max = 1.0;
@@ -200,7 +201,7 @@ print "Mesh initialized"
 domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
 domains.set_all(0)
 obstacle.mark(domains, 1)
-
+obstacle2.mark(domains, 2)
 # Initialize mesh function for boundary domains
 boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
 boundaries.set_all(0)
@@ -218,6 +219,7 @@ EPS_0 = 8.854E-12
 Q_E = 1.6E-19
 a0 = dolfin.Constant(11.6*EPS_0)
 a1 = dolfin.Constant(1.0*EPS_0)
+a2 = dolfin.Constant(1000000*EPS_0)
 g_L = dolfin.Constant("0.0")
 g_R = dolfin.Constant("0.0")
 g_T = dolfin.Constant("0.0")
@@ -254,7 +256,7 @@ print "Measures defined"
 # Define variational form
 F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
-    # + dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(2) \
+    + dolfin.inner(a2*dolfin.grad(u), dolfin.grad(v))*dx(2) \
     - g_L*v*ds(1) - g_R*v*ds(3) \
     - g_T*v*ds(2) - g_Bo*v*ds(4) \
     - g_F*v*ds(5) - g_Ba*v*ds(6) \
@@ -312,23 +314,21 @@ dolfin.plot(us, title="slice")
 plt.figure()
 dolfin.plot(dolfin.grad(us), title="Projected grad(us)")
 
-n = dolfin.FacetNormal(mesh)
-m1 = dolfin.dot(dolfin.grad(u), n)*dolfin.ds(2)
-v1 = dolfin.assemble(m1)
-print "\int grad(u) * n ds(2) = ", v1
-
-# Evaluate integral of u over the obstacle
-m2 = u*dolfin.dx(1)
-v2 = dolfin.assemble(m2)
-print "\int u dx(1) = ", v2
-
 print "Print solution to file."
 file_string = "../data/Potential.pvd"
 dolfin.File(file_string) << u
 
+reader = pvs.OpenDataFile("../data/Potential.pvd")
+writer = pvs.CreateWriter("../data/Potential.csv", reader)
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+print "CSV created"
+
 plt.show()
 ##PLOTTING
 data_3d = pvs.PVDReader(FileName=file_string)
+
 #create the slice
 yslice = pvs.Slice(Input=data_3d, SliceType="Plane")  
 yslice.SliceType.Origin = [0, 0.5, 0]

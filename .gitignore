@@ -6,11 +6,17 @@ PoisFFT/src/*.out
 PoisFFT/PoissonSolverSlides.odp
 
 #in-house poisson solver at https://github.com/NathanChiu/poissonsolver
-poissonsolver/outfile*.txt
+poissonsolver/*.txt
 poissonsolver/perf*
 poissonsolver/profres*
 poissonsolver/*.tar.gz
 poissonsolver/*.svg
+poissonsolver/*.gp
+poissonsolver/*.out
+poissonsolver/*.cmake
+poissonsolver/CMakeFiles
+poissonsolver/*.m
+poissonsolver/src/TEST
 
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
 ubuff/cmake-build-debug
