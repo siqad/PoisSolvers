@@ -4,6 +4,7 @@ PoisFFT/lib
 PoisFFT/src/out*.txt
 PoisFFT/src/*.out
 PoisFFT/PoissonSolverSlides.odp
+PoisFFT/src/CMakeLists.txt
 
 #in-house poisson solver at https://github.com/NathanChiu/poissonsolver
 poissonsolver/*.txt
@@ -17,6 +18,7 @@ poissonsolver/*.cmake
 poissonsolver/CMakeFiles
 poissonsolver/*.m
 poissonsolver/src/TEST
+poissonsolver/src/CMakeLists.txt
 
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
 ubuff/cmake-build-debug
