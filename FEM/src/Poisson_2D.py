@@ -106,15 +106,15 @@ Line(11) = {12, 11};
 Physical Line(5) = {11};
 Line{11} In Surface{6};
 Line(12) = {11, 9};
-Physical Line(5) = {12};
+Physical Line(6) = {12};
 Line{12} In Surface{6};
 
 Physical Surface(1) = {6};
 '''
 
-with open('/home/nathan/git/PoisSolvers/FEM/data/domain.geo', 'w') as f: f.write(domain)
-subprocess.call(['gmsh -2 /home/nathan/git/PoisSolvers/FEM/data/domain.geo'], shell=True)
-subprocess.call(['dolfin-convert /home/nathan/git/PoisSolvers/FEM/data/domain.msh domain.xml'], shell=True)
+with open('../data/domain.geo', 'w') as f: f.write(domain)
+subprocess.call(['gmsh -2 ../data/domain.geo'], shell=True)
+subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
 mesh = dolfin.Mesh('domain.xml')
 
 # domain = mshr.Box(dolfin.Point(0,0,0), dolfin.Point(1,1,1))
