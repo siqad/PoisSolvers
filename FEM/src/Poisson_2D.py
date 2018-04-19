@@ -195,11 +195,6 @@ a, L = dolfin.lhs(F), dolfin.rhs(F)
 u = dolfin.Function(V)
 problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
 solver = dolfin.LinearVariationalSolver(problem)
-# solver.parameters['linear_solver'] = 'cg' #doesn't play well with different x-y boundary lengths
-# cg_param = solver.parameters['krylov_solver']
-# cg_param['absolute_tolerance'] = 1E-7
-# cg_param['relative_tolerance'] = 1E-4
-# cg_param['maximum_iterations'] = 1000
 solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'ilu'
 print "Solving problem..."
@@ -222,15 +217,5 @@ plt.ylim(boundary_y_min, boundary_y_max)
 plt.xlim(boundary_x_min, boundary_x_max)
 dolfin.plot(mesh, title="mesh")
 plt.show()
-
-##PLOTTING in paraview
-# print "Plotting in paraview..."
-# data_2d = pvs.PVDReader(FileName=file_string)
-# pvs.Show(data_2d)
-# prop = pvs.GetDisplayProperties(data_2d)
-# prop.Representation = "Wireframe"
-# print prop.GetProperty("Representation")
-# pvs.Interact(view=None)
-# pvs.Render()
 
 print "Ending."
