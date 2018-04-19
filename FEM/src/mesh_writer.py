@@ -113,7 +113,6 @@ class MeshWriter():
         self.addCrackByIndex(self.ind_point-3, self.ind_point-2, scale)
         self.addCrackByIndex(self.ind_point-2, self.ind_point-1, scale)
         self.addCrackByIndex(self.ind_point-1, self.ind_point-4, scale)
-        self.addPointToSurface([(x_min+x_max)/2.0,(y_min+y_max)/2.0], 1)
         return
     
 # mw = MeshWriter()

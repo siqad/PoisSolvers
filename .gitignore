@@ -32,3 +32,5 @@ FEM/data
 *cmake-build-debug*
 *.png
 *.xml
+*.pos
+*.pyc
