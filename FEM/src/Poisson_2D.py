@@ -5,12 +5,12 @@ import subprocess
 import mesh_writer
 import numpy as np
 
-elec_length = 1.0
-elec_spacing = 1.5
+elec_length = 2.0
+elec_spacing = 5.0
 boundary_x_min = 0.0
-boundary_x_max = 10.0
+boundary_x_max = 4*elec_length+4*elec_spacing
 boundary_y_min = 0.0
-boundary_y_max = 30.0
+boundary_y_max = 10.0
 mid_x = (boundary_x_max+boundary_x_min)/2.0
 mid_y = (boundary_y_max+boundary_y_min)/2.0
 
@@ -152,11 +152,11 @@ electrode_270.mark(boundaries, 8)
 print "Defining inputs..."
 a0 = dolfin.Constant(1.0)
 a1 = dolfin.Constant(100.0)
-g_T = dolfin.Constant("-1.0")
-g_B = dolfin.Constant("-1.0")
+g_T = dolfin.Constant("0.0")
+g_B = dolfin.Constant("0.0")
 g_L = dolfin.Constant("0.0")
 g_R = dolfin.Constant("0.0")
-f = dolfin.Constant(0.05)
+f = dolfin.Constant(0.00)
 
 # Define function space and basis functions
 print "Defining function space and basis..."
@@ -195,12 +195,13 @@ a, L = dolfin.lhs(F), dolfin.rhs(F)
 u = dolfin.Function(V)
 problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
 solver = dolfin.LinearVariationalSolver(problem)
-solver.parameters['linear_solver'] = 'cg'
+# solver.parameters['linear_solver'] = 'cg' #doesn't play well with different x-y boundary lengths
+# cg_param = solver.parameters['krylov_solver']
+# cg_param['absolute_tolerance'] = 1E-7
+# cg_param['relative_tolerance'] = 1E-4
+# cg_param['maximum_iterations'] = 1000
+solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'ilu'
-cg_param = solver.parameters['krylov_solver']
-cg_param['absolute_tolerance'] = 1E-7
-cg_param['relative_tolerance'] = 1E-4
-cg_param['maximum_iterations'] = 1000
 print "Solving problem..."
 solver.solve()
 print "Solve finished"
@@ -213,8 +214,13 @@ dolfin.File(file_string) << u
 #PLOTTING in matplotlib
 print "Plotting in matplotlib..."
 plt.figure()
+plt.ylim(boundary_y_min, boundary_y_max)
+plt.xlim(boundary_x_min, boundary_x_max)
 dolfin.plot(u, title="u")
-dolfin.plot(mesh)
+plt.figure()
+plt.ylim(boundary_y_min, boundary_y_max)
+plt.xlim(boundary_x_min, boundary_x_max)
+dolfin.plot(mesh, title="mesh")
 plt.show()
 
 ##PLOTTING in paraview
