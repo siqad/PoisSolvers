@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import mshr
 from paraview import simple as pvs
 import subprocess
+import mesh_writer
 
 # Create classes for defining parts of the boundaries and the interior
 # of the domain
@@ -13,7 +14,7 @@ class Left(dolfin.SubDomain):
 
 class Right(dolfin.SubDomain):
     def inside(self, x, on_boundary):
-        return dolfin.near(x[0], 1.0)
+        return dolfin.near(x[0], 10.0)
 
 class Bottom(dolfin.SubDomain):
     def inside(self, x, on_boundary):
@@ -21,83 +22,37 @@ class Bottom(dolfin.SubDomain):
 
 class Top(dolfin.SubDomain):
     def inside(self, x, on_boundary):
-        return dolfin.near(x[1], 1.0)
+        return dolfin.near(x[1], 10.0)
 
 # INTERNAL BOUNDARY CONDITION
 # ELECTRODE
-class Obstacle(dolfin.SubDomain):
+class Electrode(dolfin.SubDomain):
     def inside(self, x, on_boundary):
-        return (dolfin.between(x[0], (0.4, 0.6)) and dolfin.between(x[1], (0.4, 0.6)) )
+        return (dolfin.between(x[0], (4.0, 6.0)) and dolfin.between(x[1], (4.0, 6.0)) )
 
 # INTERNAL BOUNDARY CONDITION
 #DIELECTRIC
-class Obstacle2(dolfin.SubDomain):
+class Dielectric(dolfin.SubDomain):
     def inside(self, x, on_boundary):
-        return (dolfin.between(x[1], (0.8, 1.0)) )
+        return (dolfin.between(x[1], (8.0, 10.0)) )
 
 # Initialize sub-domain instances
 left = Left()
 top = Top()
 right = Right()
 bottom = Bottom()
-obstacle = Obstacle()
-obstacle2 = Obstacle2()
+electrode = Electrode()
+dielectric = Dielectric()
 
-# Define mesh
-domain = '''
-//mesh_resolution: small->fine, large->coarse
-mesh_resolution = 0.1;
-Point(1) = {0, 0, 0, mesh_resolution};
-Point(2) = {1, 0, 0, mesh_resolution};
-Point(3) = {1, 1, 0, mesh_resolution};
-Point(4) = {0, 1, 0, mesh_resolution};
-// 2d domain
-Line(1) = {1, 2};
-Line(2) = {2, 3};
-Line(3) = {3, 4};
-Line(4) = {4, 1};
-Line Loop(5) = {1, 2, 3, 4};
-Plane Surface(6) = {5};
+mw = mesh_writer.MeshWriter()
+mw.resolution = 1.0
+mw.addOuterBound([0.0,0.0], [10.0,10.0], 1)
+mw.addCrack([0.01,8.0],[9.99,8.0],0.1)
+mw.addCrack([0.01,7.0],[9.99,7.0],0.5)
+mw.addCrackBox([4.0,4.0],[6.0,6.0],0.1)
+# print mw.file_string
 
-// Cracks are locations that the mesh is forced to align to
-
-// 1
-//Point(5) = {0.01, 0.2, 0, mesh_resolution};
-//Point(6) = {0.99, 0.2, 0, mesh_resolution}; 
-//Line(7) = {5, 6};
-//Physical Line(1) = {7};
-//Line{7} In Surface{6};
-
-// 2
-Point(7) = {0.01, 0.8, 0, 0.1*mesh_resolution};
-Point(8) = {0.99, 0.8, 0, 0.1*mesh_resolution};
-Line(8) = {7, 8};
-Physical Line(2) = {8};
-Line{8} In Surface{6};
-
-
-Point(9) = {0.4, 0.4, 0, 0.1*mesh_resolution};
-Point(10) = {0.4, 0.6, 0, 0.1*mesh_resolution};
-Point(11) = {0.6, 0.4, 0, 0.1*mesh_resolution};
-Point(12) = {0.6, 0.6, 0, 0.1*mesh_resolution};
-
-Line(9) = {9, 10};
-Physical Line(3) = {9};
-Line{9} In Surface{6};
-Line(10) = {10, 12};
-Physical Line(4) = {10};
-Line{10} In Surface{6};
-Line(11) = {12, 11};
-Physical Line(5) = {11};
-Line{11} In Surface{6};
-Line(12) = {11, 9};
-Physical Line(6) = {12};
-Line{12} In Surface{6};
-
-Physical Surface(1) = {6};
-'''
-
-with open('../data/domain.geo', 'w') as f: f.write(domain)
+with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -2 ../data/domain.geo'], shell=True)
 subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
 mesh = dolfin.Mesh('domain.xml')
@@ -106,7 +61,7 @@ print "Mesh initialized"
 # Initialize mesh function for interior domains
 domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
 domains.set_all(0)
-obstacle2.mark(domains, 1)
+dielectric.mark(domains, 1)
 
 # Initialize mesh function for boundary domains
 boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
@@ -117,7 +72,7 @@ right.mark(boundaries, 3)
 bottom.mark(boundaries, 4)
 # front.mark(boundaries, 5)
 # back.mark(boundaries, 6)
-obstacle.mark(boundaries, 5)
+electrode.mark(boundaries, 5)
 print "Boundaries marked"
 
 # Define input data
