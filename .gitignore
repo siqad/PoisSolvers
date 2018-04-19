@@ -21,7 +21,7 @@ poissonsolver/src/TEST
 poissonsolver/src/CMakeLists.txt
 
 #University of Buffalo at http://www.physics.buffalo.edu/phy410-505/topic6/
-ubuff/cmake-build-debug
+ubuff/
 
 #FEM data
 FEM/data
