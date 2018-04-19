@@ -126,8 +126,8 @@ mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -2 ../data/domain.geo'], shell=True)
-subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
-mesh = dolfin.Mesh('domain.xml')
+subprocess.call(['dolfin-convert ../data/domain.msh ../data/domain.xml'], shell=True)
+mesh = dolfin.Mesh('../data/domain.xml')
 
 # Initialize mesh function for interior domains
 print "Marking domains..."
