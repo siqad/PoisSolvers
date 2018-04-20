@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<physeng>
+    <name>PoisSolver</name>
+    <version>0.1</version>
+    <interpreter></interpreter> <!-- used for calling a script with python, java, etc. Leave blank otherwise -->
+    <bin_path>poissolver</bin_path> <!-- relative to engines.xml -->
+    <sim_params preserve_order="true">
+      <bcs>
+        <T>string</T>
+        <val>Neumann</val>
+        <label>Boundary conditions</label>
+        <tip>The boundary conditions used at the simulation boundaries. TODO detailes for each option</tip>
+        <value_selection type="ComboBox">
+          <Neumann>Neumann</Neumann>
+          <Dirichlet>Dirichlet</Dirichlet>
+          <Periodic>Periodic</Periodic>
+        </value_selection>
+      </bcs>
+      <resolution>
+        <T>int</T>
+        <val>50</val>
+        <label>Resolution</label>
+        <tip>Resolution in terms of points per length along each axis.</tip>
+      </resolution>
+      <length>
+        <T>float</T>
+        <val>1E-6</val>
+        <label>Length</label>
+        <tip>A length scale that makes the width comparable with the depth during simulation</tip>
+      </length>
+      <max_error>
+        <T>float</T>
+        <val>5E-2</val>
+        <label>Maximum Error</label>
+        <tip></tip>
+      </max_error>
+      <mode>
+        <T>string</T>
+        <val>Standard</val>
+        <label>Mode</label>
+        <tip>The mode of simulation. Standard mode runs a PoisSolver simulation and disables the potential on the design panel. Clock mode generates a bunch of results stored in a file with clocking potentials on the electrodes.</tip>
+        <value_selection type="ComboBox">
+          <Standard>Standard</Standard>
+          <Clock>Clock</Clock>
+        </value_selection>
+      </mode>
+      <low_pot>
+        <T>float</T>
+        <val>0</val>
+        <label>Low potential (clocking)</label>
+        <tip></tip>
+      </low_pot>
+      <high_pot>
+        <T>float</T>
+        <val>0</val>
+        <label>High potential (clocking)</label>
+        <tip></tip>
+      </high_pot>
+      <steps>
+        <T>int</T>
+        <val>20</val>
+        <label>Steps</label>
+        <tip>Number of steps between low and high potentials when generating clock results</tip>
+      </steps>
+    </sim_params>
+</physeng>
