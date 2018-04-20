@@ -1,5 +1,6 @@
 #PoisFFT at https://github.com/LadaF/PoisFFT
-PoisFFT/bin
+PoisFFT/bin/gcc
+PoisFFT/bin/objs/*
 PoisFFT/lib
 PoisFFT/src/out*.txt
 PoisFFT/src/*.out

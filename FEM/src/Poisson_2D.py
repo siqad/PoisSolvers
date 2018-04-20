@@ -5,13 +5,14 @@ import subprocess
 import mesh_writer
 import numpy as np
 
-elec_length = 5.0
-elec_spacing = 10.0
+elec_length = 20.0
+elec_height = 10.0
+elec_spacing = 100.0
 boundary_x_min = 0.0
 boundary_x_max = 4*elec_length+4*elec_spacing
-boundary_y_min = -50.0
-boundary_y_max = 50.0
-boundary_dielectric = 8.0
+boundary_y_min = -500.0
+boundary_y_max = 500.0
+boundary_dielectric = 15.0
 mid_x = (boundary_x_max+boundary_x_min)/2.0
 mid_y = (boundary_y_max+boundary_y_min)/2.0
 
@@ -44,9 +45,9 @@ class Electrode_0(dolfin.SubDomain):
         global elec_length, elec_spacing, mid_x
         return ( \
            (dolfin.between(x[0], (mid_x-0.5*elec_length+2*(elec_length+elec_spacing), mid_x-0.01+2*(elec_length+elec_spacing))) and \
-            dolfin.between(x[1], (-0.5*elec_length, 0.5*elec_length))) or \
+            dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) or \
            (dolfin.between(x[0], (mid_x+0.01-2*(elec_length+elec_spacing), mid_x+0.5*elec_length-2*(elec_length+elec_spacing))) and \
-            dolfin.between(x[1], (-0.5*elec_length, 0.5*elec_length))) \
+            dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
         )
 
 class Electrode_90(dolfin.SubDomain):
@@ -54,7 +55,7 @@ class Electrode_90(dolfin.SubDomain):
         global elec_length, elec_spacing, mid_x
         return ( \
            (dolfin.between(x[0], (mid_x-0.5*elec_length-(elec_length+elec_spacing), mid_x+0.5*elec_length-(elec_length+elec_spacing))) and \
-            dolfin.between(x[1], (-0.5*elec_length, 0.5*elec_length))) \
+            dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
         )
 
 class Electrode_180(dolfin.SubDomain):
@@ -62,7 +63,7 @@ class Electrode_180(dolfin.SubDomain):
         global elec_length, elec_spacing, mid_x
         return ( \
            (dolfin.between(x[0], (mid_x-0.5*elec_length, mid_x+0.5*elec_length)) and \
-            dolfin.between(x[1], (-0.5*elec_length, 0.5*elec_length))) \
+            dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
         )
 
 class Electrode_270(dolfin.SubDomain):
@@ -70,7 +71,7 @@ class Electrode_270(dolfin.SubDomain):
         global elec_length, elec_spacing, mid_x
         return ( \
            (dolfin.between(x[0], (mid_x-0.5*elec_length+(elec_length+elec_spacing), mid_x+0.5*elec_length+(elec_length+elec_spacing))) and \
-            dolfin.between(x[1], (-0.5*elec_length, 0.5*elec_length))) \
+            dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
         )
 
 # INTERNAL BOUNDARY CONDITION
@@ -100,24 +101,24 @@ mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max
 mw.addCrack([0.01*boundary_x_max,boundary_dielectric],[0.99*boundary_x_max,boundary_dielectric],0.1)
 mw.addCrack([0.01*boundary_x_max,0.8*boundary_dielectric],[0.99*boundary_x_max,0.8*boundary_dielectric],0.25)
 
-mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_length],\
-               [mid_x+0.5*elec_length,0.5*elec_length],0.1)
+mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_height],\
+               [mid_x+0.5*elec_length,0.5*elec_height],0.1)
 mw.addPointToSurface([(mid_x-0.5*elec_length + mid_x+0.5*elec_length)/2.0, 0.0], 1)
 
-mw.addCrackBox([mid_x-0.5*elec_length-(elec_length+elec_spacing),-0.5*elec_length],\
-               [mid_x+0.5*elec_length-(elec_length+elec_spacing),0.5*elec_length],0.1)
+mw.addCrackBox([mid_x-0.5*elec_length-(elec_length+elec_spacing),-0.5*elec_height],\
+               [mid_x+0.5*elec_length-(elec_length+elec_spacing),0.5*elec_height],0.1)
 mw.addPointToSurface([(mid_x-0.5*elec_length-(elec_length+elec_spacing) + mid_x+0.5*elec_length-(elec_length+elec_spacing))/2.0, 0.0], 1)
 
-mw.addCrackBox([mid_x-0.5*elec_length+(elec_length+elec_spacing),-0.5*elec_length],\
-               [mid_x+0.5*elec_length+(elec_length+elec_spacing),0.5*elec_length],0.1)
+mw.addCrackBox([mid_x-0.5*elec_length+(elec_length+elec_spacing),-0.5*elec_height],\
+               [mid_x+0.5*elec_length+(elec_length+elec_spacing),0.5*elec_height],0.1)
 mw.addPointToSurface([(mid_x-0.5*elec_length+(elec_length+elec_spacing) + mid_x+0.5*elec_length+(elec_length+elec_spacing))/2.0, 0.0], 1)
 
-mw.addCrackBox([mid_x+0.01-2*(elec_length+elec_spacing),-0.5*elec_length],\
-               [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_length],0.1)
+mw.addCrackBox([mid_x+0.01-2*(elec_length+elec_spacing),-0.5*elec_height],\
+               [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
 mw.addPointToSurface([(mid_x+0.01-2*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
 
-mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_length],\
-               [mid_x-0.01+2*(elec_length+elec_spacing),0.5*elec_length],0.1)
+mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
+               [mid_x-0.01+2*(elec_length+elec_spacing),0.5*elec_height],0.1)
 mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x-0.01+2*(elec_length+elec_spacing))/2.0, 0.0], 1)
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
@@ -146,15 +147,17 @@ electrode_270.mark(boundaries, 8)
 
 # Define input data
 print "Defining inputs..."
-EPS_0 = 8.854e-6       #Absolute permittivity, [Farad/micron]
+EPS_0 = 8.854e-12       #Absolute permittivity, [Farad/metre]
 Q_E = 1.602e-19         #Elementary charge, [Coulomb/charge]
+# a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
+# a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
 a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
 a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
 g_T = dolfin.Constant("0.0")
 g_B = dolfin.Constant("0.0")
 g_L = dolfin.Constant("0.0")
 g_R = dolfin.Constant("0.0")
-f0 = dolfin.Constant(1.0e6*Q_E) #Charge density, Si [Coulomb/micron^-3]
+f0 = dolfin.Constant(1.0e-2*Q_E) #Charge density, Si [Coulomb/nm^-3]
 f1 = dolfin.Constant(0.0) #Charge density, Air
 h_T = dolfin.Constant(0.0)
 h_B = dolfin.Constant(0.0)
@@ -174,14 +177,16 @@ print "Defining Dirichlet boundaries..."
 chi_si = 4.05 #eV
 phi_gold = 5.1 #eV
 phi_bi = phi_gold - chi_si
-pot = 0.3
-amp = pot + phi_bi #in band diagram, voltages are flipped so negatives are on top
+amp = 5.0
 #############
 
 bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),\
        dolfin.DirichletBC(V, amp*np.sin(np.pi/2.0), boundaries, 6),\
        dolfin.DirichletBC(V, amp*np.sin(np.pi), boundaries, 7),\
-       dolfin.DirichletBC(V, amp*np.sin(3.0/2.0*np.pi), boundaries, 8)]
+       dolfin.DirichletBC(V, amp*np.sin(3.0/2.0*np.pi), boundaries, 8),
+       # dolfin.DirichletBC(V, 0, boundaries, 2)]
+       dolfin.DirichletBC(V, 0, boundaries, 1),
+       dolfin.DirichletBC(V, 0, boundaries, 3)]
 
 # Define new measures associated with the interior domains and
 # exterior boundaries
@@ -194,10 +199,14 @@ ds = dolfin.ds(subdomain_data=boundaries)
 print "Defining variational form..."
 F = ( a0*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + a1*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(1) \
-    + h_T*u*v*ds(2) + h_B*u*v*ds(4) \
-    + h_L*u*v*ds(1) + h_R*u*v*ds(3) \
-    # - g_L*v*ds(1) - g_R*v*ds(3) \
-    # - g_T*v*ds(2) - g_B*v*ds(4) \
+    # + h_L*u*v*ds(1) \
+    + h_T*u*v*ds(2) \
+    # + h_R*u*v*ds(3) \
+    + h_B*u*v*ds(4) \
+    # - g_L*v*ds(1) \
+    # - g_T*v*ds(2) \
+    # - g_R*v*ds(3) \
+    # - g_B*v*ds(4) \
     - f0*v*dx(0) - f1*v*dx(1) )
 
 # Separate left and right hand sides of equation
@@ -210,6 +219,10 @@ problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
 solver = dolfin.LinearVariationalSolver(problem)
 solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'ilu'
+prm = dolfin.parameters.krylov_solver  # short form
+prm.absolute_tolerance = 1E-25
+prm.relative_tolerance = 1E-6
+prm.maximum_iterations = 1000
 print "Solving problem..."
 solver.solve()
 print "Solve finished"
@@ -226,6 +239,7 @@ plt.ylim(boundary_y_min, boundary_y_max)
 plt.xlim(boundary_x_min, boundary_x_max)
 p = dolfin.plot(u, scalarbar=True, title="u")
 plt.colorbar(p)
+# dolfin.plot(mesh)
 plt.figure()
 plt.ylim(boundary_y_min, boundary_y_max)
 plt.xlim(boundary_x_min, boundary_x_max)
