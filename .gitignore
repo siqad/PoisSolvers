@@ -28,6 +28,7 @@ ubuff/
 FEM/data
 
 #ignore all object files
+*.dblite
 *.o
 *.idea*
 *cmake-build-debug*
