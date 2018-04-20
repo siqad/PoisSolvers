@@ -32,5 +32,6 @@ FEM/data
 *cmake-build-debug*
 *.png
 *.xml
+!engine_description.xml
 *.pos
 *.pyc
