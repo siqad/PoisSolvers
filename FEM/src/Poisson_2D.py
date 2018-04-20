@@ -5,12 +5,12 @@ import subprocess
 import mesh_writer
 import numpy as np
 
-elec_length = 4.0
-elec_spacing = 2.0
+elec_length = 5.0
+elec_spacing = 10.0
 boundary_x_min = 0.0
 boundary_x_max = 4*elec_length+4*elec_spacing
-boundary_y_min = -20.0
-boundary_y_max = 30.0
+boundary_y_min = -50.0
+boundary_y_max = 50.0
 boundary_dielectric = 8.0
 mid_x = (boundary_x_max+boundary_x_min)/2.0
 mid_y = (boundary_y_max+boundary_y_min)/2.0
@@ -98,7 +98,7 @@ mw = mesh_writer.MeshWriter()
 mw.resolution = boundary_x_max/10.0
 mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max], 1)
 mw.addCrack([0.01*boundary_x_max,boundary_dielectric],[0.99*boundary_x_max,boundary_dielectric],0.1)
-mw.addCrack([0.01*boundary_x_max,0.8*boundary_dielectric],[0.99*boundary_x_max,0.8*boundary_dielectric],1.0)
+mw.addCrack([0.01*boundary_x_max,0.8*boundary_dielectric],[0.99*boundary_x_max,0.8*boundary_dielectric],0.25)
 
 mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_length],\
                [mid_x+0.5*elec_length,0.5*elec_length],0.1)
@@ -146,18 +146,21 @@ electrode_270.mark(boundaries, 8)
 
 # Define input data
 print "Defining inputs..."
-a0 = dolfin.Constant(100.0) #Dielectric
-a1 = dolfin.Constant(1.0) #Air
+EPS_0 = 8.854e-6       #Absolute permittivity, [Farad/micron]
+Q_E = 1.602e-19         #Elementary charge, [Coulomb/charge]
+a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
+a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
 g_T = dolfin.Constant("0.0")
 g_B = dolfin.Constant("0.0")
-g_L = dolfin.Constant("-1.0")
-g_R = dolfin.Constant("1.0")
-f0 = dolfin.Constant(1.0) #Charge density
-f1 = dolfin.Constant(0.0)
+g_L = dolfin.Constant("0.0")
+g_R = dolfin.Constant("0.0")
+f0 = dolfin.Constant(1.0e6*Q_E) #Charge density, Si [Coulomb/micron^-3]
+f1 = dolfin.Constant(0.0) #Charge density, Air
 h_T = dolfin.Constant(0.0)
 h_B = dolfin.Constant(0.0)
 h_L = dolfin.Constant(0.0)
 h_R = dolfin.Constant(0.0)
+
 # Define function space and basis functions
 print "Defining function space and basis..."
 V = dolfin.FunctionSpace(mesh, "CG", 3)
@@ -166,7 +169,15 @@ v = dolfin.TestFunction(V)
 
 # Define Dirichlet boundary conditions at top, bottom, front, back
 print "Defining Dirichlet boundaries..."
-amp = 20
+
+############# This entire part is kinda ehhhhhhhhh...
+chi_si = 4.05 #eV
+phi_gold = 5.1 #eV
+phi_bi = phi_gold - chi_si
+pot = 0.3
+amp = pot + phi_bi #in band diagram, voltages are flipped so negatives are on top
+#############
+
 bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),\
        dolfin.DirichletBC(V, amp*np.sin(np.pi/2.0), boundaries, 6),\
        dolfin.DirichletBC(V, amp*np.sin(np.pi), boundaries, 7),\
@@ -181,8 +192,8 @@ ds = dolfin.ds(subdomain_data=boundaries)
 # 1 left, 2 top, 3 right, 4 bottom
 # Define variational form
 print "Defining variational form..."
-F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
-    + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
+F = ( a0*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(0) \
+    + a1*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(1) \
     + h_T*u*v*ds(2) + h_B*u*v*ds(4) \
     + h_L*u*v*ds(1) + h_R*u*v*ds(3) \
     # - g_L*v*ds(1) - g_R*v*ds(3) \
@@ -213,7 +224,8 @@ print "Plotting in matplotlib..."
 plt.figure()
 plt.ylim(boundary_y_min, boundary_y_max)
 plt.xlim(boundary_x_min, boundary_x_max)
-dolfin.plot(u, title="u")
+p = dolfin.plot(u, scalarbar=True, title="u")
+plt.colorbar(p)
 plt.figure()
 plt.ylim(boundary_y_min, boundary_y_max)
 plt.xlim(boundary_x_min, boundary_x_max)
