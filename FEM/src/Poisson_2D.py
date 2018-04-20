@@ -145,24 +145,6 @@ electrode_90.mark(boundaries, 6)
 electrode_180.mark(boundaries, 7)
 electrode_270.mark(boundaries, 8)
 
-# Define input data
-print "Defining inputs..."
-EPS_0 = 8.854e-12       #Absolute permittivity, [Farad/metre]
-Q_E = 1.602e-19         #Elementary charge, [Coulomb/charge]
-# a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
-# a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
-a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
-a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
-g_T = dolfin.Constant("0.0")
-g_B = dolfin.Constant("0.0")
-g_L = dolfin.Constant("0.0")
-g_R = dolfin.Constant("0.0")
-f0 = dolfin.Constant(1.0e-2*Q_E) #Charge density, Si [Coulomb/nm^-3]
-f1 = dolfin.Constant(0.0) #Charge density, Air
-h_T = dolfin.Constant(0.0)
-h_B = dolfin.Constant(0.0)
-h_L = dolfin.Constant(0.0)
-h_R = dolfin.Constant(0.0)
 
 # Define function space and basis functions
 print "Defining function space and basis..."
@@ -187,6 +169,27 @@ bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),\
        # dolfin.DirichletBC(V, 0, boundaries, 2)]
        dolfin.DirichletBC(V, 0, boundaries, 1),
        dolfin.DirichletBC(V, 0, boundaries, 3)]
+
+
+# Define input data
+print "Defining inputs..."
+EPS_0 = 8.854e-12       #Absolute permittivity, [Farad/metre]
+Q_E = 1.602e-19         #Elementary charge, [Coulomb/charge]
+# a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
+# a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
+a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
+a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
+g_T = dolfin.Constant("0.0")
+g_B = dolfin.Constant("0.0")
+g_L = dolfin.Constant("0.0")
+g_R = dolfin.Constant("0.0")
+f0 = dolfin.Constant(1.0e-12*Q_E) #Charge density, Si [Coulomb/nm^-3]
+f1 = dolfin.Constant(0.0) #Charge density, Air
+h_T = dolfin.Constant(1.0/boundary_y_max)
+# h_T = dolfin.Constant(0.0)
+h_B = dolfin.Constant(0.0)
+h_L = dolfin.Constant(0.0)
+h_R = dolfin.Constant(0.0)
 
 # Define new measures associated with the interior domains and
 # exterior boundaries
