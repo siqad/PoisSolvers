@@ -1,5 +1,12 @@
 #!/bin/bash
 
+###############################################################################
+# This script has only tested on Ubuntu 17.10.                                #
+#                                                                             #
+# This script assumes that all of the dependencies from apt have already been #
+# installed. If not, please read the Quasics documentation and install them.  #
+###############################################################################
+
 set -e
 
 # determine number of physical cores to use for compilation
@@ -16,5 +23,7 @@ git clone https://github.com/mpip/pfft.git
 cd pfft
 ./bootstrap.sh
 ./configure
-make
+make $multicore_compile
+
+echo "Installing pfft into the system, sudo rights required"
 sudo make install
