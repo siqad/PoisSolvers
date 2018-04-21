@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+
+# determine number of physical cores to use for compilation
+cpu_cores=$(grep "^core id" /proc/cpuinfo | sort -u | wc -l)
+multicore_compile="-j $cpu_cores"
+
+# store handy directories
+make_dir=$(pwd)
+dependencies_dir=$(mkdir dependencies && cd dependencies && pwd)
+
+# clone dependencies
+cd $dependencies_dir
+git clone https://github.com/mpip/pfft.git
+cd pfft
+./bootstrap.sh
+./configure
+make
+sudo make install
