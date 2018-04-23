@@ -1,18 +1,18 @@
 import dolfin
 import matplotlib.pyplot as plt
-from paraview import simple as pvs
+# from paraview import simple as pvs
 import subprocess
 import mesh_writer
 import numpy as np
 
-elec_length = 20.0
-elec_height = 10.0
-elec_spacing = 50.0
-boundary_x_min = 0.0
-boundary_x_max = 4*elec_length+4*elec_spacing
-boundary_y_min = -200.0
-boundary_y_max = 200.0
-boundary_dielectric = 15.0
+elec_length = 2.0*1e-9
+elec_height = 1.0*1e-9
+elec_spacing = 5.0*1e-9
+boundary_x_min = 0.0*1e-9
+boundary_x_max = (4*elec_length+4*elec_spacing)
+boundary_y_min = -50.0*1e-9
+boundary_y_max = 50.0*1e-9
+boundary_dielectric = 20.0*1e-9
 mid_x = (boundary_x_max+boundary_x_min)/2.0
 mid_y = (boundary_y_max+boundary_y_min)/2.0
 
@@ -44,9 +44,9 @@ class Electrode_0(dolfin.SubDomain):
     def inside(self, x, on_boundary):
         global elec_length, elec_spacing, mid_x
         return ( \
-           (dolfin.between(x[0], (mid_x-0.5*elec_length+2*(elec_length+elec_spacing), mid_x-0.01+2*(elec_length+elec_spacing))) and \
+           (dolfin.between(x[0], (mid_x-0.5*elec_length+2*(elec_length+elec_spacing), mid_x+1.99*(elec_length+elec_spacing))) and \
             dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) or \
-           (dolfin.between(x[0], (mid_x+0.01-2*(elec_length+elec_spacing), mid_x+0.5*elec_length-2*(elec_length+elec_spacing))) and \
+           (dolfin.between(x[0], (mid_x-1.99*(elec_length+elec_spacing), mid_x+0.5*elec_length-2*(elec_length+elec_spacing))) and \
             dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
         )
 
@@ -81,6 +81,18 @@ class Air(dolfin.SubDomain):
         global boundary_y_max
         return (dolfin.between(x[1], (boundary_dielectric, boundary_y_max)) )
 
+# Sub domain for Periodic boundary condition
+class PeriodicBoundary(dolfin.SubDomain):
+    def inside(self, x, on_boundary):
+        return bool(x[0] < dolfin.DOLFIN_EPS + boundary_x_min and x[0] > -(dolfin.DOLFIN_EPS + boundary_x_min) and on_boundary)
+    def map(self, x, y):
+        #map the left domain to the right domain to boundary_x_max
+        y[0] = x[0] - boundary_x_max 
+        y[1] = x[1]
+
+# Create periodic boundary condition
+pbc = PeriodicBoundary()
+
 # Initialize sub-domain instances
 print "Initialising subdomain instances..."
 left = Left()
@@ -113,13 +125,23 @@ mw.addCrackBox([mid_x-0.5*elec_length+(elec_length+elec_spacing),-0.5*elec_heigh
                [mid_x+0.5*elec_length+(elec_length+elec_spacing),0.5*elec_height],0.1)
 mw.addPointToSurface([(mid_x-0.5*elec_length+(elec_length+elec_spacing) + mid_x+0.5*elec_length+(elec_length+elec_spacing))/2.0, 0.0], 1)
 
-mw.addCrackBox([mid_x+0.01-2*(elec_length+elec_spacing),-0.5*elec_height],\
+
+mw.addCrackBox([mid_x-1.99*(elec_length+elec_spacing),-0.5*elec_height],\
                [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
-mw.addPointToSurface([(mid_x+0.01-2*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
+mw.addPointToSurface([(mid_x-1.99*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
 
 mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
-               [mid_x-0.01+2*(elec_length+elec_spacing),0.5*elec_height],0.1)
-mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x-0.01+2*(elec_length+elec_spacing))/2.0, 0.0], 1)
+               [mid_x+1.99*(elec_length+elec_spacing),0.5*elec_height],0.1)
+mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x+1.99*(elec_length+elec_spacing))/2.0, 0.0], 1)
+
+
+# mw.addCrackBox([mid_x+0.01-2*(elec_length+elec_spacing),-0.5*elec_height],\
+#                [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
+# mw.addPointToSurface([(mid_x+0.01-2*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
+# 
+# mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
+#                [mid_x-0.01+2*(elec_length+elec_spacing),0.5*elec_height],0.1)
+# mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x-0.01+2*(elec_length+elec_spacing))/2.0, 0.0], 1)
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -2 ../data/domain.geo'], shell=True)
@@ -148,7 +170,7 @@ electrode_270.mark(boundaries, 8)
 
 # Define function space and basis functions
 print "Defining function space and basis..."
-V = dolfin.FunctionSpace(mesh, "CG", 3)
+V = dolfin.FunctionSpace(mesh, "CG", 3, constrained_domain=pbc)
 u = dolfin.TrialFunction(V)
 v = dolfin.TestFunction(V)
 
@@ -165,18 +187,18 @@ amp = 5.0
 bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),
        dolfin.DirichletBC(V, amp*np.sin(np.pi/2.0), boundaries, 6),
        dolfin.DirichletBC(V, amp*np.sin(np.pi), boundaries, 7),
-       dolfin.DirichletBC(V, amp*np.sin(3.0/2.0*np.pi), boundaries, 8),
-       dolfin.DirichletBC(V, np.abs(amp/boundary_y_max), boundaries, 2),
-       dolfin.DirichletBC(V, np.abs(amp/boundary_y_min), boundaries, 4),
+       dolfin.DirichletBC(V, amp*np.sin(3.0/2.0*np.pi), boundaries, 8)]
+       # dolfin.DirichletBC(V, np.abs(amp/boundary_y_max), boundaries, 2),
+       # dolfin.DirichletBC(V, np.abs(amp/boundary_y_min), boundaries, 4),
        # dolfin.DirichletBC(V, 0, boundaries, 2)]
        # dolfin.DirichletBC(V, 0, boundaries, 4)]
-       dolfin.DirichletBC(V, 0, boundaries, 1),
-       dolfin.DirichletBC(V, 0, boundaries, 3)]
+       # dolfin.DirichletBC(V, 0, boundaries, 1),
+       # dolfin.DirichletBC(V, 0, boundaries, 3)]
 
 
 # Define input data
 print "Defining inputs..."
-EPS_0 = 8.854e-3       #Absolute permittivity, [Farad/metre]
+EPS_0 = 8.854e-12       #Absolute permittivity, [Farad/metre]
 Q_E = 1.602e-19         #Elementary charge, [Coulomb/charge]
 # a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
 # a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
@@ -186,14 +208,15 @@ g_T = dolfin.Constant("0.0")
 g_B = dolfin.Constant("0.0")
 g_L = dolfin.Constant("0.0")
 g_R = dolfin.Constant("0.0")
-f0 = dolfin.Constant(1.0e-8*Q_E) #Charge density, Si [Coulomb/nm^-2] assuming 1um length into page
+# f0 = dolfin.Constant(1.0e34*Q_E) #Charge density, Si [Coulomb/nm^-2] assuming 1m length into page
+f0 = dolfin.Constant(0.0) #Charge density, Si [Coulomb/nm^-2] assuming 1m length into page
 f1 = dolfin.Constant(0.0) #Charge density, Air
 # h_T = dolfin.Constant(np.abs(1.0/boundary_y_max))
 # h_B = dolfin.Constant(np.abs(1.0/boundary_y_min))
-# h_T = dolfin.Constant(0.0)
-# h_B = dolfin.Constant(0.0)
-h_L = dolfin.Constant(0.0)
-h_R = dolfin.Constant(0.0)
+h_T = dolfin.Constant(0.0)
+h_B = dolfin.Constant(0.0)
+# h_L = dolfin.Constant(0.0)
+# h_R = dolfin.Constant(0.0)
 
 # Define new measures associated with the interior domains and
 # exterior boundaries
@@ -207,9 +230,9 @@ print "Defining variational form..."
 F = ( a0*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + a1*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(1) \
     # + h_L*u*v*ds(1) \
-    # + h_T*u*v*ds(2) \
+    + h_T*u*v*ds(2) \
     # + h_R*u*v*ds(3) \
-    # + h_B*u*v*ds(4) \
+    + h_B*u*v*ds(4) \
     # - g_L*v*ds(1) \
     # - g_T*v*ds(2) \
     # - g_R*v*ds(3) \

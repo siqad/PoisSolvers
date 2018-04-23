@@ -14,14 +14,14 @@ class MeshWriter():
 
     #add a point at p, p in form [x, y]
     def addPoint(self, p, scale):
-        self.file_string += "Point(%d) = {%.3f, %.3f, 0.000, %.3f};\n"\
+        self.file_string += "Point(%d) = {%.15f, %.15f, 0.000, %.15f};\n"\
             %(self.ind_point, p[0], p[1], self.resolution*scale)
         self.ind_point += 1
         return
     
     #add a point at p, p in form [x, y]
     def addPointToSurface(self, p, scale):
-        self.file_string += "Point(%d) = {%.3f, %.3f, 0.000, %.3f};\n"\
+        self.file_string += "Point(%d) = {%.15f, %.15f, 0.000, %.15f};\n"\
             %(self.ind_point, p[0], p[1], self.resolution*scale)
         self.ind_point += 1
         self.file_string += "Point{%d} In Surface{%d};\n"\
