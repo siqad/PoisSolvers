@@ -27,6 +27,9 @@ ubuff/
 #FEM data
 FEM/data
 
+#dependencies directory when building and installing dependencies from script
+dependencies/
+
 #ignore all object files
 *.dblite
 *.o

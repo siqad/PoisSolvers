@@ -1,0 +1,29 @@
+#!/bin/bash
+
+###############################################################################
+# This script has only tested on Ubuntu 17.10.                                #
+#                                                                             #
+# This script assumes that all of the dependencies from apt have already been #
+# installed. If not, please read the Quasics documentation and install them.  #
+###############################################################################
+
+set -e
+
+# determine number of physical cores to use for compilation
+cpu_cores=$(grep "^core id" /proc/cpuinfo | sort -u | wc -l)
+multicore_compile="-j $cpu_cores"
+
+# store handy directories
+make_dir=$(pwd)
+dependencies_dir=$(mkdir dependencies && cd dependencies && pwd)
+
+# clone dependencies
+cd $dependencies_dir
+git clone https://github.com/mpip/pfft.git
+cd pfft
+./bootstrap.sh
+./configure
+make $multicore_compile
+
+echo "Installing pfft into the system, sudo rights required"
+sudo make install
