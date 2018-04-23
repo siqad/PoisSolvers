@@ -7,11 +7,11 @@ import numpy as np
 
 elec_length = 20.0
 elec_height = 10.0
-elec_spacing = 100.0
+elec_spacing = 50.0
 boundary_x_min = 0.0
 boundary_x_max = 4*elec_length+4*elec_spacing
-boundary_y_min = -500.0
-boundary_y_max = 500.0
+boundary_y_min = -200.0
+boundary_y_max = 200.0
 boundary_dielectric = 15.0
 mid_x = (boundary_x_max+boundary_x_min)/2.0
 mid_y = (boundary_y_max+boundary_y_min)/2.0
@@ -162,18 +162,21 @@ phi_bi = phi_gold - chi_si
 amp = 5.0
 #############
 
-bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),\
-       dolfin.DirichletBC(V, amp*np.sin(np.pi/2.0), boundaries, 6),\
-       dolfin.DirichletBC(V, amp*np.sin(np.pi), boundaries, 7),\
+bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),
+       dolfin.DirichletBC(V, amp*np.sin(np.pi/2.0), boundaries, 6),
+       dolfin.DirichletBC(V, amp*np.sin(np.pi), boundaries, 7),
        dolfin.DirichletBC(V, amp*np.sin(3.0/2.0*np.pi), boundaries, 8),
+       dolfin.DirichletBC(V, np.abs(amp/boundary_y_max), boundaries, 2),
+       dolfin.DirichletBC(V, np.abs(amp/boundary_y_min), boundaries, 4),
        # dolfin.DirichletBC(V, 0, boundaries, 2)]
+       # dolfin.DirichletBC(V, 0, boundaries, 4)]
        dolfin.DirichletBC(V, 0, boundaries, 1),
        dolfin.DirichletBC(V, 0, boundaries, 3)]
 
 
 # Define input data
 print "Defining inputs..."
-EPS_0 = 8.854e-12       #Absolute permittivity, [Farad/metre]
+EPS_0 = 8.854e-3       #Absolute permittivity, [Farad/metre]
 Q_E = 1.602e-19         #Elementary charge, [Coulomb/charge]
 # a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
 # a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
@@ -183,11 +186,12 @@ g_T = dolfin.Constant("0.0")
 g_B = dolfin.Constant("0.0")
 g_L = dolfin.Constant("0.0")
 g_R = dolfin.Constant("0.0")
-f0 = dolfin.Constant(1.0e-12*Q_E) #Charge density, Si [Coulomb/nm^-3]
+f0 = dolfin.Constant(1.0e-8*Q_E) #Charge density, Si [Coulomb/nm^-2] assuming 1um length into page
 f1 = dolfin.Constant(0.0) #Charge density, Air
-h_T = dolfin.Constant(1.0/boundary_y_max)
+# h_T = dolfin.Constant(np.abs(1.0/boundary_y_max))
+# h_B = dolfin.Constant(np.abs(1.0/boundary_y_min))
 # h_T = dolfin.Constant(0.0)
-h_B = dolfin.Constant(0.0)
+# h_B = dolfin.Constant(0.0)
 h_L = dolfin.Constant(0.0)
 h_R = dolfin.Constant(0.0)
 
@@ -203,9 +207,9 @@ print "Defining variational form..."
 F = ( a0*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + a1*dolfin.inner(dolfin.grad(u), dolfin.grad(v))*dx(1) \
     # + h_L*u*v*ds(1) \
-    + h_T*u*v*ds(2) \
+    # + h_T*u*v*ds(2) \
     # + h_R*u*v*ds(3) \
-    + h_B*u*v*ds(4) \
+    # + h_B*u*v*ds(4) \
     # - g_L*v*ds(1) \
     # - g_T*v*ds(2) \
     # - g_R*v*ds(3) \
