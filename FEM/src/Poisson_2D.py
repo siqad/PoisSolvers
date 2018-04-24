@@ -13,7 +13,7 @@ def worker(amp_in, offset):
     elec_spacing = 10.0e-9 
     boundary_x_min = 0.0e-9
     boundary_x_max = (4*elec_length+4*elec_spacing)
-    boundary_y_min = -50.0e-9
+    boundary_y_min = -100.0e-9
     boundary_y_max = 100.0e-9
     boundary_dielectric = elec_height/2.0+10.0e-9 #surface will be placed relative to top of electrode.
     mid_x = (boundary_x_max+boundary_x_min)/2.0
@@ -119,7 +119,7 @@ def worker(amp_in, offset):
     mw.resolution = boundary_x_max/10.0
     mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max], 1)
     mw.addCrack([0.01*boundary_x_max,boundary_dielectric],[0.999*boundary_x_max,boundary_dielectric],0.05)
-    mw.addCrack([0.01*boundary_x_max,0.8*boundary_dielectric],[0.999*boundary_x_max,0.8*boundary_dielectric],0.1)
+    # mw.addCrack([0.01*boundary_x_max,0.8*boundary_dielectric],[0.999*boundary_x_max,0.8*boundary_dielectric],0.1)
 
     mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_height],\
                    [mid_x+0.5*elec_length,0.5*elec_height],0.1)
@@ -275,27 +275,22 @@ def worker(amp_in, offset):
     u_P1 = dolfin.project(u, V)
     u_nodal_values = u_P1.vector()
     u_array = u_nodal_values.get_local()
-    # print u_array
     coor = mesh.coordinates()
-    boundary_vals_x = []
-    boundary_vals_v = []
+    boundary_vals = []
     #gather the values at the Si-Air
     for i in range(len(coor)):
-        if coor[i][1]==boundary_dielectric:
-            boundary_vals_x += [coor[i][0]]
-            boundary_vals_v += [u(coor[i][0],coor[i][1])]
-    boundary_vals_x += [boundary_vals_x.pop(1)]
-    boundary_vals_v += [boundary_vals_v.pop(1)]
-    print "Amp: %f Max: %f Min: %f"%(amp_in, max(boundary_vals_v), min(boundary_vals_v))
+        if np.abs(coor[i][1] - boundary_dielectric) < dolfin.DOLFIN_EPS:
+            boundary_vals += [[coor[i][0],u(coor[i][0],coor[i][1])]]
+    boundary_vals.sort(key=lambda x: x[0])
+    data = np.array(boundary_vals)
+    x, v = data.T
+    print "Amp: %f Max: %f Min: %f"%(amp_in, max(v), min(v))
 
     ####Potential at boundary
     plt.figure()
     plt.title("Potential at Si-Air boundary vs x")
-    # plt.xlim(boundary_x_min, boundary_x_max)
-    plt.plot(boundary_vals_x, boundary_vals_v)
-    # print boundary_x_max
-    # print boundary_vals_x
-    # plt.show()
+    plt.xlim(boundary_x_min, boundary_x_max)
+    plt.plot(x, v)
     # ####Potential gradient
     # V_vec = dolfin.VectorFunctionSpace(mesh, "CG", 3)
     # gradu = dolfin.project(dolfin.grad(u),V_vec)
