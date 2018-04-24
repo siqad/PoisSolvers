@@ -5,14 +5,14 @@ import subprocess
 import mesh_writer
 import numpy as np
 
-elec_length = 2.0*1e-9
-elec_height = 1.0*1e-9
-elec_spacing = 5.0*1e-9
-boundary_x_min = 0.0*1e-9
+elec_length = 15.0e-9
+elec_height = 10.0e-9
+elec_spacing = 10.0e-9
+boundary_x_min = 0.0e-9
 boundary_x_max = (4*elec_length+4*elec_spacing)
-boundary_y_min = -50.0*1e-9
-boundary_y_max = 50.0*1e-9
-boundary_dielectric = 20.0*1e-9
+boundary_y_min = -50.0e-9
+boundary_y_max = 50.0e-9
+boundary_dielectric = 10.0e-9
 mid_x = (boundary_x_max+boundary_x_min)/2.0
 mid_y = (boundary_y_max+boundary_y_min)/2.0
 
@@ -44,9 +44,9 @@ class Electrode_0(dolfin.SubDomain):
     def inside(self, x, on_boundary):
         global elec_length, elec_spacing, mid_x
         return ( \
-           (dolfin.between(x[0], (mid_x-0.5*elec_length+2*(elec_length+elec_spacing), mid_x+1.99*(elec_length+elec_spacing))) and \
+           (dolfin.between(x[0], (mid_x-0.5*elec_length+2*(elec_length+elec_spacing), mid_x+1.999*(elec_length+elec_spacing))) and \
             dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) or \
-           (dolfin.between(x[0], (mid_x-1.99*(elec_length+elec_spacing), mid_x+0.5*elec_length-2*(elec_length+elec_spacing))) and \
+           (dolfin.between(x[0], (mid_x-1.999*(elec_length+elec_spacing), mid_x+0.5*elec_length-2*(elec_length+elec_spacing))) and \
             dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
         )
 
@@ -110,8 +110,8 @@ print "Initializing mesh with MeshWriter..."
 mw = mesh_writer.MeshWriter()
 mw.resolution = boundary_x_max/10.0
 mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max], 1)
-mw.addCrack([0.01*boundary_x_max,boundary_dielectric],[0.99*boundary_x_max,boundary_dielectric],0.1)
-mw.addCrack([0.01*boundary_x_max,0.8*boundary_dielectric],[0.99*boundary_x_max,0.8*boundary_dielectric],0.25)
+mw.addCrack([0.01*boundary_x_max,boundary_dielectric],[0.999*boundary_x_max,boundary_dielectric],0.05)
+mw.addCrack([0.01*boundary_x_max,0.8*boundary_dielectric],[0.999*boundary_x_max,0.8*boundary_dielectric],0.1)
 
 mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_height],\
                [mid_x+0.5*elec_length,0.5*elec_height],0.1)
@@ -125,26 +125,17 @@ mw.addCrackBox([mid_x-0.5*elec_length+(elec_length+elec_spacing),-0.5*elec_heigh
                [mid_x+0.5*elec_length+(elec_length+elec_spacing),0.5*elec_height],0.1)
 mw.addPointToSurface([(mid_x-0.5*elec_length+(elec_length+elec_spacing) + mid_x+0.5*elec_length+(elec_length+elec_spacing))/2.0, 0.0], 1)
 
-
-mw.addCrackBox([mid_x-1.99*(elec_length+elec_spacing),-0.5*elec_height],\
+#Use 1.99 instead of 2.00 to prevent intersection of face with boundary face.
+mw.addCrackBox([mid_x-1.999*(elec_length+elec_spacing),-0.5*elec_height],\
                [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
-mw.addPointToSurface([(mid_x-1.99*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
+mw.addPointToSurface([(mid_x-1.999*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
 
 mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
-               [mid_x+1.99*(elec_length+elec_spacing),0.5*elec_height],0.1)
-mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x+1.99*(elec_length+elec_spacing))/2.0, 0.0], 1)
-
-
-# mw.addCrackBox([mid_x+0.01-2*(elec_length+elec_spacing),-0.5*elec_height],\
-#                [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
-# mw.addPointToSurface([(mid_x+0.01-2*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
-# 
-# mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
-#                [mid_x-0.01+2*(elec_length+elec_spacing),0.5*elec_height],0.1)
-# mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x-0.01+2*(elec_length+elec_spacing))/2.0, 0.0], 1)
+               [mid_x+1.999*(elec_length+elec_spacing),0.5*elec_height],0.1)
+mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x+1.999*(elec_length+elec_spacing))/2.0, 0.0], 1)
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
-subprocess.call(['gmsh -2 ../data/domain.geo'], shell=True)
+subprocess.call(['gmsh -2 ../data/domain.geo -string "General.ExpertMode=1;"'], shell=True) #Expert mode to suppress warnings about fine mesh
 subprocess.call(['dolfin-convert ../data/domain.msh ../data/domain.xml'], shell=True)
 mesh = dolfin.Mesh('../data/domain.xml')
 
@@ -180,14 +171,15 @@ print "Defining Dirichlet boundaries..."
 ############# This entire part is kinda ehhhhhhhhh...
 chi_si = 4.05 #eV
 phi_gold = 5.1 #eV
-phi_bi = phi_gold - chi_si
-amp = 5.0
+# phi_bi = phi_gold - chi_si
+phi_bi = 0
+amp = 1.05
 #############
 
-bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),
-       dolfin.DirichletBC(V, amp*np.sin(np.pi/2.0), boundaries, 6),
-       dolfin.DirichletBC(V, amp*np.sin(np.pi), boundaries, 7),
-       dolfin.DirichletBC(V, amp*np.sin(3.0/2.0*np.pi), boundaries, 8)]
+bcs = [dolfin.DirichletBC(V, amp*np.sin(0)+phi_bi, boundaries, 5),
+       dolfin.DirichletBC(V, amp*np.sin(np.pi/2.0)+phi_bi, boundaries, 6),
+       dolfin.DirichletBC(V, amp*np.sin(np.pi)+phi_bi, boundaries, 7),
+       dolfin.DirichletBC(V, amp*np.sin(3.0/2.0*np.pi)+phi_bi, boundaries, 8)]
        # dolfin.DirichletBC(V, np.abs(amp/boundary_y_max), boundaries, 2),
        # dolfin.DirichletBC(V, np.abs(amp/boundary_y_min), boundaries, 4),
        # dolfin.DirichletBC(V, 0, boundaries, 2)]
@@ -195,11 +187,16 @@ bcs = [dolfin.DirichletBC(V, amp*np.sin(0), boundaries, 5),
        # dolfin.DirichletBC(V, 0, boundaries, 1),
        # dolfin.DirichletBC(V, 0, boundaries, 3)]
 
-
 # Define input data
 print "Defining inputs..."
 EPS_0 = 8.854e-12       #Absolute permittivity, [Farad/metre]
 Q_E = 1.602e-19         #Elementary charge, [Coulomb/charge]
+k = 8.617e-5            #Boltzmann constant in eV/K
+T = 4                   #Temperature in Kelvin
+N_c = 2.82e25           #N_c for silicon in 1/m^3
+N_v = 1.83E25           #N_v for silicon in 1/m^3
+n_i = np.sqrt(N_c*N_v)*np.power(T,1.5)*np.exp(-1.1/(2.0*k*T))
+print "n_i = ", n_i
 # a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
 # a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
 a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
@@ -208,8 +205,8 @@ g_T = dolfin.Constant("0.0")
 g_B = dolfin.Constant("0.0")
 g_L = dolfin.Constant("0.0")
 g_R = dolfin.Constant("0.0")
-# f0 = dolfin.Constant(1.0e34*Q_E) #Charge density, Si [Coulomb/nm^-2] assuming 1m length into page
-f0 = dolfin.Constant(0.0) #Charge density, Si [Coulomb/nm^-2] assuming 1m length into page
+#with T = 4 kelvin, k = 8.617e-5 ev/K, carrier charge density is ~0 inside silicon.
+f0 = dolfin.Constant(n_i) #Temperature dependent carrier density
 f1 = dolfin.Constant(0.0) #Charge density, Air
 # h_T = dolfin.Constant(np.abs(1.0/boundary_y_max))
 # h_B = dolfin.Constant(np.abs(1.0/boundary_y_min))
@@ -262,18 +259,39 @@ print "Printing solution to file..."
 file_string = "../data/Potential.pvd"
 dolfin.File(file_string) << u
 
-#PLOTTING in matplotlib
-print "Plotting in matplotlib..."
+u_P1 = dolfin.project(u, V)
+u_nodal_values = u_P1.vector()
+u_array = u_nodal_values.get_local()
+coor = mesh.coordinates()
+boundary_vals_x = []
+boundary_vals_v = []
+#gather the values at the Si-Air
+for i in range((coor.size/2)):
+    if coor[i][1]==boundary_dielectric:
+        boundary_vals_x += [coor[i][0]]
+        boundary_vals_v += [u(coor[i][0],coor[i][1])]
+boundary_vals_x += boundary_vals_x.pop(1)
+boundary_vals_v += boundary_vals_v.pop(1)
+plt.figure()
+plt.plot(boundary_vals_x, boundary_vals_v)
+# V_vec = dolfin.VectorFunctionSpace(mesh, "CG", 3)
+# gradu = dolfin.project(dolfin.grad(u),V_vec)
+# plt.figure()
+# plt.ylim(boundary_y_min, boundary_y_max)
+# plt.xlim(boundary_x_min, boundary_x_max)
+# dolfin.plot(gradu, title="gradient of u")
+# #PLOTTING in matplotlib
 plt.figure()
 plt.ylim(boundary_y_min, boundary_y_max)
 plt.xlim(boundary_x_min, boundary_x_max)
 p = dolfin.plot(u, scalarbar=True, title="u")
 plt.colorbar(p)
-# dolfin.plot(mesh)
-plt.figure()
-plt.ylim(boundary_y_min, boundary_y_max)
-plt.xlim(boundary_x_min, boundary_x_max)
-dolfin.plot(mesh, title="mesh")
+# # dolfin.plot(mesh)
+# plt.figure()
+# plt.ylim(boundary_y_min, boundary_y_max)
+# plt.xlim(boundary_x_min, boundary_x_max)
+# dolfin.plot(mesh, title="mesh")
 plt.show()
+print "Plotting in matplotlib..."
 
 print "Ending."
