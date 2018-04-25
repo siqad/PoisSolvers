@@ -310,14 +310,14 @@ def main():
     # Use in-house package to define mesh
     print "Initializing mesh with MeshWriter..."
     mw = mesh_writer.MeshWriter()
-    mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0)*0.1
+    mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0)*0.5
     mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max], 1)
     mw.addCrack([0.001*boundary_x_max,boundary_dielectric],[0.999*boundary_x_max,boundary_dielectric],0.1)
     fields = []
     #Threshold fields use indices of existing lines. Add the field directly after adding the associated crack or line. 
-    fields += [mw.addTHField(0.5, 1, 0.1*boundary_dielectric, 0.2*boundary_dielectric)]
+    fields += [mw.addTHField(0.1, 1, 0.25*boundary_dielectric, 0.5*boundary_dielectric)]
     mw.addLine([0.001*boundary_x_max,0],[0.999*boundary_x_max,0],0.1)
-    fields += [mw.addTHField(0.5, 1, 0.5*elec_height, 0.75*elec_height)]
+    fields += [mw.addTHField(0.1, 1, 0.6*elec_height, 0.75*elec_height)]
     mw.addMinField(fields)
     
     mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_height],\
@@ -340,7 +340,10 @@ def main():
     mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
                    [mid_x+1.999*(elec_length+elec_spacing),0.5*elec_height],0.1)
     mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x+1.999*(elec_length+elec_spacing))/2.0, 0.0], 1)
-        
+    
+    dir = "../data/Plots"
+    if not os.path.exists(dir):
+        os.makedirs(dir)
     with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
     subprocess.call(['gmsh -2 ../data/domain.geo -string "General.ExpertMode=1;"'+\
                      ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
@@ -352,7 +355,7 @@ def main():
     # testvals = np.array([0.12]) #works fine for the 2_1_1 and 1_2_1 and 2_2_1 case.
     # testvals = np.array([0.16]) #works when elec_length, elec_spacing, dielectric_boundary are the same
     # testvals = np.array([0.32]) #works for 1_1_2
-    testvals = np.array([0.25])
+    testvals = np.array([0.32])
     offsets = np.array([-1.05])
     timesteps = np.linspace(0,2*np.pi, 25, endpoint=False)
     # timesteps = [0]
@@ -360,7 +363,8 @@ def main():
         for j in range(len(timesteps)):
             results += [worker(testvals[i], offsets[i], timesteps[j],j, params)]
     res_x, res_v = zip(*results)    
-    print "Wobble: ", max(res_v) - min(res_v)
+    print max(res_v), min(res_v)
+    print "Wobble: ", (max(res_v) - min(res_v))/((max(res_v)+min(res_v))/2.0)*100, "%"
 main()
 
 #For making gifs
