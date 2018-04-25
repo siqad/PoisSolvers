@@ -8,14 +8,18 @@ import numpy as np
 def worker(amp_in, offset):
     #elec_length, elec_spacing use 10nm as conservative estimate of current generation feature size.
     #elec_height uses 20nm, shown possible for Cr here: https://www.nature.com/articles/srep23823.pdf
-    elec_length = 10.0e-9
-    elec_height = 20.0e-9 
-    elec_spacing = 10.0e-9 
+    #the voltage at the boundary increases with elec_length and elec_spacing.
+    #the voltage at the boundary decreases with boundary_dielectric by the same amount. 
+    #E.G for voltage at boundary V(elec_spacing, elec_length, boundary_dielectric), V(1, 1, 1) == V(2, 2, 2) == V(3, 3, 3)...
+    #Also roughly linear with applied V. 
+    elec_length = 30.0e-9
+    elec_height = 10.0e-9 
+    elec_spacing = 30.0e-9 
     boundary_x_min = 0.0e-9
     boundary_x_max = (4*elec_length+4*elec_spacing)
     boundary_y_min = -100.0e-9
     boundary_y_max = 100.0e-9
-    boundary_dielectric = elec_height/2.0+10.0e-9 #surface will be placed relative to top of electrode.
+    boundary_dielectric = elec_height/2.0+30.0e-9 #surface will be placed relative to top of electrode.
     mid_x = (boundary_x_max+boundary_x_min)/2.0
     mid_y = (boundary_y_max+boundary_y_min)/2.0
 
@@ -306,8 +310,9 @@ def worker(amp_in, offset):
     # p = dolfin.plot(u, scalarbar=True, title="u")
     p = dolfin.plot(u, title="u")
     plt.colorbar(p)
-    # plt.axes().set_aspect('equal')
-    # ####Mesh
+    air_line_data = np.array([boundary_dielectric for i in xrange(len(x))])
+    plt.plot(x, air_line_data, 'k--')
+    ####Mesh
     # plt.figure()
     # plt.ylim(boundary_y_min, boundary_y_max)
     # plt.xlim(boundary_x_min, boundary_x_max)
@@ -315,7 +320,7 @@ def worker(amp_in, offset):
     plt.show()
     print "Plotting in matplotlib..."
     print "Ending."
-    return amp_in, max(boundary_vals_v)
+    return amp_in, max(v)
 
 def main():
     results = []
