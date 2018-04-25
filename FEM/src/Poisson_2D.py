@@ -11,15 +11,15 @@ def worker(amp_in, offset):
     #the voltage at the boundary increases with elec_length and elec_spacing.
     #the voltage at the boundary decreases with boundary_dielectric by the same amount. 
     #E.G for voltage at boundary V(elec_spacing, elec_length, boundary_dielectric), V(1, 1, 1) == V(2, 2, 2) == V(3, 3, 3)...
-    #Also roughly linear with applied V. 
-    elec_length = 30.0e-9
-    elec_height = 10.0e-9 
-    elec_spacing = 30.0e-9 
-    boundary_x_min = 0.0e-9
+    #Also roughly linear with applied V.
+    elec_length = 10.0e-9
+    elec_height = 20.0e-9 #not much effect on V.
+    elec_spacing = 10.0e-9 
+    boundary_x_min = 0.0e-9 #periodic, wraps around to x_max
     boundary_x_max = (4*elec_length+4*elec_spacing)
-    boundary_y_min = -100.0e-9
-    boundary_y_max = 100.0e-9
-    boundary_dielectric = elec_height/2.0+30.0e-9 #surface will be placed relative to top of electrode.
+    boundary_dielectric = elec_height/2.0+10.0e-9 #surface will be placed relative to top of electrode.
+    boundary_y_min = -5*boundary_dielectric #V stops changing after setting simulation to boundary +/-5*boundary_dielectric
+    boundary_y_max = 5*boundary_dielectric
     mid_x = (boundary_x_max+boundary_x_min)/2.0
     mid_y = (boundary_y_max+boundary_y_min)/2.0
 
@@ -285,6 +285,7 @@ def worker(amp_in, offset):
     for i in range(len(coor)):
         if np.abs(coor[i][1] - boundary_dielectric) < dolfin.DOLFIN_EPS:
             boundary_vals += [[coor[i][0],u(coor[i][0],coor[i][1])]]
+    #sort by ascending x values.
     boundary_vals.sort(key=lambda x: x[0])
     data = np.array(boundary_vals)
     x, v = data.T
