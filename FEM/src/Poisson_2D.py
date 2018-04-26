@@ -5,7 +5,7 @@ import subprocess
 import mesh_writer
 import numpy as np
 
-def worker(amp_in, offset, timestep, step, params):
+def worker(amp_in, offset, timestep, step, params, outfile):
     #elec_length, elec_spacing use 10nm as conservative estimate of current generation feature size.
     #elec_height uses 20nm, shown possible for Cr here: https://www.nature.com/articles/srep23823.pdf
     #the voltage at the boundary increases with elec_length and elec_spacing.
@@ -47,34 +47,42 @@ def worker(amp_in, offset, timestep, step, params):
         def inside(self, x, on_boundary):
             # global elec_length, elec_spacing, mid_x
             return ( \
-               (dolfin.between(x[0], (mid_x-0.5*elec_length+2*(elec_length+elec_spacing), mid_x+1.999*(elec_length+elec_spacing))) and \
-                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) or \
-               (dolfin.between(x[0], (mid_x-1.999*(elec_length+elec_spacing), mid_x+0.5*elec_length-2*(elec_length+elec_spacing))) and \
-                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
+                (dolfin.between(x[0], (0.5*elec_spacing, 0.5*elec_spacing+elec_length))) and \
+                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height)) 
+               # (dolfin.between(x[0], (mid_x-0.5*elec_length+2*(elec_length+elec_spacing), mid_x+1.999*(elec_length+elec_spacing))) and \
+               #  dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) or \
+               # (dolfin.between(x[0], (mid_x-1.999*(elec_length+elec_spacing), mid_x+0.5*elec_length-2*(elec_length+elec_spacing))) and \
+               #  dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
             )
 
     class Electrode_90(dolfin.SubDomain):
         def inside(self, x, on_boundary):
             # global elec_length, elec_spacing, mid_x
             return ( \
-               (dolfin.between(x[0], (mid_x-0.5*elec_length-(elec_length+elec_spacing), mid_x+0.5*elec_length-(elec_length+elec_spacing))) and \
-                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
+                (dolfin.between(x[0], (1.5*elec_spacing+elec_length, 1.5*elec_spacing+2*elec_length))) and \
+                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))
+               # (dolfin.between(x[0], (mid_x-0.5*elec_length-(elec_length+elec_spacing), mid_x+0.5*elec_length-(elec_length+elec_spacing))) and \
+               #  dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
             )
 
     class Electrode_180(dolfin.SubDomain):
         def inside(self, x, on_boundary):
             # global elec_length, elec_spacing, mid_x
             return ( \
-               (dolfin.between(x[0], (mid_x-0.5*elec_length, mid_x+0.5*elec_length)) and \
-                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
+                (dolfin.between(x[0], (2.5*elec_spacing+2*elec_length, 2.5*elec_spacing+3*elec_length))) and \
+                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))
+               # (dolfin.between(x[0], (mid_x-0.5*elec_length, mid_x+0.5*elec_length)) and \
+               #  dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
             )
 
     class Electrode_270(dolfin.SubDomain):
         def inside(self, x, on_boundary):
             # global elec_length, elec_spacing, mid_x
             return ( \
-               (dolfin.between(x[0], (mid_x-0.5*elec_length+(elec_length+elec_spacing), mid_x+0.5*elec_length+(elec_length+elec_spacing))) and \
-                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
+                (dolfin.between(x[0], (3.5*elec_spacing+3*elec_length, 3.5*elec_spacing+4*elec_length))) and \
+                dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))
+               # (dolfin.between(x[0], (mid_x-0.5*elec_length+(elec_length+elec_spacing), mid_x+0.5*elec_length+(elec_length+elec_spacing))) and \
+               #  dolfin.between(x[1], (-0.5*elec_height, 0.5*elec_height))) \
             )
 
     # INTERNAL BOUNDARY CONDITION
@@ -255,10 +263,11 @@ def worker(amp_in, offset, timestep, step, params):
     print "Amp: %f Max: %f Min: %f"%(amp_in, max(v), min(v))
 
     ####Potential at boundary
+    print "Plotting in matplotlib..."
     plt.figure()
     plt.title("Potential at Si-Air boundary vs x")
     plt.xlim(boundary_x_min, boundary_x_max)
-    plt.ylim(-0.15, 0.15)
+    plt.ylim(-0.10, 0.10)
     plt.plot(x, v)
     savestring = '../data/Plots/SiAirBoundary%02d.png'%(step) 
     plt.savefig(savestring)
@@ -279,21 +288,21 @@ def worker(amp_in, offset, timestep, step, params):
     # plt.colorbar(p)
     # air_line_data = np.array([boundary_dielectric for i in xrange(len(x))])
     # plt.plot(x, air_line_data, 'k--')
-    ###Mesh
+    ##Mesh
     # plt.figure()
     # plt.ylim(boundary_y_min, boundary_y_max)
     # plt.xlim(boundary_x_min, boundary_x_max)
     # dolfin.plot(mesh, title="mesh")
     # plt.show()
-    print "Plotting in matplotlib..."
+    t = timestep*np.ones(len(x))
+    print "Saving numpy arrays to file."
+    np.savetxt(outfile, np.c_[t,x,v], fmt='%1.4e')
     print "Ending."
     return amp_in, max(v)
 
 def main():
-    
-    
     #ONLY NEED TO CREATE THE MESH ONCE, then save it to file.
-    elec_length = 50.0e-9
+    elec_length = 20.0e-9
     elec_height = 20.0e-9 #not much effect on V.
     elec_spacing = 50.0e-9 
     boundary_x_min = 0.0e-9 #periodic, wraps around to x_max
@@ -310,36 +319,62 @@ def main():
     # Use in-house package to define mesh
     print "Initializing mesh with MeshWriter..."
     mw = mesh_writer.MeshWriter()
-    mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0)*0.5
+    mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0)*0.25
     mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max], 1)
     mw.addCrack([0.001*boundary_x_max,boundary_dielectric],[0.999*boundary_x_max,boundary_dielectric],0.1)
     fields = []
     #Threshold fields use indices of existing lines. Add the field directly after adding the associated crack or line. 
-    fields += [mw.addTHField(0.1, 1, 0.25*boundary_dielectric, 0.5*boundary_dielectric)]
-    mw.addLine([0.001*boundary_x_max,0],[0.999*boundary_x_max,0],0.1)
-    fields += [mw.addTHField(0.1, 1, 0.6*elec_height, 0.75*elec_height)]
+    fields += [mw.addTHField(0.25, 1, 0.1*boundary_dielectric, 0.5*boundary_dielectric)]
+    mw.addLine([0,0],[boundary_x_max,0],0.1)
+    fields += [mw.addTHField(0.25, 1, 0.75*elec_height, 3.0*elec_height)]
     mw.addMinField(fields)
-    
-    mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_height],\
-                   [mid_x+0.5*elec_length,0.5*elec_height],0.1)
-    mw.addPointToSurface([(mid_x-0.5*elec_length + mid_x+0.5*elec_length)/2.0, 0.0], 1)
-    
-    mw.addCrackBox([mid_x-0.5*elec_length-(elec_length+elec_spacing),-0.5*elec_height],\
-                   [mid_x+0.5*elec_length-(elec_length+elec_spacing),0.5*elec_height],0.1)
-    mw.addPointToSurface([(mid_x-0.5*elec_length-(elec_length+elec_spacing) + mid_x+0.5*elec_length-(elec_length+elec_spacing))/2.0, 0.0], 1)
-    
-    mw.addCrackBox([mid_x-0.5*elec_length+(elec_length+elec_spacing),-0.5*elec_height],\
-                   [mid_x+0.5*elec_length+(elec_length+elec_spacing),0.5*elec_height],0.1)
-    mw.addPointToSurface([(mid_x-0.5*elec_length+(elec_length+elec_spacing) + mid_x+0.5*elec_length+(elec_length+elec_spacing))/2.0, 0.0], 1)
-    
-    #Use 1.99 instead of 2.00 to prevent intersection of face with boundary face.
-    mw.addCrackBox([mid_x-1.999*(elec_length+elec_spacing),-0.5*elec_height],\
-                   [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
-    mw.addPointToSurface([(mid_x-1.999*(elec_length+elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
-    
-    mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
-                   [mid_x+1.999*(elec_length+elec_spacing),0.5*elec_height],0.1)
-    mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x+1.999*(elec_length+elec_spacing))/2.0, 0.0], 1)
+
+    x_left = 0.5*elec_spacing
+    x_right = x_left+elec_length
+    mw.addCrackBox([x_left,-0.5*elec_height],\
+                   [x_right,0.5*elec_height],0.1)
+
+    x_left += elec_spacing + elec_length
+    x_right = x_left+elec_length
+    mw.addCrackBox([x_left,-0.5*elec_height],\
+                   [x_right,0.5*elec_height],0.1)
+
+    x_left += elec_spacing + elec_length
+    x_right = x_left+elec_length
+    mw.addCrackBox([x_left,-0.5*elec_height],\
+                   [x_right,0.5*elec_height],0.1)
+
+    x_left += elec_spacing + elec_length
+    x_right = x_left+elec_length
+    mw.addCrackBox([x_left,-0.5*elec_height],\
+                   [x_right,0.5*elec_height],0.1)
+
+    # mw.addPointToSurface([(mid_x-0.5*elec_length + mid_x+0.5*elec_length)/2.0, 0.0], 1)
+    # #Centre electrode
+    # mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_height],\
+    #                [mid_x+0.5*elec_length,0.5*elec_height],0.1)
+    # mw.addPointToSurface([(mid_x-0.5*elec_length + mid_x+0.5*elec_length)/2.0, 0.0], 1)
+    # 
+    # #mid-left
+    # mw.addCrackBox([mid_x-0.5*elec_length-(elec_length+elec_spacing),-0.5*elec_height],\
+    #                [mid_x+0.5*elec_length-(elec_length+elec_spacing),0.5*elec_height],0.1)
+    # mw.addPointToSurface([(mid_x-0.5*elec_length-(elec_length+elec_spacing) + mid_x+0.5*elec_length-(elec_length+elec_spacing))/2.0, 0.0], 1)
+    # 
+    # #mid-right
+    # mw.addCrackBox([mid_x-0.5*elec_length+(elec_length+elec_spacing),-0.5*elec_height],\
+    #                [mid_x+0.5*elec_length+(elec_length+elec_spacing),0.5*elec_height],0.1)
+    # mw.addPointToSurface([(mid_x-0.5*elec_length+(elec_length+elec_spacing) + mid_x+0.5*elec_length+(elec_length+elec_spacing))/2.0, 0.0], 1)
+    # 
+    # #left
+    # #Use 1.99 instead of 2.00 to prevent intersection of face with boundary face.
+    # mw.addCrackBox([mid_x-(1.999*elec_length+2*elec_spacing),-0.5*elec_height],\
+    #                [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
+    # mw.addPointToSurface([(mid_x-(1.999*elec_length+2*elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
+    # 
+    # #right
+    # mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
+    #                [mid_x+(1.999*elec_length+2*elec_spacing),0.5*elec_height],0.1)
+    # mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x+(1.999*elec_length+2*elec_spacing))/2.0, 0.0], 1)
     
     dir = "../data/Plots"
     if not os.path.exists(dir):
@@ -355,16 +390,25 @@ def main():
     # testvals = np.array([0.12]) #works fine for the 2_1_1 and 1_2_1 and 2_2_1 case.
     # testvals = np.array([0.16]) #works when elec_length, elec_spacing, dielectric_boundary are the same
     # testvals = np.array([0.32]) #works for 1_1_2
-    testvals = np.array([0.32])
+    testvals = np.array([0.66])
     offsets = np.array([-1.05])
-    timesteps = np.linspace(0,2*np.pi, 25, endpoint=False)
+    timesteps = np.linspace(0,2*np.pi, 40, endpoint=False)
     # timesteps = [0]
+    outfile = file("../data/surfacepotentials.txt", "w")
     for i in range(len(testvals)):
         for j in range(len(timesteps)):
-            results += [worker(testvals[i], offsets[i], timesteps[j],j, params)]
+            results += [worker(testvals[i], offsets[i], timesteps[j],j, params, outfile)]
     res_x, res_v = zip(*results)    
     print max(res_v), min(res_v)
     print "Wobble: ", (max(res_v) - min(res_v))/((max(res_v)+min(res_v))/2.0)*100, "%"
+    
+    #read from file
+    # outfile.close()
+    # outfile = file("../data/surfacepotentials.txt", "r")
+    # t, x, v = np.loadtxt(outfile, unpack=True)
+    # print t
+    # print x
+    # print v
 main()
 
 #For making gifs
