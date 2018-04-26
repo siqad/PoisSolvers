@@ -302,7 +302,7 @@ def worker(amp_in, offset, timestep, step, params, outfile):
 
 def main():
     #ONLY NEED TO CREATE THE MESH ONCE, then save it to file.
-    elec_length = 20.0e-9
+    elec_length = 25.0e-9
     elec_height = 20.0e-9 #not much effect on V.
     elec_spacing = 50.0e-9 
     boundary_x_min = 0.0e-9 #periodic, wraps around to x_max
@@ -390,7 +390,7 @@ def main():
     # testvals = np.array([0.12]) #works fine for the 2_1_1 and 1_2_1 and 2_2_1 case.
     # testvals = np.array([0.16]) #works when elec_length, elec_spacing, dielectric_boundary are the same
     # testvals = np.array([0.32]) #works for 1_1_2
-    testvals = np.array([0.66])
+    testvals = np.array([0.6])
     offsets = np.array([-1.05])
     timesteps = np.linspace(0,2*np.pi, 40, endpoint=False)
     # timesteps = [0]
