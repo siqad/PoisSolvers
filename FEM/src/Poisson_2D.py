@@ -1,5 +1,6 @@
 import dolfin
 import matplotlib.pyplot as plt
+import matplotlib.patches as ptc
 import os
 import subprocess
 import mesh_writer
@@ -187,7 +188,7 @@ def worker(amp_in, offset, timestep, step, params, outfile):
     print "n_i = ", n_i
     # a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
     # a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
-    a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
+    a0 = dolfin.Constant(100.0*EPS_0) #Permittivity, Si
     a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
     g_T = dolfin.Constant("0.0")
     g_B = dolfin.Constant("0.0")
@@ -264,13 +265,13 @@ def worker(amp_in, offset, timestep, step, params, outfile):
 
     ####Potential at boundary
     print "Plotting in matplotlib..."
-    plt.figure()
-    plt.title("Potential at Si-Air boundary vs x")
-    plt.xlim(boundary_x_min, boundary_x_max)
-    plt.ylim(-0.10, 0.10)
-    plt.plot(x, v)
-    savestring = '../data/Plots/SiAirBoundary%02d.png'%(step) 
-    plt.savefig(savestring)
+    # plt.figure()
+    # plt.title("Potential at Si-Air boundary vs x")
+    # plt.xlim(boundary_x_min, boundary_x_max)
+    # plt.ylim(-0.10, 0.10)
+    # plt.plot(x, v)
+    # savestring = '../data/Plots/SiAirBoundary%02d.png'%(step) 
+    # plt.savefig(savestring)
     # ####Potential gradient
     # V_vec = dolfin.VectorFunctionSpace(mesh, "CG", 3)
     # gradu = dolfin.project(dolfin.grad(u),V_vec)
@@ -279,21 +280,48 @@ def worker(amp_in, offset, timestep, step, params, outfile):
     # plt.xlim(boundary_x_min, boundary_x_max)
     # dolfin.plot(gradu, title="gradient of u")
     # ####Potential
-    # plt.figure()
-    # # plt.subplot(2, 1, 2)
-    # plt.ylim(boundary_y_min, boundary_y_max)
-    # plt.xlim(boundary_x_min, boundary_x_max)
-    # # p = dolfin.plot(u, scalarbar=True, title="u")
-    # p = dolfin.plot(u, title="u")
-    # plt.colorbar(p)
-    # air_line_data = np.array([boundary_dielectric for i in xrange(len(x))])
-    # plt.plot(x, air_line_data, 'k--')
+    fig = plt.figure(figsize=(10,10))
+    ax1 = fig.add_subplot(1,1,1, adjustable='box')
+    # ax1.set_title("Potential due to 4-phase clocking scheme")
+    label_size = 18
+    tick_size = 15
+    bot_trunc = 0.1
+    top_trunc = 0.3
+    ax1.set_ylim(bot_trunc*boundary_y_min, top_trunc*boundary_y_max)
+    ax1.set_xlim(boundary_x_min, boundary_x_max)
+    ax1.set_ylabel("Depth (nm)", fontsize=label_size)
+    ax1.set_xlabel("Position (nm)", fontsize=label_size)
+    # p = dolfin.plot(u, scalarbar=True, title="u")
+    p = dolfin.plot(u, alpha=1.0)
+    cbar = plt.colorbar(p, fraction = 0.046*(1.75*(bot_trunc+top_trunc)))
+    cbar.set_label(label="Potential (V)", fontsize=label_size)
+    cbar.ax.tick_params(labelsize=tick_size)
     ##Mesh
-    # plt.figure()
-    # plt.ylim(boundary_y_min, boundary_y_max)
-    # plt.xlim(boundary_x_min, boundary_x_max)
-    # dolfin.plot(mesh, title="mesh")
-    # plt.show()
+    dolfin.plot(mesh,alpha=1.0)
+    
+    air_line_data = np.array([boundary_dielectric for i in xrange(len(x))])
+    ax1.plot(x, air_line_data, 'k--', linewidth=2)
+    
+    x_left = 0.5*elec_spacing
+    for i in range(4):
+        ax1.add_patch(ptc.Rectangle((x_left, -0.5*elec_height), elec_length, elec_height, facecolor="white", zorder=10))
+        x_left += elec_spacing + elec_length
+    locs, labels = plt.yticks()
+    locs += 0.5*elec_height
+    labels = []
+    for loc in locs:
+        labels += [str(round(loc*1e9-112.5, 2))]
+    plt.yticks(locs, labels)
+    
+    locs, labels = plt.xticks()
+    labels = []
+    for loc in locs:
+        labels += [str(round(loc*1e9, 2))]
+    plt.xticks(locs, labels)
+    ax1.tick_params(labelsize=tick_size)
+    # plt.yticks()
+    plt.savefig("../data/snapshot.pdf")
+    plt.show()
     t = timestep*np.ones(len(x))
     print "Saving numpy arrays to file."
     np.savetxt(outfile, np.c_[t,x,v], fmt='%1.4e')
@@ -303,7 +331,7 @@ def worker(amp_in, offset, timestep, step, params, outfile):
 def main():
     #ONLY NEED TO CREATE THE MESH ONCE, then save it to file.
     elec_length = 25.0e-9
-    elec_height = 20.0e-9 #not much effect on V.
+    elec_height = 25.0e-9 #not much effect on V.
     elec_spacing = 50.0e-9 
     boundary_x_min = 0.0e-9 #periodic, wraps around to x_max
     boundary_x_max = (4*elec_length+4*elec_spacing)
@@ -319,14 +347,14 @@ def main():
     # Use in-house package to define mesh
     print "Initializing mesh with MeshWriter..."
     mw = mesh_writer.MeshWriter()
-    mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0)*0.25
+    mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0)*0.5
     mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max], 1)
     mw.addCrack([0.001*boundary_x_max,boundary_dielectric],[0.999*boundary_x_max,boundary_dielectric],0.1)
     fields = []
     #Threshold fields use indices of existing lines. Add the field directly after adding the associated crack or line. 
-    fields += [mw.addTHField(0.25, 1, 0.1*boundary_dielectric, 0.5*boundary_dielectric)]
+    fields += [mw.addTHField(0.5, 1, 0.1*boundary_dielectric, 0.5*boundary_dielectric)]
     mw.addLine([0,0],[boundary_x_max,0],0.1)
-    fields += [mw.addTHField(0.25, 1, 0.75*elec_height, 3.0*elec_height)]
+    fields += [mw.addTHField(0.5, 1, 0.75*elec_height, 3.0*elec_height)]
     mw.addMinField(fields)
 
     x_left = 0.5*elec_spacing
@@ -392,8 +420,8 @@ def main():
     # testvals = np.array([0.32]) #works for 1_1_2
     testvals = np.array([0.6])
     offsets = np.array([-1.05])
-    timesteps = np.linspace(0,2*np.pi, 40, endpoint=False)
-    # timesteps = [0]
+    # timesteps = np.linspace(0,2*np.pi, 40, endpoint=False)
+    timesteps = [0]
     outfile = file("../data/surfacepotentials.txt", "w")
     for i in range(len(testvals)):
         for j in range(len(timesteps)):
