@@ -344,14 +344,16 @@ def main():
     params = [elec_length, elec_height, elec_spacing,
             boundary_x_min, boundary_x_max, boundary_dielectric, 
             boundary_y_min, boundary_y_max, mid_x, mid_y]
+            
     # Use in-house package to define mesh
     print "Initializing mesh with MeshWriter..."
     mw = mesh_writer.MeshWriter()
     mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0)*0.5
     mw.addOuterBound([boundary_x_min,boundary_y_min], [boundary_x_max,boundary_y_max], 1)
-    mw.addCrack([0.001*boundary_x_max,boundary_dielectric],[0.999*boundary_x_max,boundary_dielectric],0.1)
+    mw.addSeam([0.001*boundary_x_max,boundary_dielectric],[0.999*boundary_x_max,boundary_dielectric],0.1)
     fields = []
-    #Threshold fields use indices of existing lines. Add the field directly after adding the associated crack or line. 
+    
+    #Threshold fields use indices of existing lines. Add the field directly after adding the associated seam or line. 
     fields += [mw.addTHField(0.5, 1, 0.1*boundary_dielectric, 0.5*boundary_dielectric)]
     mw.addLine([0,0],[boundary_x_max,0],0.1)
     fields += [mw.addTHField(0.5, 1, 0.75*elec_height, 3.0*elec_height)]
@@ -359,51 +361,24 @@ def main():
 
     x_left = 0.5*elec_spacing
     x_right = x_left+elec_length
-    mw.addCrackBox([x_left,-0.5*elec_height],\
+    mw.addSeamBox([x_left,-0.5*elec_height],\
                    [x_right,0.5*elec_height],0.1)
 
     x_left += elec_spacing + elec_length
     x_right = x_left+elec_length
-    mw.addCrackBox([x_left,-0.5*elec_height],\
+    mw.addSeamBox([x_left,-0.5*elec_height],\
                    [x_right,0.5*elec_height],0.1)
 
     x_left += elec_spacing + elec_length
     x_right = x_left+elec_length
-    mw.addCrackBox([x_left,-0.5*elec_height],\
+    mw.addSeamBox([x_left,-0.5*elec_height],\
                    [x_right,0.5*elec_height],0.1)
 
     x_left += elec_spacing + elec_length
     x_right = x_left+elec_length
-    mw.addCrackBox([x_left,-0.5*elec_height],\
+    mw.addSeamBox([x_left,-0.5*elec_height],\
                    [x_right,0.5*elec_height],0.1)
 
-    # mw.addPointToSurface([(mid_x-0.5*elec_length + mid_x+0.5*elec_length)/2.0, 0.0], 1)
-    # #Centre electrode
-    # mw.addCrackBox([mid_x-0.5*elec_length,-0.5*elec_height],\
-    #                [mid_x+0.5*elec_length,0.5*elec_height],0.1)
-    # mw.addPointToSurface([(mid_x-0.5*elec_length + mid_x+0.5*elec_length)/2.0, 0.0], 1)
-    # 
-    # #mid-left
-    # mw.addCrackBox([mid_x-0.5*elec_length-(elec_length+elec_spacing),-0.5*elec_height],\
-    #                [mid_x+0.5*elec_length-(elec_length+elec_spacing),0.5*elec_height],0.1)
-    # mw.addPointToSurface([(mid_x-0.5*elec_length-(elec_length+elec_spacing) + mid_x+0.5*elec_length-(elec_length+elec_spacing))/2.0, 0.0], 1)
-    # 
-    # #mid-right
-    # mw.addCrackBox([mid_x-0.5*elec_length+(elec_length+elec_spacing),-0.5*elec_height],\
-    #                [mid_x+0.5*elec_length+(elec_length+elec_spacing),0.5*elec_height],0.1)
-    # mw.addPointToSurface([(mid_x-0.5*elec_length+(elec_length+elec_spacing) + mid_x+0.5*elec_length+(elec_length+elec_spacing))/2.0, 0.0], 1)
-    # 
-    # #left
-    # #Use 1.99 instead of 2.00 to prevent intersection of face with boundary face.
-    # mw.addCrackBox([mid_x-(1.999*elec_length+2*elec_spacing),-0.5*elec_height],\
-    #                [mid_x+0.5*elec_length-2*(elec_length+elec_spacing),0.5*elec_height],0.1)
-    # mw.addPointToSurface([(mid_x-(1.999*elec_length+2*elec_spacing) + mid_x+0.5*elec_length-2*(elec_length+elec_spacing))/2.0, 0.0], 1)
-    # 
-    # #right
-    # mw.addCrackBox([mid_x-0.5*elec_length+2*(elec_length+elec_spacing),-0.5*elec_height],\
-    #                [mid_x+(1.999*elec_length+2*elec_spacing),0.5*elec_height],0.1)
-    # mw.addPointToSurface([(mid_x-0.5*elec_length+2*(elec_length+elec_spacing) + mid_x+(1.999*elec_length+2*elec_spacing))/2.0, 0.0], 1)
-    
     dir = "../data/Plots"
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -440,5 +415,5 @@ def main():
 main()
 
 #For making gifs
-subprocess.call(['convert -delay 10 -loop 0 ../data/Plots/*.png ../data/Plots/SiAirBoundary.gif'], shell=True)
+# subprocess.call(['convert -delay 10 -loop 0 ../data/Plots/*.png ../data/Plots/SiAirBoundary.gif'], shell=True)
 

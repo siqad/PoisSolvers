@@ -3,53 +3,69 @@ import subprocess
 from paraview import simple as pvs
 import numpy as np
 
+boundary_x_min = 0.0
+boundary_x_max = 1.0
+boundary_y_min = 0.0
+boundary_y_max = 1.0
+boundary_z_min = 0.0
+boundary_z_max = 1.0
+mid_x = (boundary_x_min+boundary_x_max)/2.0
+mid_y = (boundary_y_min+boundary_y_max)/2.0
+mid_z = (boundary_z_min+boundary_z_max)/2.0
+print mid_x, mid_y, mid_z
+elec_length = 0.2
+elec_width = 0.2
+elec_depth = 0.2
+boundary_dielectric = 0.8
 # Create classes for defining parts of the boundaries and the interior
 # of the domain
-class Left(dolfin.SubDomain):
+class Left(dolfin.SubDomain): #x_min
     def inside(self, x, on_boundary):
-        return dolfin.near(x[0], 0.0)
+        return dolfin.near(x[0], boundary_x_min)
 
-class Right(dolfin.SubDomain):
+class Right(dolfin.SubDomain): #x_max
     def inside(self, x, on_boundary):
-        return dolfin.near(x[0], 1.0)
+        return dolfin.near(x[0], boundary_x_max)
 
-class Bottom(dolfin.SubDomain):
+class Bottom(dolfin.SubDomain): #y_min
     def inside(self, x, on_boundary):
-        return dolfin.near(x[1], 0.0)
+        return dolfin.near(x[1], boundary_y_min)
 
-class Top(dolfin.SubDomain):
+class Top(dolfin.SubDomain): #y_max
     def inside(self, x, on_boundary):
-        return dolfin.near(x[1], 1.0)
+        return dolfin.near(x[1], boundary_y_max)
 
-class Front(dolfin.SubDomain):
+class Back(dolfin.SubDomain): #z_min
     def inside(self, x, on_boundary):
-        return dolfin.near(x[2], 1.0)
+        return dolfin.near(x[2], boundary_z_min)
 
-class Back(dolfin.SubDomain):
+class Front(dolfin.SubDomain): #z_max
     def inside(self, x, on_boundary):
-        return dolfin.near(x[2], 0.0)
+        return dolfin.near(x[2], boundary_z_max)
 
 # INTERNAL BOUNDARY CONDITION
 # DIELECTRIC
-class Obstacle(dolfin.SubDomain):
+class Air(dolfin.SubDomain):
     def inside(self, x, on_boundary):
-        return (dolfin.between(x[2], (0.8, 1.0)))
+        return (dolfin.between(x[2], (boundary_dielectric, boundary_z_max)))
 
 # INTERNAL BOUNDARY CONDITION
 # ELECTRODE
-class Obstacle2(dolfin.SubDomain):
+class Electrode(dolfin.SubDomain):
     def inside(self, x, on_boundary):
-        return (dolfin.between(x[0], (0.4, 0.6)) and dolfin.between(x[1], (0.0, 1.0)) and dolfin.between(x[2], (0.4, 0.6)))
+        return (dolfin.between(x[0], (mid_x-elec_length/2.0, mid_x+elec_length/2.0)) \
+            and dolfin.between(x[1], (mid_y-elec_width/2.0, mid_y+elec_width/2.0)) \
+            and dolfin.between(x[2], (mid_z-elec_depth/2.0, mid_z+elec_depth/2.0)) )
 
 # Initialize sub-domain instances
 left = Left() #x
 top = Top() #y
 right = Right() #x
 bottom = Bottom() #y
-front = Front()
-back = Back()
-obstacle = Obstacle()
-obstacle2 = Obstacle2()
+front = Front() #z
+back = Back() #z
+air = Air()
+electrode = Electrode()
 print "Create subdomains..."
 
 # Define mesh
@@ -113,7 +129,8 @@ Plane Surface(22) = {21};
 Line Loop(23) = {10,6,-11,-2};
 Plane Surface(24) = {23};
 
-Surface Loop(25) = {14,18,22,16,20,24};
+Surface Loop(25) = {16,20,22,14,24,18};
+//Surface Loop(25) = {14,18,22,16,20,24};
 Volume(26) = {25};
 
 //Electrode points
@@ -196,8 +213,7 @@ print "Mesh initialized"
 # Initialize mesh function for interior domains
 domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
 domains.set_all(0)
-obstacle.mark(domains, 1)
-obstacle2.mark(domains, 2)
+air.mark(domains, 1)
 # Initialize mesh function for boundary domains
 boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
 boundaries.set_all(0)
@@ -207,7 +223,7 @@ right.mark(boundaries, 3)
 bottom.mark(boundaries, 4)
 front.mark(boundaries, 5)
 back.mark(boundaries, 6)
-obstacle2.mark(boundaries, 7)
+electrode.mark(boundaries, 7)
 print "Boundaries marked"
 
 # Define input data
@@ -269,7 +285,7 @@ problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
 solver = dolfin.LinearVariationalSolver(problem)
 # solver.parameters['linear_solver'] = 'cg'
 solver.parameters['linear_solver'] = 'gmres'
-# solver.parameters['preconditioner'] = 'ilu'
+solver.parameters['preconditioner'] = 'ilu'
 cg_param = solver.parameters['krylov_solver']
 cg_param['absolute_tolerance'] = 1E-7
 cg_param['relative_tolerance'] = 1E-4

@@ -62,7 +62,7 @@ class MeshWriter():
         self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
         self.addLineByIndex(self.ind_point-1, self.ind_point-4, scale)
         self.file_string += "Line Loop(%d) = {%d,%d,%d,%d};\n"\
-            %(self.ind_2d,self.ind_point-4,self.ind_point-3,self.ind_point-2,self.ind_point-1)
+            %(self.ind_2d,self.ind_2d-4,self.ind_2d-3,self.ind_2d-2,self.ind_2d-1)
         self.ind_2d += 1
         self.file_string += "Plane Surface(%d) = {%d};\n"\
             %(self.ind_2d,self.ind_2d-1)
@@ -77,8 +77,8 @@ class MeshWriter():
             %(self.ind_phys_surface, self.ind_2d-1)
         return
 
-    #adds a crack that the mesh must align to.
-    def addCrack(self, p1, p2, scale):
+    #adds a seam that the mesh must align to.
+    def addSeam(self, p1, p2, scale):
         self.addLine(p1, p2, scale)
         self.file_string += "Physical Line(%d) = {%d};\n"\
             %(self.ind_phys, self.ind_2d-1)
@@ -87,7 +87,7 @@ class MeshWriter():
             %(self.ind_2d-1, self.ind_surface)        
         return
         
-    def addCrackByIndex(self, p1_ind, p2_ind, scale):
+    def addSeamByIndex(self, p1_ind, p2_ind, scale):
         self.file_string += "Line(%d) = {%d, %d};\n"\
             %(self.ind_2d, p1_ind, p2_ind)
         self.ind_2d += 1
@@ -98,10 +98,10 @@ class MeshWriter():
             %(self.ind_2d-1, self.ind_surface)        
         return
     
-    #defines a box made from cracks, which the mesh will align itself to.
+    #defines a box made from seams, which the mesh will align itself to.
     #will set the internal resolution to standard,
-    #keeping scaled resolution at the crack boundary
-    def addCrackBox(self, p1, p2, scale):
+    #keeping scaled resolution at the seam boundary
+    def addSeamBox(self, p1, p2, scale):
         x_min = min(p1[0],p2[0])
         y_min = min(p1[1],p2[1])
         x_max = max(p1[0],p2[0])
@@ -110,10 +110,10 @@ class MeshWriter():
         self.addPoint([x_max,y_min], scale)
         self.addPoint([x_max,y_max], scale)
         self.addPoint([x_min,y_max], scale)
-        self.addCrackByIndex(self.ind_point-4, self.ind_point-3, scale)
-        self.addCrackByIndex(self.ind_point-3, self.ind_point-2, scale)
-        self.addCrackByIndex(self.ind_point-2, self.ind_point-1, scale)
-        self.addCrackByIndex(self.ind_point-1, self.ind_point-4, scale)
+        self.addSeamByIndex(self.ind_point-4, self.ind_point-3, scale)
+        self.addSeamByIndex(self.ind_point-3, self.ind_point-2, scale)
+        self.addSeamByIndex(self.ind_point-2, self.ind_point-1, scale)
+        self.addSeamByIndex(self.ind_point-1, self.ind_point-4, scale)
         return
 
     #returns index of threshold field
@@ -147,9 +147,9 @@ class MeshWriter():
 # mw = MeshWriter()
 # 
 # mw.addOuterBound([0.0,0.0], [1.0,1.0], 1)
-# mw.addCrack([0.01,0.8],[0.99,0.8],0.1)
-# mw.addCrack([0.01,0.7],[0.99,0.7],0.5)
-# mw.addCrackBox([0.4,0.4],[0.6,0.6],0.1)
+# mw.addSeam([0.01,0.8],[0.99,0.8],0.1)
+# mw.addSeam([0.01,0.7],[0.99,0.7],0.5)
+# mw.addSeamBox([0.4,0.4],[0.6,0.6],0.1)
 # # print mw.file_string
 # 
 # with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
