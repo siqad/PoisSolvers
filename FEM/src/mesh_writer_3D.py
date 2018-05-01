@@ -8,8 +8,7 @@ class MeshWriter():
         self.file_string = ""
         self.ind_point = 0
         self.ind_2d = 0
-        self.ind_surface = 0
-        # self.ind_phys = 0
+        self.ind_vol = 0
         self.ind_phys_vol = 0
         self.ind_field = 1
 
@@ -18,15 +17,6 @@ class MeshWriter():
         self.file_string += "Point(%d) = {%.15f, %.15f, %.15f, %.15f};\n"\
             %(self.ind_point, p[0], p[1], p[2], self.resolution*scale)
         self.ind_point += 1
-        return self.ind_point -1
-    
-    #add a point at p, p in form [x, y]
-    def addPointToSurface(self, p, scale):
-        self.file_string += "Point(%d) = {%.15f, %.15f, %.15f, %.15f};\n"\
-            %(self.ind_point, p[0], p[1], p[2], self.resolution*scale)
-        self.ind_point += 1
-        self.file_string += "Point{%d} In Surface{%d};\n"\
-            %(self.ind_point-1, self.ind_surface)
         return self.ind_point -1
     
     #line goes from p1->p2.
@@ -45,7 +35,7 @@ class MeshWriter():
         return self.ind_2d -1
     
     
-    def addLineLoop(self, a, b, c, d, option):
+    def addLineLoop(self, a, b, c, d, option="bound"):
         self.file_string += "Line Loop(%d) = {%d,%d,%d,%d};\n"\
             %(self.ind_2d,a,b,c,d)
         self.ind_2d += 1
@@ -53,14 +43,14 @@ class MeshWriter():
             %(self.ind_2d,self.ind_2d-1)
         if option == "seam":
             self.file_string += "Surface{%d} In Volume{%d};\n"\
-                %(self.ind_2d,self.ind_phys_vol)
+                %(self.ind_2d,self.ind_vol)
         self.ind_2d += 1
-    
+        return self.ind_2d - 1
     #creates the outer boundary of the mesh
     #p in form [x,y]
     #start from bottom left, go counterclockwise
     #not enough that lines defined by points at same location, need to have SAME shared point index.
-    def addRect(self, p1, p2, scale, option="bound"):
+    def addBox(self, p1, p2, scale, option="bound"):
         x_min = min(p1[0],p2[0])
         y_min = min(p1[1],p2[1])
         z_min = min(p1[2],p2[2])
@@ -113,57 +103,30 @@ class MeshWriter():
             self.ind_2d += 1        
             self.file_string += "Volume(%d) = {%d};\n"\
                 %(self.ind_2d,self.ind_2d-1)
+            self.ind_vol = self.ind_2d
             self.ind_2d += 1
             self.file_string += "Physical Volume(%d) = {%d};\n"\
                 %(self.ind_phys_vol, self.ind_2d-1)
         return
 
+    def addSurface(self, p1, p2, p3, p4, scale, option):
+        self.addPoint(p1, scale)
+        self.addPoint(p2, scale)
+        self.addPoint(p3, scale)
+        self.addPoint(p4, scale)
+
+        l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
+        l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)
+        l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
+        l1 = self.addLineByIndex(self.ind_point-1, self.ind_point-4, scale)
+        
+        self.addLineLoop(l4,l3,l2,l1,option)
+
     #creates the outer boundary, and sets it as a volume.
     def addOuterBound(self, p1, p2, scale, option):
-        self.addRect(p1, p2, scale, option)
+        self.addBox(p1, p2, scale, option)
         # if option == "bound"
         return
-
-    # #adds a seam that the mesh must align to.
-    # def addSeam(self, p1, p2, scale):
-    #     self.addLine(p1, p2, scale)
-    #     self.file_string += "Physical Line(%d) = {%d};\n"\
-    #         %(self.ind_phys, self.ind_2d-1)
-    #     self.ind_phys += 1
-    #     self.file_string += "Line{%d} In Surface{%d};\n"\
-    #         %(self.ind_2d-1, self.ind_surface)        
-    #     return
-    # 
-    # def addSeamByIndex(self, p1_ind, p2_ind, scale):
-    #     self.file_string += "Line(%d) = {%d, %d};\n"\
-    #         %(self.ind_2d, p1_ind, p2_ind)
-    #     self.ind_2d += 1
-    #     self.file_string += "Physical Line(%d) = {%d};\n"\
-    #         %(self.ind_phys,self.ind_2d-1)
-    #     self.ind_phys += 1
-    #     self.file_string += "Line{%d} In Surface{%d};\n"\
-    #         %(self.ind_2d-1, self.ind_surface)        
-    #     return
-    
-    #defines a box made from seams, which the mesh will align itself to.
-    #will set the internal resolution to standard,
-    #keeping scaled resolution at the seam boundary
-    # def addSeamBox(self, p1, p2, scale):
-    #     x_min = min(p1[0],p2[0])
-    #     y_min = min(p1[1],p2[1])
-    #     z_min = min(p1[2],p2[2])
-    #     x_max = max(p1[0],p2[0])
-    #     y_max = max(p1[1],p2[1])
-    #     z_max = max(p1[2],p2[2])
-    #     self.addPoint([x_min,y_min], scale)
-    #     self.addPoint([x_max,y_min], scale)
-    #     self.addPoint([x_max,y_max], scale)
-    #     self.addPoint([x_min,y_max], scale)
-    #     self.addSeamByIndex(self.ind_point-4, self.ind_point-3, scale)
-    #     self.addSeamByIndex(self.ind_point-3, self.ind_point-2, scale)
-    #     self.addSeamByIndex(self.ind_point-2, self.ind_point-1, scale)
-    #     self.addSeamByIndex(self.ind_point-1, self.ind_point-4, scale)
-    #     return
 
     #returns index of threshold field
     #The threshold field sets a resolution based on the distance away from a line
@@ -173,7 +136,7 @@ class MeshWriter():
     def addTHField(self, res_min_scale, res_max_scale, dist_min, dist_max):
         self.file_string += "Field[%d] = Attractor;\n"%(self.ind_field)
         self.file_string += "Field[%d].NNodesByEdge = 100;\n"%(self.ind_field)
-        self.file_string += "Field[%d].EdgesList = {%d};\n"%(self.ind_field, self.ind_2d-1)
+        self.file_string += "Field[%d].FacesList = {%d};\n"%(self.ind_field, self.ind_2d-1)
         self.ind_field += 1
         self.file_string += 'Field[%d] = Threshold;\n'%(self.ind_field)
         self.file_string += "Field[%d].IField = %d;\n"%(self.ind_field, self.ind_field-1)
@@ -193,20 +156,18 @@ class MeshWriter():
         self.file_string += 'Background Field = %d;\n'%(self.ind_field)
         self.ind_field += 1
 
-mw = MeshWriter()
-
-mw.addRect([0.0,0.0,0.0], [1.0,1.0,1.0], 1, "bound")
-# mw.addSeam([0.01,0.8],[0.99,0.8],0.1)
-# mw.addSeam([0.01,0.7],[0.99,0.7],0.5)
-# mw.addSeamBox([0.4,0.4],[0.6,0.6],0.1)
-# print mw.file_string
-
-with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
-subprocess.call(['gmsh -3 ../data/domain.geo'], shell=True)
-subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
-mesh = dolfin.Mesh('domain.xml')
-file_string = "../data/mesh.pvd"
-dolfin.File(file_string) << mesh
-# plt.figure()
-# dolfin.plot(mesh)
-# plt.show()
+# mw = MeshWriter()
+# mw.addBox([0.0,0.0,0.0], [1.0,1.0,1.0], 1, "bound")
+# mw.addBox([0.4,0.4,0.4], [0.6,0.6,0.6], 1, "seam")
+# fields = []
+# mw.addSurface([0.01,0.01,0.8],[0.99,0.01,0.8],[0.99,0.99,0.8],[0.01,0.99,0.8],1, "seam")
+# fields += [mw.addTHField(0.5, 1, 0.01, 0.1)]
+# mw.addSurface([0.0,0.0,0.5],[1.0,0.0,0.5],[1.0,1.0,0.5],[0.0,1.0,0.5],1, "bound")
+# fields += [mw.addTHField(0.5, 1, 0.1, 0.3)]
+# mw.addMinField(fields)
+# with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
+# subprocess.call(['gmsh -3 ../data/domain.geo'], shell=True)
+# subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
+# mesh = dolfin.Mesh('domain.xml')
+# file_string = "../data/mesh.pvd"
+# dolfin.File(file_string) << mesh

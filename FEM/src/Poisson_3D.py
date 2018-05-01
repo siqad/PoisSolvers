@@ -2,6 +2,7 @@ import dolfin
 import subprocess
 from paraview import simple as pvs
 import numpy as np
+import mesh_writer_3D as mw
 
 boundary_x_min = 0.0
 boundary_x_max = 1.0
@@ -12,7 +13,6 @@ boundary_z_max = 1.0
 mid_x = (boundary_x_min+boundary_x_max)/2.0
 mid_y = (boundary_y_min+boundary_y_max)/2.0
 mid_z = (boundary_z_min+boundary_z_max)/2.0
-print mid_x, mid_y, mid_z
 elec_length = 0.2
 elec_width = 0.2
 elec_depth = 0.2
@@ -68,143 +68,17 @@ air = Air()
 electrode = Electrode()
 print "Create subdomains..."
 
-# Define mesh
-domain = """
-//PARAMETERS
-mesh_resolution = 0.05;
-x_max = 1.0;
-x_min = 0.0;
-y_max = 1.0;
-y_min = 0.0;
-z_max = 1.0;
-z_min = 0.0;
+mw = mw.MeshWriter()
+mw.addBox([0.0,0.0,0.0], [1.0,1.0,1.0], 1, "bound")
+mw.addBox([0.4,0.4,0.4], [0.6,0.6,0.6], 1, "seam")
+fields = []
+mw.addSurface([0.01,0.01,0.8],[0.99,0.01,0.8],[0.99,0.99,0.8],[0.01,0.99,0.8],1, "seam")
+fields += [mw.addTHField(0.5, 1, 0.01, 0.1)]
+mw.addSurface([0.0,0.0,0.5],[1.0,0.0,0.5],[1.0,1.0,0.5],[0.0,1.0,0.5],1, "bound")
+fields += [mw.addTHField(0.5, 1, 0.1, 0.3)]
+mw.addMinField(fields)
 
-// POINTS
-Point(1) = {x_min, y_min, z_min, mesh_resolution}; //0, 0, 0
-Point(2) = {x_min, y_min, z_max, mesh_resolution}; //0, 0, 1
-Point(3) = {x_min, y_max, z_min, mesh_resolution}; //0, 1, 0
-Point(4) = {x_min, y_max, z_max, mesh_resolution}; //0, 1, 1
-Point(5) = {x_max, y_min, z_min, mesh_resolution}; //1, 0, 0
-Point(6) = {x_max, y_min, z_max, mesh_resolution}; //1, 0, 1
-Point(7) = {x_max, y_max, z_min, mesh_resolution}; //1, 1, 0
-Point(8) = {x_max, y_max, z_max, mesh_resolution}; //1, 1, 1
-
-//2D ITEMS
-//LINES
-//x = x_min surface
-Line(1) = {1,2}; //0, 0, 0 -> 0, 0, 1
-Line(2) = {2,4}; //0, 0, 1 -> 0, 1, 1
-Line(3) = {4,3}; //0, 1, 1 -> 0, 1, 0
-Line(4) = {3,1}; //0, 1, 0 -> 0, 0, 0
-
-//x = x_max surface
-Line(5) = {5,6}; //1, 0, 0 -> 1, 0, 1
-Line(6) = {6,8}; //1, 0, 1 -> 1, 1, 1
-Line(7) = {8,7}; //1, 1, 1 -> 1, 1, 0
-Line(8) = {7,5}; //1, 1, 0 -> 1, 0, 0
-
-//lines from x_max to x_min
-Line(9) = {1,5}; //0, 0, 0 -> 1, 0, 0
-Line(10) = {2,6}; //0, 0, 1 -> 1, 0, 1
-Line(11) = {4,8}; //0, 1, 1 -> 1, 1, 1
-Line(12) = {3,7}; //0, 1, 0 -> 1, 1, 0
-
-//SURFACES
-//x = x_min
-Line Loop(13) = {1,2,3,4};
-Plane Surface(14) = {13};
-//x = x_max
-Line Loop(15) = {5,6,7,8};
-Plane Surface(16) = {15};
-//y = y_min
-Line Loop(17) = {9,5,-10,-1};
-Plane Surface(18) = {17};
-//y = y_max
-Line Loop(19) = {12,-7,-11,3};
-Plane Surface(20) = {19};
-//z = z_min
-Line Loop(21) = {9,-8,-12,4};
-Plane Surface(22) = {21};
-//z = z_max
-Line Loop(23) = {10,6,-11,-2};
-Plane Surface(24) = {23};
-
-Surface Loop(25) = {16,20,22,14,24,18};
-//Surface Loop(25) = {14,18,22,16,20,24};
-Volume(26) = {25};
-
-//Electrode points
-Point(9) = {0.4, 0.01, 0.4, mesh_resolution};
-Point(10) = {0.6, 0.01, 0.4, mesh_resolution}; 
-Point(11) = {0.4, 0.99, 0.4, mesh_resolution};
-Point(12) = {0.6, 0.99, 0.4, mesh_resolution};
-
-Point(13) = {0.4, 0.01, 0.6, mesh_resolution};
-Point(14) = {0.6, 0.01, 0.6, mesh_resolution}; 
-Point(15) = {0.4, 0.99, 0.6, mesh_resolution};
-Point(16) = {0.6, 0.99, 0.6, mesh_resolution};
-
-//low z face
-Line(27) = {9,10};
-Line(28) = {10,12};
-Line(29) = {12,11};
-Line(30) = {11,9};
-Line Loop(31) = {27, 28, 29, 30};
-Plane Surface(32) = {31};
-Surface{32} In Volume{26};
-
-//high z face
-Line(33) = {13,14};
-Line(34) = {14,16};
-Line(35) = {16,15};
-Line(36) = {15,13};
-Line Loop(37) = {33, 34, 35, 36};
-Plane Surface(38) = {37};
-Surface{38} In Volume{26};
-
-//low x face
-Line(39) = {9,13};
-Line(40) = {15,11};
-Line Loop(41) = {39, -36, 40, 30};
-Plane Surface(42) = {41};
-Surface{42} In Volume{26};
-
-//high x face
-Line(43) = {10,14};
-Line(44) = {16,12};
-Line Loop(45) = {43, 34, 44, -28};
-Plane Surface(46) = {45};
-Surface{46} In Volume{26};
-
-//low y face
-Line Loop(47) = {27, 43, -33, -39};
-Plane Surface(48) = {47};
-Surface{48} In Volume{26};
-
-//high y face
-Line Loop(49) = {-29, -44, 35, 40};
-Plane Surface(50) = {49};
-Surface{50} In Volume{26};
-
-//Si-Air Boundary
-Point(17) = {0.01, 0.01, 0.8, mesh_resolution};
-Point(18) = {0.01, 0.99, 0.8, mesh_resolution};
-Point(19) = {0.99, 0.01, 0.99, mesh_resolution};
-Point(20) = {0.99, 0.99, 0.99, mesh_resolution};
-Line(51) = {17, 18};
-Line(52) = {18, 20};
-Line(53) = {20, 19};
-Line(54) = {19, 17};
-Line Loop(55) = {51, 52, 53, 54};
-Plane Surface(56) = {55};
-Surface{56} In Volume{26};
-
-//Volume
-Physical Volume(1) = {26};
-
-"""
-
-with open('../data/domain.geo', 'w') as f: f.write(domain)
+with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -3 ../data/domain.geo'], shell=True)
 subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
 mesh = dolfin.Mesh('domain.xml')
