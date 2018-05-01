@@ -188,7 +188,7 @@ def worker(amp_in, offset, timestep, step, params, outfile):
     print "n_i = ", n_i
     # a0 = dolfin.Constant(11.68*EPS_0) #Permittivity, Si
     # a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
-    a0 = dolfin.Constant(100.0*EPS_0) #Permittivity, Si
+    a0 = dolfin.Constant(11.6*EPS_0) #Permittivity, Si
     a1 = dolfin.Constant(1.0*EPS_0) #Permittivity, Air
     g_T = dolfin.Constant("0.0")
     g_B = dolfin.Constant("0.0")

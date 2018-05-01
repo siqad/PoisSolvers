@@ -13,9 +13,10 @@ boundary_z_max = 1.0
 mid_x = (boundary_x_min+boundary_x_max)/2.0
 mid_y = (boundary_y_min+boundary_y_max)/2.0
 mid_z = (boundary_z_min+boundary_z_max)/2.0
-elec_length = 0.2
-elec_width = 0.2
-elec_depth = 0.2
+elec_length = 0.1
+elec_width = 0.1
+elec_depth = 0.1
+offset = 0.2
 boundary_dielectric = 0.8
 # Create classes for defining parts of the boundaries and the interior
 # of the domain
@@ -52,10 +53,26 @@ class Air(dolfin.SubDomain):
 # INTERNAL BOUNDARY CONDITION
 # ELECTRODE
 class Electrode(dolfin.SubDomain):
+    def __init__(self, xs, ys, zs):
+        self.xs = xs
+        self.ys = ys
+        self.zs = zs
+        dolfin.SubDomain.__init__(self) # Call base class constructor!
     def inside(self, x, on_boundary):
-        return (dolfin.between(x[0], (mid_x-elec_length/2.0, mid_x+elec_length/2.0)) \
-            and dolfin.between(x[1], (mid_y-elec_width/2.0, mid_y+elec_width/2.0)) \
-            and dolfin.between(x[2], (mid_z-elec_depth/2.0, mid_z+elec_depth/2.0)) )
+        return (dolfin.between(x[0], (self.xs[0], self.xs[1])) \
+            and dolfin.between(x[1], (self.ys[0], self.ys[1])) \
+            and dolfin.between(x[2], (self.zs[0], self.zs[1])) )
+
+mw = mw.MeshWriter()
+
+mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0, (boundary_z_max-boundary_z_min)/10.0)
+mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
+fields = []
+mw.addSurface([0.01,0.01,0.8],[0.99,0.01,0.8],[0.99,0.99,0.8],[0.01,0.99,0.8],1, "seam")
+fields += [mw.addTHField(0.5, 1, 0.01, 0.1)]
+mw.addSurface([0.0,0.0,0.5],[1.0,0.0,0.5],[1.0,1.0,0.5],[0.0,1.0,0.5],1, "bound")
+fields += [mw.addTHField(0.5, 1, 0.1, 0.3)]
+mw.addMinField(fields)
 
 # Initialize sub-domain instances
 left = Left() #x
@@ -65,18 +82,15 @@ bottom = Bottom() #y
 front = Front() #z
 back = Back() #z
 air = Air()
-electrode = Electrode()
-print "Create subdomains..."
+electrode = []
+for i in range(4):
+    electrode.append(Electrode([i*offset+0.1, i*offset+0.1+elec_length], \
+                        [mid_y-elec_width/2.0, mid_y+elec_width/2.0], \
+                        [mid_z-elec_depth/2.0, mid_z+elec_depth/2.0] ) )
+    mw.addBox([i*offset+0.1,mid_y-elec_width/2.0,mid_z-elec_depth/2.0], \
+              [i*offset+0.1+elec_length,mid_y+elec_width/2.0,mid_z+elec_depth/2.0], 1, "seam")
 
-mw = mw.MeshWriter()
-mw.addBox([0.0,0.0,0.0], [1.0,1.0,1.0], 1, "bound")
-mw.addBox([0.4,0.4,0.4], [0.6,0.6,0.6], 1, "seam")
-fields = []
-mw.addSurface([0.01,0.01,0.8],[0.99,0.01,0.8],[0.99,0.99,0.8],[0.01,0.99,0.8],1, "seam")
-fields += [mw.addTHField(0.5, 1, 0.01, 0.1)]
-mw.addSurface([0.0,0.0,0.5],[1.0,0.0,0.5],[1.0,1.0,0.5],[0.0,1.0,0.5],1, "bound")
-fields += [mw.addTHField(0.5, 1, 0.1, 0.3)]
-mw.addMinField(fields)
+print "Create subdomains..."
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -3 ../data/domain.geo'], shell=True)
@@ -97,7 +111,8 @@ right.mark(boundaries, 3)
 bottom.mark(boundaries, 4)
 front.mark(boundaries, 5)
 back.mark(boundaries, 6)
-electrode.mark(boundaries, 7)
+for i in range(4):        
+    electrode[i].mark(boundaries, 7+i)
 print "Boundaries marked"
 
 # Define input data
@@ -112,6 +127,8 @@ g_T = dolfin.Constant("0.0")
 g_Bo = dolfin.Constant("0.0")
 g_F = dolfin.Constant("0.0")
 g_Ba = dolfin.Constant("0.0")
+h_T = dolfin.Constant(0.0)
+h_B = dolfin.Constant(0.0)
 f = dolfin.Constant(-1.0E10*Q_E)
 print "Boundary values created"
 
@@ -121,14 +138,10 @@ u = dolfin.TrialFunction(V)
 v = dolfin.TestFunction(V)
 print "Function, space, basis defined"
 
-# Define Dirichlet boundary conditions at top, bottom, front, back
-# bcs = [dolfin.DirichletBC(V, 0.0, boundaries, 1),
-#        dolfin.DirichletBC(V, 0.0, boundaries, 3),
-#        dolfin.DirichletBC(V, 0.0, boundaries, 5),
-#        dolfin.DirichletBC(V, 0.0, boundaries, 6),
-#        dolfin.DirichletBC(V, 1.0, boundaries, 7)]
-
-bcs = [dolfin.DirichletBC(V, 5.0, boundaries, 7)]
+bcs = [dolfin.DirichletBC(V, 5.0, boundaries, 7),
+       dolfin.DirichletBC(V, 5.0, boundaries, 8),
+       dolfin.DirichletBC(V, 5.0, boundaries, 9),
+       dolfin.DirichletBC(V, 5.0, boundaries, 10)]
 print "Dirichlet boundaries defined"
 
 # Define new measures associated with the interior domains and
@@ -140,11 +153,11 @@ print "Measures defined"
 # Define variational form
 F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
-    + dolfin.inner(a2*dolfin.grad(u), dolfin.grad(v))*dx(2) \
     - g_L*v*ds(1) - g_R*v*ds(3) \
-    - g_T*v*ds(2) - g_Bo*v*ds(4) \
+    # - g_T*v*ds(2) - g_Bo*v*ds(4) \
     - g_F*v*ds(5) - g_Ba*v*ds(6) \
-    - f*v*dx(0) - f*v*dx(1) ) #- f*v*dolfin.dx(2) )
+    + h_T*u*v*ds(2) + h_B*u*v*ds(4) \
+    - f*v*dx(0) - f*v*dx(1) )
 print "Variational Form defined"
 
 # Separate left and right hand sides of equation
@@ -157,7 +170,6 @@ u = dolfin.Function(V)
 
 problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
 solver = dolfin.LinearVariationalSolver(problem)
-# solver.parameters['linear_solver'] = 'cg'
 solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'ilu'
 cg_param = solver.parameters['krylov_solver']
@@ -166,9 +178,6 @@ cg_param['relative_tolerance'] = 1E-4
 cg_param['maximum_iterations'] = 1000
 print "Solving problem..."
 solver.solve()
-# dolfin.parameters['krylov_solver']['maximum_iterations'] = 10
-# dolfin.solve(a == L, u, bcs, solver_parameters={'linear_solver': 'cg', 'preconditioner': 'ilu'})
-# solve(a == L, u, bcs, solver_parameters={"newton_solver":{"relative_tolerance":1e-6}})
 print "Solve finished"
 
 # PRINT TO FILE
