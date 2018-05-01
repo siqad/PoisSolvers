@@ -17,7 +17,7 @@ elec_length = 0.1
 elec_width = 0.1
 elec_depth = 0.1
 offset = 0.3
-boundary_dielectric = 0.8
+boundary_dielectric = 0.8*boundary_z_max
 # Create classes for defining parts of the boundaries and the interior
 # of the domain
 class Left(dolfin.SubDomain): #x_min
@@ -65,10 +65,13 @@ class Electrode(dolfin.SubDomain):
 
 mw = mw.MeshWriter()
 
-mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0, (boundary_z_max-boundary_z_min)/20.0)
+mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0, (boundary_z_max-boundary_z_min)/10.0)/2.0
 mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
 fields = []
-mw.addSurface([0.01,0.01,0.8],[0.99,0.01,0.8],[0.99,0.99,0.8],[0.01,0.99,0.8],1, "seam")
+mw.addSurface([0.1*boundary_x_max,0.1*boundary_y_max,boundary_dielectric],\
+              [0.9*boundary_x_max,0.1*boundary_y_max,boundary_dielectric],\
+              [0.9*boundary_x_max,0.9*boundary_y_max,boundary_dielectric],\
+              [0.1*boundary_x_max,0.9*boundary_y_max,boundary_dielectric],1, "seam")
 fields += [mw.addTHField(0.5, 1, 0.01, 0.1)]
 mw.addSurface([0.0,0.0,0.5],[1.0,0.0,0.5],[1.0,1.0,0.5],[0.0,1.0,0.5],1, "bound")
 fields += [mw.addTHField(0.5, 1, 0.1, 0.3)]
@@ -89,7 +92,6 @@ for i in range(4):
                         [mid_z-elec_depth/2.0, mid_z+elec_depth/2.0] ) )
     mw.addBox([i*offset+0.1,mid_y-elec_width/2.0,mid_z-elec_depth/2.0], \
               [i*offset+0.1+elec_length,mid_y+elec_width/2.0,mid_z+elec_depth/2.0], 1, "seam")
-
 print "Create subdomains..."
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
@@ -123,7 +125,6 @@ EPS_0 = 8.854E-12
 Q_E = 1.6E-19
 a0 = dolfin.Constant(11.6*EPS_0)
 a1 = dolfin.Constant(1.0*EPS_0)
-a2 = dolfin.Constant(1000000*EPS_0)
 g_L = dolfin.Constant("0.0")
 g_R = dolfin.Constant("0.0")
 g_T = dolfin.Constant("0.0")
@@ -173,7 +174,7 @@ u = dolfin.Function(V)
 
 problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
 solver = dolfin.LinearVariationalSolver(problem)
-solver.parameters['linear_solver'] = 'cg'
+solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'ilu'
 cg_param = solver.parameters['krylov_solver']
 cg_param['absolute_tolerance'] = 1E-7
