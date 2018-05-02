@@ -3,12 +3,29 @@ import subprocess
 from paraview import simple as pvs
 import numpy as np
 import mesh_writer_3D as mw
+import electrode_parser
+import time
 
 length_scale = 1.0e-9
-boundary_x_min = 0.0
-boundary_x_max = 2.0*length_scale
-boundary_y_min = 0.0
-boundary_y_max = 2.0*length_scale
+elec_list, layer_props = electrode_parser.xml_parse("../sim_problem.xml")
+print elec_list
+print layer_props
+box_x, box_y = electrode_parser.getBB(elec_list)
+
+print box_x, box_y
+boundary_x_min, boundary_x_max = box_x
+boundary_y_min, boundary_y_max = box_y
+
+#prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
+if boundary_x_min == 0:
+    boundary_x_min -= 0.01*boundary_x_max
+if boundary_y_min == 0:
+    boundary_y_min -= 0.01*boundary_y_max
+
+# boundary_x_min = 0.0
+# boundary_x_max = 2.0*length_scale
+# boundary_y_min = 0.0
+# boundary_y_max = 2.0*length_scale
 boundary_z_min = 0.0
 boundary_z_max = 2.0*length_scale
 mid_x = (boundary_x_min+boundary_x_max)/2.0
@@ -19,6 +36,7 @@ elec_width = 0.1*length_scale
 elec_depth = 0.1*length_scale
 offset = 0.3*length_scale
 boundary_dielectric = 0.8*boundary_z_max
+
 # Create classes for defining parts of the boundaries and the interior
 # of the domain
 class Left(dolfin.SubDomain): #x_min
@@ -66,25 +84,23 @@ class Electrode(dolfin.SubDomain):
 
 mw = mw.MeshWriter()
 
-mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0, (boundary_z_max-boundary_z_min)/10.0)/2.0
-print "resolution:", mw.resolution
+mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0, (boundary_z_max-boundary_z_min)/10.0)
 mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
 fields = []
-mw.addSurface([0.1*boundary_x_max,0.1*boundary_y_max,boundary_dielectric],\
-              [0.9*boundary_x_max,0.1*boundary_y_max,boundary_dielectric],\
+#dielectric seam
+mw.addSurface([0.9*boundary_x_min,0.9*boundary_y_min,boundary_dielectric],\
+              [0.9*boundary_x_max,0.9*boundary_y_min,boundary_dielectric],\
               [0.9*boundary_x_max,0.9*boundary_y_max,boundary_dielectric],\
-              [0.1*boundary_x_max,0.9*boundary_y_max,boundary_dielectric],1, "seam")
+              [0.9*boundary_x_min,0.9*boundary_y_max,boundary_dielectric],1, "seam")
+#overextend the boxes a little. The Box field is a little iffy on the surface of the box, so we will make the box a tad larger than the boundary.
 fields += [mw.addBoxField(0.5, 1.0, [boundary_x_min, 1.01*boundary_x_max], [boundary_y_min, 1.01*boundary_y_max], \
                                     [boundary_dielectric-0.1*length_scale, boundary_dielectric+0.1*length_scale])]
-# fields += [mw.addTHField(0.5, 1.0, 0.01*length_scale, 0.1*length  _scale)]
-# mw.addSurface([boundary_x_min,boundary_y_min,0.5*boundary_z_max],[boundary_x_max,boundary_y_min,0.5*boundary_z_max],\
-#               [boundary_x_max,boundary_y_max,0.5*boundary_z_max],[boundary_x_min,boundary_y_max,0.5*boundary_z_max],1, "bound")
-mw.addSurface([boundary_x_min,boundary_y_min,0.5*boundary_z_max],[0.5*length_scale,boundary_y_min,0.5*boundary_z_max],\
-              [0.5*length_scale,0.5*length_scale,0.5*boundary_z_max],[boundary_x_min,0.5*length_scale,0.5*boundary_z_max],1, "bound")
+# mw.addSurface([boundary_x_min,boundary_y_min,0.5*boundary_z_max],[0.5*length_scale,boundary_y_min,0.5*boundary_z_max],\
+#               [0.5*length_scale,0.5*length_scale,0.5*boundary_z_max],[boundary_x_min,0.5*length_scale,0.5*boundary_z_max],1, "bound")
 fields += [mw.addBoxField(0.5, 1.0, [boundary_x_min, 1.01*boundary_x_max], [boundary_y_min, 1.01*boundary_y_max], [mid_z-elec_depth, mid_z+elec_depth])]
-# fields += [mw.addTHField(0.25, 1.0, 0.05*length_scale, 0.1*length_scale)]
 bg_field_ind = mw.addMinField(fields)
 mw.setBGField(bg_field_ind)
+
 # Initialize sub-domain instances
 left = Left() #x
 top = Top() #y
@@ -94,12 +110,12 @@ front = Front() #z
 back = Back() #z
 air = Air()
 electrode = []
-for i in range(4):
-    electrode.append(Electrode([i*offset+0.1*length_scale, i*offset+0.1*length_scale+elec_length], \
-                        [mid_y-elec_width/2.0, mid_y+elec_width/2.0], \
+for i in range(len(elec_list)):
+    electrode.append(Electrode([elec_list[i]['x1'], elec_list[i]['x2']], \
+                        [elec_list[i]['y1'], elec_list[i]['y2']], \
                         [mid_z-elec_depth/2.0, mid_z+elec_depth/2.0] ) )
-    mw.addBox([i*offset+0.1*length_scale,mid_y-elec_width/2.0,mid_z-elec_depth/2.0], \
-              [i*offset+0.1*length_scale+elec_length,mid_y+elec_width/2.0,mid_z+elec_depth/2.0], 1, "seam")
+    mw.addBox([elec_list[i]['x1'],elec_list[i]['y1'],mid_z-elec_depth/2.0], \
+              [elec_list[i]['x2'],elec_list[i]['y2'],mid_z+elec_depth/2.0], 1, "seam")
 print "Create subdomains..."
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
@@ -124,7 +140,7 @@ right.mark(boundaries, 3)
 bottom.mark(boundaries, 4)
 front.mark(boundaries, 5)
 back.mark(boundaries, 6)
-for i in range(4):        
+for i in range(len(elec_list)):        
     electrode[i].mark(boundaries, 7+i)
 print "Boundaries marked"
 
@@ -157,10 +173,14 @@ u = dolfin.TrialFunction(V)
 v = dolfin.TestFunction(V)
 print "Function, space, basis defined"
 
-bcs = [dolfin.DirichletBC(V, 5.0, boundaries, 7),
-       dolfin.DirichletBC(V, 5.0, boundaries, 8),
-       dolfin.DirichletBC(V, 5.0, boundaries, 9),
-       dolfin.DirichletBC(V, 5.0, boundaries, 10)]
+bcs = []
+for i in range(len(elec_list)):
+    bcs.append(dolfin.DirichletBC(V, 5.0, boundaries, 7+i))
+# bcs = [dolfin.DirichletBC(V, 5.0, boundaries, 7),
+#        dolfin.DirichletBC(V, 5.0, boundaries, 8),
+#        dolfin.DirichletBC(V, 5.0, boundaries, 9),
+#        dolfin.DirichletBC(V, 5.0, boundaries, 10)]
+# bcs = [dolfin.DirichletBC(V, 5.0, boundaries, 7)]
 print "Dirichlet boundaries defined"
 
 # Define new measures associated with the interior domains and
@@ -193,24 +213,28 @@ problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
 solver = dolfin.LinearVariationalSolver(problem)
 solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'sor'
-cg_param = solver.parameters['krylov_solver']
-cg_param['absolute_tolerance'] = 1E-7
-cg_param['relative_tolerance'] = 1E-4
-cg_param['maximum_iterations'] = 2500
+spec_param = solver.parameters['krylov_solver']
+spec_param['absolute_tolerance'] = 1E-7
+spec_param['relative_tolerance'] = 1E-4
+spec_param['maximum_iterations'] = 2500
+# spec_param['monitor_convergence'] = True
+
 print "Solving problem..."
+start = time.time()
 solver.solve()
-print "Solve finished"
+end = time.time()
+print "Solve finished in " + str(end-start) + " seconds."
 
 # PRINT TO FILE
 print "Saving solution to .pvd file..."
 file_string = "../data/Potential.pvd"
 dolfin.File(file_string) << u
-print "Saving to .csv file..."
+# print "Saving to .csv file..."
 reader = pvs.OpenDataFile("../data/Potential.pvd")
-writer = pvs.CreateWriter("../data/Potential.csv", reader)
-writer.WriteAllTimeSteps = 1
-writer.FieldAssociation = "Points"
-writer.UpdatePipeline()
+# writer = pvs.CreateWriter("../data/Potential.csv", reader)
+# writer.WriteAllTimeSteps = 1
+# writer.FieldAssociation = "Points"
+# writer.UpdatePipeline()
 print "Solution saved."
 
 ##PLOTTING
