@@ -8,11 +8,11 @@ for design in root.findall('design'):
         for electrodes in layer.findall('electrode'):
             for property in electrodes:
                 if property.tag == "dim":
-                    print property.attrib
-                    print property.get('x1')
-                    print property.get('y1')
-                    print property.get('x2')
-                    print property.get('y2')
+                    # print property.attrib
+                    print 'x1', property.get('x1')
+                    print 'y1', property.get('y1')
+                    print 'x2', property.get('x2')
+                    print 'y2', property.get('y2')
                 else:
                     print property.tag, property.text
                     

@@ -135,7 +135,7 @@ class MeshWriter():
     #In between, the resolution is linearly interpolated.
     def addTHField(self, res_min_scale, res_max_scale, dist_min, dist_max):
         self.file_string += "Field[%d] = Attractor;\n"%(self.ind_field)
-        self.file_string += "Field[%d].NNodesByEdge = 100;\n"%(self.ind_field)
+        self.file_string += "Field[%d].NNodesByEdge = 1000;\n"%(self.ind_field)
         self.file_string += "Field[%d].FacesList = {%d};\n"%(self.ind_field, self.ind_2d-1)
         self.ind_field += 1
         self.file_string += 'Field[%d] = Threshold;\n'%(self.ind_field)
@@ -153,8 +153,38 @@ class MeshWriter():
         fields_string = ",".join(map(str, field_list))
         self.file_string += 'Field[%d] = Min;\n'%(self.ind_field)
         self.file_string += 'Field[%d].FieldsList = {%s};\n'%(self.ind_field, fields_string)
-        self.file_string += 'Background Field = %d;\n'%(self.ind_field)
+        # self.file_string += 'Background Field = %d;\n'%(self.ind_field)
         self.ind_field += 1
+        return self.ind_field-1
+                
+    #Add a minimum field, based on the given list of fields. The minimum field applies the minimum resolution of all fields.
+    def addMaxField(self, field_list):
+        #create comma separated string of field indexes
+        fields_string = ",".join(map(str, field_list))
+        self.file_string += 'Field[%d] = Max;\n'%(self.ind_field)
+        self.file_string += 'Field[%d].FieldsList = {%s};\n'%(self.ind_field, fields_string)
+        # self.file_string += 'Background Field = %d;\n'%(self.ind_field)
+        self.ind_field += 1
+        return self.ind_field-1
+
+    def setBGField(self, ind):
+        self.file_string += 'Background Field = %d;\n'%(ind)
+        
+        
+        
+    def addBoxField(self, res_in_scale, res_out_scale, xs, ys, zs):
+        self.file_string += "Field[%d] = Box;\n"%(self.ind_field)
+        self.file_string += "Field[%d].VIn = %.15f;\n"%(self.ind_field, self.resolution*res_in_scale)
+        self.file_string += "Field[%d].VOut = %.15f;\n"%(self.ind_field, self.resolution*res_out_scale)
+        self.file_string += "Field[%d].XMin = %.15f;\n"%(self.ind_field, xs[0])
+        self.file_string += "Field[%d].XMax = %.15f;\n"%(self.ind_field, xs[1])
+        self.file_string += "Field[%d].YMin = %.15f;\n"%(self.ind_field, ys[0])
+        self.file_string += "Field[%d].YMax = %.15f;\n"%(self.ind_field, ys[1])
+        self.file_string += "Field[%d].ZMin = %.15f;\n"%(self.ind_field, zs[0])
+        self.file_string += "Field[%d].ZMax = %.15f;\n"%(self.ind_field, zs[1])
+        self.ind_field += 1
+        return self.ind_field-1        
+        
 
 # mw = MeshWriter()
 # mw.addBox([0.0,0.0,0.0], [1.0,1.0,1.0], 1, "bound")
