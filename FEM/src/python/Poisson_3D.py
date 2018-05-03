@@ -6,7 +6,7 @@ import mesh_writer_3D as mw
 import electrode_parser
 import time
 
-elec_list, layer_props, sim_params = electrode_parser.xml_parse("../sim_problem.xml")
+elec_list, layer_props, sim_params = electrode_parser.xml_parse("../../sim_problem.xml")
 metal_thickness, metal_offset = electrode_parser.getZparams(layer_props)
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
 res_scale = 5.0*electrode_parser.getResolutionScale(sim_params)
@@ -116,12 +116,12 @@ mw.setBGField(bg_field_ind)
               
 print "Create subdomains..."
 
-with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
-subprocess.call(['gmsh -3 ../data/domain.geo -string "General.ExpertMode=1;"'+\
+with open('../../data/domain.geo', 'w') as f: f.write(mw.file_string)
+subprocess.call(['gmsh -3 ../../data/domain.geo -string "General.ExpertMode=1;"'+\
                  ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
                  ' -string "Mesh.CharacteristicLengthExtendFromBoundary=0;"'], shell=True) #Expert mode to suppress warnings about fine mesh
-subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
-mesh = dolfin.Mesh('domain.xml')
+subprocess.call(['dolfin-convert ../../data/domain.msh ../../data/domain.xml'], shell=True)
+mesh = dolfin.Mesh('../../data/domain.xml')
 print "Mesh initialized"
 
 # Initialize mesh function for interior domains
@@ -217,9 +217,9 @@ print "Solve finished in " + str(end-start) + " seconds."
 
 # PRINT TO FILE
 print "Saving solution to .pvd file..."
-file_string = "../data/Potential.pvd"
+file_string = "../../data/Potential.pvd"
 dolfin.File(file_string) << u
-reader = pvs.OpenDataFile("../data/Potential.pvd")
+reader = pvs.OpenDataFile("../../data/Potential.pvd")
 print "Solution saved."
 
 ##PLOTTING
