@@ -6,15 +6,11 @@ import mesh_writer_3D as mw
 import electrode_parser
 import time
 
-length_scale = 1.0e-9
 elec_list, layer_props = electrode_parser.xml_parse("../sim_problem.xml")
 print elec_list
 print layer_props
-box_x, box_y = electrode_parser.getBB(elec_list)
-
-print box_x, box_y
-boundary_x_min, boundary_x_max = box_x
-boundary_y_min, boundary_y_max = box_y
+metal_thickness, metal_offset = electrode_parser.getZparams(layer_props)
+[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
 
 #prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
 if boundary_x_min == 0:
@@ -22,20 +18,9 @@ if boundary_x_min == 0:
 if boundary_y_min == 0:
     boundary_y_min -= 0.01*boundary_y_max
 
-# boundary_x_min = 0.0
-# boundary_x_max = 2.0*length_scale
-# boundary_y_min = 0.0
-# boundary_y_max = 2.0*length_scale
-boundary_z_min = 0.0
-boundary_z_max = 2.0*length_scale
-mid_x = (boundary_x_min+boundary_x_max)/2.0
-mid_y = (boundary_y_min+boundary_y_max)/2.0
-mid_z = (boundary_z_min+boundary_z_max)/2.0
-elec_length = 0.1*length_scale
-elec_width = 0.1*length_scale
-elec_depth = 0.1*length_scale
-offset = 0.3*length_scale
-boundary_dielectric = 0.8*boundary_z_max
+boundary_z_min = metal_offset*1.25
+boundary_z_max = np.abs(0.2*boundary_z_min)
+boundary_dielectric = 0.0 #at the surface.
 
 # Create classes for defining parts of the boundaries and the interior
 # of the domain
@@ -84,7 +69,7 @@ class Electrode(dolfin.SubDomain):
 
 mw = mw.MeshWriter()
 
-mw.resolution = min((boundary_x_max-boundary_x_min)/10.0, (boundary_y_max-boundary_y_min)/10.0, (boundary_z_max-boundary_z_min)/10.0)
+mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/5.0
 mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
 fields = []
 #dielectric seam
@@ -92,14 +77,13 @@ mw.addSurface([0.9*boundary_x_min,0.9*boundary_y_min,boundary_dielectric],\
               [0.9*boundary_x_max,0.9*boundary_y_min,boundary_dielectric],\
               [0.9*boundary_x_max,0.9*boundary_y_max,boundary_dielectric],\
               [0.9*boundary_x_min,0.9*boundary_y_max,boundary_dielectric],1, "seam")
-#overextend the boxes a little. The Box field is a little iffy on the surface of the box, so we will make the box a tad larger than the boundary.
-fields += [mw.addBoxField(0.5, 1.0, [boundary_x_min, 1.01*boundary_x_max], [boundary_y_min, 1.01*boundary_y_max], \
-                                    [boundary_dielectric-0.1*length_scale, boundary_dielectric+0.1*length_scale])]
-# mw.addSurface([boundary_x_min,boundary_y_min,0.5*boundary_z_max],[0.5*length_scale,boundary_y_min,0.5*boundary_z_max],\
-#               [0.5*length_scale,0.5*length_scale,0.5*boundary_z_max],[boundary_x_min,0.5*length_scale,0.5*boundary_z_max],1, "bound")
-fields += [mw.addBoxField(0.5, 1.0, [boundary_x_min, 1.01*boundary_x_max], [boundary_y_min, 1.01*boundary_y_max], [mid_z-elec_depth, mid_z+elec_depth])]
-bg_field_ind = mw.addMinField(fields)
-mw.setBGField(bg_field_ind)
+              
+#over-extend a little, to ensure that the higher resolution appears.
+fields += [mw.addBoxField(0.25, 1.0, \
+          [boundary_x_min-0.01*np.abs(boundary_x_min), boundary_x_max+0.01*np.abs(boundary_x_max)], \
+          [boundary_y_min-0.01*np.abs(boundary_y_min), boundary_y_max+0.01*np.abs(boundary_y_max)], \
+          [boundary_dielectric-mw.resolution, boundary_dielectric+mw.resolution])]
+fields = [mw.addMinField(fields)]
 
 # Initialize sub-domain instances
 left = Left() #x
@@ -113,16 +97,30 @@ electrode = []
 for i in range(len(elec_list)):
     electrode.append(Electrode([elec_list[i]['x1'], elec_list[i]['x2']], \
                         [elec_list[i]['y1'], elec_list[i]['y2']], \
-                        [mid_z-elec_depth/2.0, mid_z+elec_depth/2.0] ) )
-    mw.addBox([elec_list[i]['x1'],elec_list[i]['y1'],mid_z-elec_depth/2.0], \
-              [elec_list[i]['x2'],elec_list[i]['y2'],mid_z+elec_depth/2.0], 1, "seam")
+                        [metal_offset, metal_offset+metal_thickness] ) )
+    mw.addBox([elec_list[i]['x1'],elec_list[i]['y1'],metal_offset], \
+              [elec_list[i]['x2'],elec_list[i]['y2'],metal_offset+metal_thickness], 1, "seam")
+    #make resolution inside electrodes coarse
+    fields += [mw.addBoxField(1.0, 0.0, \
+              [elec_list[i]['x1'], elec_list[i]['x2']], \
+              [elec_list[i]['y1'], elec_list[i]['y2']], \
+              [metal_offset, metal_offset+metal_thickness])]
+    fields = [mw.addMaxField(fields)]
+    fields += [mw.addBoxField(0.25, 1.0, \
+              [1.1*elec_list[i]['x1'], 1.1*elec_list[i]['x2']], \
+              [1.1*elec_list[i]['y1'], 1.1*elec_list[i]['y2']], \
+              [1.1*metal_offset, 1.1*(metal_offset+metal_thickness)])]
+    fields = [mw.addMinField(fields)]
+
+bg_field_ind = mw.addMeanField(fields, mw.resolution)
+mw.setBGField(bg_field_ind)
+              
 print "Create subdomains..."
 
 with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -3 ../data/domain.geo -string "General.ExpertMode=1;"'+\
                  ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
                  ' -string "Mesh.CharacteristicLengthExtendFromBoundary=0;"'], shell=True) #Expert mode to suppress warnings about fine mesh
-# subprocess.call(['gmsh -3 ../data/domain.geo -string "Mesh.CharacteristicLengthFromPoints=0;"'], shell=True)
 subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
 mesh = dolfin.Mesh('domain.xml')
 print "Mesh initialized"
@@ -147,8 +145,6 @@ print "Boundaries marked"
 # Define input data
 EPS_0 = 8.854E-12
 Q_E = 1.6E-19
-# a0 = dolfin.Constant(11.6*EPS_0)
-# a1 = dolfin.Constant(1.0*EPS_0)
 a0 = dolfin.Constant(11.6*EPS_0)
 a1 = dolfin.Constant(1.0*EPS_0)
 g_L = dolfin.Constant("0.0")
@@ -175,12 +171,7 @@ print "Function, space, basis defined"
 
 bcs = []
 for i in range(len(elec_list)):
-    bcs.append(dolfin.DirichletBC(V, 5.0, boundaries, 7+i))
-# bcs = [dolfin.DirichletBC(V, 5.0, boundaries, 7),
-#        dolfin.DirichletBC(V, 5.0, boundaries, 8),
-#        dolfin.DirichletBC(V, 5.0, boundaries, 9),
-#        dolfin.DirichletBC(V, 5.0, boundaries, 10)]
-# bcs = [dolfin.DirichletBC(V, 5.0, boundaries, 7)]
+    bcs.append(dolfin.DirichletBC(V, float(elec_list[i]['potential']), boundaries, 7+i))
 print "Dirichlet boundaries defined"
 
 # Define new measures associated with the interior domains and
@@ -229,36 +220,31 @@ print "Solve finished in " + str(end-start) + " seconds."
 print "Saving solution to .pvd file..."
 file_string = "../data/Potential.pvd"
 dolfin.File(file_string) << u
-# print "Saving to .csv file..."
 reader = pvs.OpenDataFile("../data/Potential.pvd")
-# writer = pvs.CreateWriter("../data/Potential.csv", reader)
-# writer.WriteAllTimeSteps = 1
-# writer.FieldAssociation = "Points"
-# writer.UpdatePipeline()
 print "Solution saved."
 
 ##PLOTTING
 print "Starting paraview..."
 data_3d = pvs.PVDReader(FileName=file_string)
 #create the slices
+mid_x = (boundary_x_min+boundary_x_max)/2.0
+mid_y = (boundary_y_min+boundary_y_max)/2.0
+mid_z = (boundary_z_min+boundary_z_max)/2.0
 xslice = pvs.Slice(Input=data_3d, SliceType="Plane")  
 xslice.SliceType.Origin = [mid_x, 0, 0]
-xslice.SliceType.Normal = [length_scale, 0, 0]
+xslice.SliceType.Normal = [1, 0, 0]
 yslice = pvs.Slice(Input=data_3d, SliceType="Plane")  
 yslice.SliceType.Origin = [0, mid_y, 0]
-yslice.SliceType.Normal = [0, length_scale, 0]
+yslice.SliceType.Normal = [0, 1, 0]
 zslice = pvs.Slice(Input=data_3d, SliceType="Plane")  
 zslice.SliceType.Origin = [0, 0, mid_z]
-zslice.SliceType.Normal = [0, 0, length_scale]
+zslice.SliceType.Normal = [0, 0, 1]
 pvs.Show(data_3d)
 prop = pvs.GetDisplayProperties(data_3d)
 prop.Representation = "Wireframe"
 pvs.Show(xslice)
 pvs.Show(yslice)
 pvs.Show(zslice)
-# renderView1 = pvs.GetActiveView()
-# source = pvs.GetActiveSource()
-# displayProperties = pvs.GetDisplayProperties(source, view=renderView1)
 pvs.Interact(view=None)
 pvs.Render()
 print "Ending."

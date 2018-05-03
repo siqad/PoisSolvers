@@ -36,21 +36,23 @@ def xml_parse(path):
     return elec_list, layer_props
     
 def getBB(elec_list):
-    x1s = [x['x1'] for x in elec_list]
-    y1s = [x['y1'] for x in elec_list]
-    x2s = [x['x2'] for x in elec_list]
-    y2s = [x['y2'] for x in elec_list]
+    x1s = [a['x1'] for a in elec_list]
+    y1s = [a['y1'] for a in elec_list]
+    x2s = [a['x2'] for a in elec_list]
+    y2s = [a['y2'] for a in elec_list]
 
     min_x = min(x1s)
     min_y = min(y1s)
     max_x = max(x2s)
     max_y = max(y2s)
     
-    min_x -= (max_x - min_x)*0.5
-    max_x += (max_x - min_x)*0.5
-    min_y -= (max_y - min_y)*0.5
-    max_y += (max_y - min_y)*0.5
-    return [min_x, max_x], [min_y, max_y]
+    xs = [min_x-(max_x-min_x), max_x+(max_x-min_x)]
+    ys = [min_y-(max_y-min_y), max_y+(max_y-min_y)]
+    return xs, ys
+    
+def getZparams(layer_props):
+    return float(layer_props['zheight']), float(layer_props['zoffset'])
+    
 
 def main():
     elec_list, layer_props = xml_parse("../sim_problem.xml")

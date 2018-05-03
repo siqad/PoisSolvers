@@ -166,6 +166,17 @@ class MeshWriter():
         # self.file_string += 'Background Field = %d;\n'%(self.ind_field)
         self.ind_field += 1
         return self.ind_field-1
+        
+    #Add a minimum field, based on the given list of fields. The minimum field applies the minimum resolution of all fields.
+    def addMeanField(self, field_list, delta):
+        #create comma separated string of field indexes
+        fields_string = ",".join(map(str, field_list))
+        self.file_string += 'Field[%d] = Mean;\n'%(self.ind_field)
+        self.file_string += 'Field[%d].IField = %s;\n'%(self.ind_field, fields_string)
+        self.file_string += 'Field[%d].Delta = %.15f;\n'%(self.ind_field, delta)
+        # self.file_string += 'Background Field = %d;\n'%(self.ind_field)
+        self.ind_field += 1
+        return self.ind_field-1
 
     def setBGField(self, ind):
         self.file_string += 'Background Field = %d;\n'%(ind)
