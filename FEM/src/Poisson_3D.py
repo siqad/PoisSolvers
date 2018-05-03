@@ -6,12 +6,11 @@ import mesh_writer_3D as mw
 import electrode_parser
 import time
 
-elec_list, layer_props = electrode_parser.xml_parse("../sim_problem.xml")
-print elec_list
-print layer_props
+elec_list, layer_props, sim_params = electrode_parser.xml_parse("../sim_problem.xml")
 metal_thickness, metal_offset = electrode_parser.getZparams(layer_props)
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
-
+res_scale = 5.0*electrode_parser.getResolutionScale(sim_params)
+# print electrode_parser.getResolutionScale(sim_params)
 #prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
 if boundary_x_min == 0:
     boundary_x_min -= 0.01*boundary_x_max
@@ -69,7 +68,7 @@ class Electrode(dolfin.SubDomain):
 
 mw = mw.MeshWriter()
 
-mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/5.0
+mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/res_scale
 mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
 fields = []
 #dielectric seam
@@ -205,8 +204,8 @@ solver = dolfin.LinearVariationalSolver(problem)
 solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'sor'
 spec_param = solver.parameters['krylov_solver']
-spec_param['absolute_tolerance'] = 1E-7
-spec_param['relative_tolerance'] = 1E-4
+spec_param['absolute_tolerance'] = 1E-5
+spec_param['relative_tolerance'] = 1E-3
 spec_param['maximum_iterations'] = 2500
 # spec_param['monitor_convergence'] = True
 

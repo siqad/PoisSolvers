@@ -7,20 +7,21 @@
     <sim_params preserve_order="true">
       <bcs>
         <T>string</T>
-        <val>Neumann</val>
+        <val>Robin</val>
         <label>Boundary conditions</label>
         <tip>The boundary conditions used at the simulation boundaries. TODO detailes for each option</tip>
         <value_selection type="ComboBox">
-          <Neumann>Neumann</Neumann>
-          <Dirichlet>Dirichlet</Dirichlet>
-          <Periodic>Periodic</Periodic>
+          <robin>Robin</robin>
+          <neumann>Neumann</neumann>
+          <dirichlet>Dirichlet</dirichlet>
+          <periodic>Periodic</periodic>
         </value_selection>
       </bcs>
       <resolution>
         <T>int</T>
-        <val>50</val>
+        <val>1</val>
         <label>Resolution</label>
-        <tip>Resolution in terms of points per length along each axis.</tip>
+        <tip>Resolution scaling factor. Warning: higher resolution calculations will take longer to complete.</tip>
       </resolution>
       <length>
         <T>float</T>
@@ -28,12 +29,18 @@
         <label>Length</label>
         <tip>A length scale that makes the width comparable with the depth during simulation</tip>
       </length>
-      <max_error>
+      <max_abs_error>
         <T>float</T>
-        <val>5E-2</val>
-        <label>Maximum Error</label>
+        <val>1E-5</val>
+        <label>Maximum Absolute Error</label>
         <tip></tip>
-      </max_error>
+      </max_abs_error>
+      <max_rel_error>
+        <T>float</T>
+        <val>1E-3</val>
+        <label>Maximum Relative Error</label>
+        <tip></tip>
+      </max_rel_error>
       <mode>
         <T>string</T>
         <val>Standard</val>
