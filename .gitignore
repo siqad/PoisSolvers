@@ -26,6 +26,8 @@ ubuff/
 
 #FEM data
 FEM/data
+FEM/bin
+FEM/build
 
 #dependencies directory when building and installing dependencies from script
 dependencies/
@@ -40,3 +42,4 @@ dependencies/
 !engine_description.xml
 *.pos
 *.pyc
+*.d
