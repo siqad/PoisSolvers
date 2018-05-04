@@ -60,6 +60,9 @@ def getZparams(layer_props):
 def getResolutionScale(sim_params):
     return float(sim_params['resolution'])
     
+def getPixPerAngstrom(elec_list):
+    return float(elec_list[0]['pixel_per_angstrom'])
+
 def main():
     elec_list, layer_props, sim_params = xml_parse("../sim_problem.xml")
     print elec_list

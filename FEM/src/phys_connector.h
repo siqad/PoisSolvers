@@ -71,7 +71,8 @@ namespace phys{
     void setExportClockPot(bool set_val){export_clock_pot = set_val;}
 
     //set vector of strings as potential data
-    void setElecPotentialData(std::vector<std::vector<std::string>> &data_in){pot_data = data_in;}
+    // void setElecPotentialData(std::vector<std::vector<std::string>> data_in);
+    void setElecPotentialData(std::vector<std::vector<std::string>> data_in){pot_data = data_in;}
     //set vector of strings as electrode data
     void setElectrodeData(std::vector<std::vector<std::string>> &data_in){elec_data = data_in;}
     //set vector of strings as db data
@@ -85,6 +86,8 @@ namespace phys{
     void setDBPotAccuData(std::vector<std::vector<std::string>> &data_in){db_pot_accu_data = data_in;}
     
     void setOutputPath(std::string path){output_path = path;}
+    std::string getOutputPath(void){return output_path;}
+    std::string getInputPath(void){return input_path;}
     //get the required simulation parameter vector.
     std::vector<std::string> getRequiredSimParam(void){return req_params;}
 

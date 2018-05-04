@@ -28,6 +28,7 @@ ubuff/
 FEM/data
 FEM/bin
 FEM/build
+FEM/*.txt
 
 #dependencies directory when building and installing dependencies from script
 dependencies/
