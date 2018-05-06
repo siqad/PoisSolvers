@@ -13,7 +13,9 @@ int main(int argc,char* argv[]){
     in_path = "../sim_problem.xml" ;
     out_path = "../sim_result.xml" ;
   }
-
+  
+  std::cout << "Input: " << in_path << std::endl;
+  std::cout << "Output: " << out_path << std::endl;
   std::cout << std::endl << "*** Constructing Problem ***" << std::endl;
   PoisSolver ps(in_path, out_path);
   ps.initVars();

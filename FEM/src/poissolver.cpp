@@ -1,4 +1,5 @@
 #include "poissolver.h"
+// #include <Python.h>
 #include "python2.7/Python.h"
 #include <stdio.h>
 
@@ -69,18 +70,19 @@ void PoisSolver::runSolver(void)
   std::cout << "Running Solver" << std::endl;
   int argc = 4;
   char* argv[4];
-  
   std::string script_name = "Poisson_3D.py";
+  // std::string script_name = "./build/debug/src/phys/poissolver";
   argv[0] = &script_name[0u];
   std::string in_path = phys_con->getInputPath();
   argv[1] = &in_path[0u];
   std::string out_path = phys_con->getOutputPath();
   argv[2] = &out_path[0u];
-  std::string python_dir = "./python/";
-  argv[3] = &python_dir[0u];
+  std::string working_dir = "./build/debug/src/phys/poissolver/";
+  argv[3] = &working_dir[0u];
   
   float wf_gold = 5.1;
   phys_con->initCollections();
+  
   std::cout << "Saving electrodes" << std::endl;
   for(auto elec : *(phys_con->elec_col)) {
     elec_vec.push_back(Electrodes(
@@ -90,7 +92,9 @@ void PoisSolver::runSolver(void)
       elec->potential, wf_gold)); //elec_vec is part of phys_engine
   }
   
-  std::string script_path = "./python/Poisson_3D.py";
+  
+  // std::string script_path = "Poisson_3D.py";
+  std::string script_path = "./build/debug/src/phys/poissolver/Poisson_3D.py";
   FILE* PythonScriptFile = fopen(script_path.c_str(), "r+");
   if(PythonScriptFile)
   {
@@ -126,7 +130,6 @@ void PoisSolver::loadPotentialTxt(std::vector<std::vector<float>> &elec_data)
 void PoisSolver::exportData(void){
   //create the vector of [x, y, val] that will be sent to setElecPotentialData
   //number of data points is n*n
-  std::cout << "EXPORTDATA" << std::endl;
   std::vector<std::vector<std::string>> elec_pot_data(e_pot_2D.size());
   for (unsigned int i = 0; i < e_pot_2D.size(); i++){
     elec_pot_data[i].resize(3);

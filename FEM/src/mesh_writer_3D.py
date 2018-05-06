@@ -114,7 +114,6 @@ class MeshWriter():
         self.addPoint(p2, scale)
         self.addPoint(p3, scale)
         self.addPoint(p4, scale)
-        print p1, p2, p3, p4
 
         l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
         l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)

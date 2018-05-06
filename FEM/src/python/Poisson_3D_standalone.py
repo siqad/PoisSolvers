@@ -9,7 +9,7 @@ import time
 elec_list, layer_props, sim_params = electrode_parser.xml_parse("../../sim_problem.xml")
 metal_thickness, metal_offset = electrode_parser.getZparams(layer_props)
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
-res_scale = 5.0*electrode_parser.getResolutionScale(sim_params)
+res_scale = electrode_parser.getResolutionScale(sim_params)
 # print electrode_parser.getResolutionScale(sim_params)
 #prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
 if boundary_x_min == 0:
@@ -68,16 +68,17 @@ class Electrode(dolfin.SubDomain):
 
 mw = mw.MeshWriter()
 
-mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/res_scale
-mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
-fields = []
+mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/res_scale/5.0
+mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1.0, "bound")
+
 #dielectric seam
-mw.addSurface([0.9*boundary_x_min,0.9*boundary_y_min,boundary_dielectric],\
-              [0.9*boundary_x_max,0.9*boundary_y_min,boundary_dielectric],\
-              [0.9*boundary_x_max,0.9*boundary_y_max,boundary_dielectric],\
-              [0.9*boundary_x_min,0.9*boundary_y_max,boundary_dielectric],1, "seam")
+mw.addSurface([boundary_x_min+0.1*np.abs(boundary_x_min),boundary_y_min+0.1*np.abs(boundary_y_min),boundary_dielectric],\
+              [boundary_x_max-0.1*np.abs(boundary_x_max),boundary_y_min+0.1*np.abs(boundary_y_min),boundary_dielectric],\
+              [boundary_x_max-0.1*np.abs(boundary_x_max),boundary_y_max-0.1*np.abs(boundary_y_max),boundary_dielectric],\
+              [boundary_x_min+0.1*np.abs(boundary_x_min),boundary_y_max-0.1*np.abs(boundary_y_max),boundary_dielectric],1.0, "seam")
               
 #over-extend a little, to ensure that the higher resolution appears.
+fields = []
 fields += [mw.addBoxField(0.25, 1.0, \
           [boundary_x_min-0.01*np.abs(boundary_x_min), boundary_x_max+0.01*np.abs(boundary_x_max)], \
           [boundary_y_min-0.01*np.abs(boundary_y_min), boundary_y_max+0.01*np.abs(boundary_y_max)], \
