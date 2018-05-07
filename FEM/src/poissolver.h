@@ -31,8 +31,8 @@ namespace phys{
         void exportData(void);        
         std::vector<Electrodes> elec_vec; // location of elecs
         std::string bc;
-        int resolution;
-        double length;
+        float resolution;
+        // double length;
         double max_error;
         double z_offset;
         double z_thickness;

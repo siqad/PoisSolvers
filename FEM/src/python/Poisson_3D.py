@@ -19,7 +19,7 @@ if boundary_x_min == 0:
 if boundary_y_min == 0:
     boundary_y_min -= 0.01*boundary_y_max
 boundary_z_min = metal_offset*1.25
-boundary_z_max = np.abs(0.2*boundary_z_min)
+boundary_z_max = np.abs(0.5*boundary_z_min)
 boundary_dielectric = 0.0 #at the surface.
 
 # Create classes for defining parts of the boundaries and the interior
@@ -59,7 +59,7 @@ class Electrode(dolfin.SubDomain):
             and dolfin.between(x[1], (self.ys[0], self.ys[1])) \
             and dolfin.between(x[2], (self.zs[0], self.zs[1])) )
 
-print "Create mesh boundaries..."
+print("Create mesh boundaries...")
 mw = mw.MeshWriter()
 mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/res_scale
 mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
@@ -79,7 +79,7 @@ fields += [mw.addBoxField(0.25, 1.0, \
 fields = [mw.addMinField(fields)]
 
 # Initialize sub-domain instances
-print "Create subdomains and fields..."
+print("Create subdomains and fields...")
 left = Left() #x
 top = Top() #y
 right = Right() #x
@@ -110,7 +110,7 @@ for i in range(len(elec_list)):
 bg_field_ind = mw.addMeanField(fields, 1E-9)
 mw.setBGField(bg_field_ind)
               
-print "Initializing mesh with GMSH..."
+print("Initializing mesh with GMSH...")
 with open(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -3 '+ os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo -string "General.ExpertMode=1;"'+\
                  ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
@@ -120,7 +120,7 @@ subprocess.call(['dolfin-convert ' + os.path.abspath(os.path.dirname(sys.argv[1]
 mesh = dolfin.Mesh(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.xml')
 
 
-print "Marking boundaries..."
+print("Marking boundaries...")
 # Initialize mesh function for interior domains
 domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
 domains.set_all(0)
@@ -137,7 +137,7 @@ back.mark(boundaries, 6)
 for i in range(len(elec_list)):        
     electrode[i].mark(boundaries, 7+i)
 
-print "Creating boundary values..."
+print("Creating boundary values...")
 # Define input data
 EPS_0 = 8.854E-12
 Q_E = 1.6E-19
@@ -157,13 +157,13 @@ h_F = dolfin.Constant("0.0")
 h_Ba = dolfin.Constant("0.0")
 f = dolfin.Constant("0.0")
 
-print "Defining function, space, basis..."
+print("Defining function, space, basis...")
 # Define function space and basis functions
 V = dolfin.FunctionSpace(mesh, "CG", 3)
 u = dolfin.TrialFunction(V)
 v = dolfin.TestFunction(V)
 
-print "Defining Dirichlet boundaries..."
+print("Defining Dirichlet boundaries...")
 bcs = []
 chi_si = 4.05 #eV
 phi_gold = 5.1 #eV
@@ -173,11 +173,11 @@ for i in range(len(elec_list)):
 
 # Define new measures associated with the interior domains and
 # exterior boundaries
-print "Defining measures..."
+print("Defining measures...")
 dx = dolfin.dx(subdomain_data=domains)
 ds = dolfin.ds(subdomain_data=boundaries)
 
-print "Defining variational form..."
+print("Defining variational form...")
 # Define variational form
 F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
@@ -189,12 +189,12 @@ F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + h_F*u*v*ds(5) + h_Ba*u*v*ds(6) \
     - f*v*dx(0) - f*v*dx(1) )
 
-print "Separateing LHS and RHS..."
+print("Separateing LHS and RHS...")
 # Separate left and right hand sides of equation
 a, L = dolfin.lhs(F), dolfin.rhs(F)
 
 # Solve problem
-print "Initializing solver parameters..."
+print("Initializing solver parameters...")
 u = dolfin.Function(V)
 
 problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
@@ -202,18 +202,18 @@ solver = dolfin.LinearVariationalSolver(problem)
 solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'sor'
 spec_param = solver.parameters['krylov_solver']
-spec_param['absolute_tolerance'] = 1E-7
-spec_param['relative_tolerance'] = 1E-4
+spec_param['absolute_tolerance'] = float(electrode_parser.getParam('max_abs_error', sim_params))
+spec_param['relative_tolerance'] = float(electrode_parser.getParam('max_rel_error', sim_params))
 spec_param['maximum_iterations'] = 2500
 
-print "Solving problem..."
+print("Solving problem...")
 start = time.time()
 solver.solve()
 end = time.time()
-print "Solve finished in " + str(end-start) + " seconds."
+print(("Solve finished in " + str(end-start) + " seconds."))
 
 # PRINT TO FILE
-print "Saving solution to .pvd file..."
+print("Saving solution to .pvd file...")
 file_string = os.path.abspath(os.path.dirname(sys.argv[1])) + "/Potential.pvd"
 dolfin.parameters['allow_extrapolation'] = True
 dolfin.File(file_string) << u
@@ -222,7 +222,7 @@ mid_x = (boundary_x_min+boundary_x_max)/2.0
 mid_y = (boundary_y_min+boundary_y_max)/2.0
 mid_z = (boundary_z_min+boundary_z_max)/2.0
 
-print "Plotting in matplotlib"
+print("Creating 2D data slice")
 nx, ny = (200, 200)
 x = np.linspace(boundary_x_min, boundary_x_max, nx)
 y = np.linspace(boundary_y_min, boundary_y_max, ny)
@@ -232,9 +232,9 @@ Z = z.reshape(nx, ny)
 
 m_2_pix = 1.0E10 * electrode_parser.getPixPerAngstrom(elec_list)
 
-print "Saving 2D potential data to file"
+print("Saving 2D potential data to file")
 f = open(os.path.abspath(os.path.dirname(sys.argv[1])) + "/arrays_tmp.txt", "w")
 for i in range(nx):
     for j in range(ny):
         f.write("{:06.2f} {:06.2f} {:06.2e}\n".format(X[i][j]*m_2_pix, Y[i][j]*m_2_pix, Z[i][j]))
-print "Ending."
+print("Ending.")

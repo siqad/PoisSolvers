@@ -9,7 +9,7 @@
         <T>string</T>
         <val>Robin</val>
         <label>Boundary conditions</label>
-        <tip>The boundary conditions used at the simulation boundaries. TODO detailes for each option</tip>
+        <tip>The boundary conditions used at the simulation boundaries.</tip>
         <value_selection type="ComboBox">
           <robin>Robin</robin>
           <neumann>Neumann</neumann>
@@ -18,28 +18,22 @@
         </value_selection>
       </bcs>
       <resolution>
-        <T>int</T>
-        <val>1</val>
+        <T>float</T>
+        <val>1.0</val>
         <label>Resolution</label>
         <tip>Resolution scaling factor. Warning: higher resolution calculations will take longer to complete.</tip>
       </resolution>
-      <length>
-        <T>float</T>
-        <val>1E-6</val>
-        <label>Length</label>
-        <tip>A length scale that makes the width comparable with the depth during simulation</tip>
-      </length>
       <max_abs_error>
-        <T>float</T>
-        <val>1E-5</val>
+        <T>double</T>
+        <val>0.0000001</val>
         <label>Maximum Absolute Error</label>
-        <tip></tip>
+        <tip>Absolute error threshold to stop simulation iterations.</tip>
       </max_abs_error>
       <max_rel_error>
-        <T>float</T>
-        <val>1E-3</val>
+        <T>double</T>
+        <val>0.0001</val>
         <label>Maximum Relative Error</label>
-        <tip></tip>
+        <tip>Relative error threshold to stop simulation iterations.</tip>
       </max_rel_error>
       <mode>
         <T>string</T>

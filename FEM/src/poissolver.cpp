@@ -16,7 +16,7 @@ void PoisSolver::initSolver(void)
   std::cout << "PoisSolver instantiated." << std::endl;
   phys_con->setRequiredSimParam("bcs");
   phys_con->setRequiredSimParam("resolution");
-  phys_con->setRequiredSimParam("length");
+  // phys_con->setRequiredSimParam("length");
   phys_con->setRequiredSimParam("max_abs_error");
   phys_con->setRequiredSimParam("max_rel_error");
   phys_con->setRequiredSimParam("mode");
@@ -41,9 +41,9 @@ void PoisSolver::initVars(void)
   bc = phys_con->parameterExists("bcs") ?
                   phys_con->getParameter("bcs") : "robin";
   resolution = phys_con->parameterExists("resolution") ?
-                  std::stoi(phys_con->getParameter("resolution")) : 1;
-  length = phys_con->parameterExists("length") ?
-                  std::stod(phys_con->getParameter("length")) : 1e-6;
+                  std::stof(phys_con->getParameter("resolution")) : 1;
+  // length = phys_con->parameterExists("length") ?
+  //                 std::stod(phys_con->getParameter("length")) : 1e-6;
   max_error = phys_con->parameterExists("max_error") ?
                   std::stod(phys_con->getParameter("max_error")) : 5e-2;
   mode = phys_con->parameterExists("mode") ?
