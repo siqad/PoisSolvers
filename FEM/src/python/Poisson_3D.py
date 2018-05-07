@@ -11,7 +11,7 @@ import os
 elec_list, layer_props, sim_params = electrode_parser.xml_parse(sys.argv[1])
 metal_thickness, metal_offset = electrode_parser.getZparams(layer_props)
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
-res_scale = electrode_parser.getResolutionScale(sim_params)
+res_scale = float(electrode_parser.getParam('sim_resolution', sim_params))
 
 #prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
 if boundary_x_min == 0:
@@ -73,9 +73,9 @@ mw.addSurface([boundary_x_min+0.01*np.abs(boundary_x_min),boundary_y_min+0.01*np
 #over-extend a little, to ensure that the higher resolution appears.
 fields = []
 fields += [mw.addBoxField(0.25, 1.0, \
-          [boundary_x_min-0.01*np.abs(boundary_x_min), boundary_x_max+0.01*np.abs(boundary_x_max)], \
-          [boundary_y_min-0.01*np.abs(boundary_y_min), boundary_y_max+0.01*np.abs(boundary_y_max)], \
-          [boundary_dielectric-0.01*np.abs(boundary_z_max), boundary_dielectric+0.01*np.abs(boundary_z_max)])]
+          [boundary_x_min-0.001*np.abs(boundary_x_min), boundary_x_max+0.001*np.abs(boundary_x_max)], \
+          [boundary_y_min-0.001*np.abs(boundary_y_min), boundary_y_max+0.001*np.abs(boundary_y_max)], \
+          [boundary_dielectric-0.05*np.abs(boundary_z_max), boundary_dielectric+0.05*np.abs(boundary_z_max)])]
 fields = [mw.addMinField(fields)]
 
 # Initialize sub-domain instances
@@ -204,7 +204,7 @@ solver.parameters['preconditioner'] = 'sor'
 spec_param = solver.parameters['krylov_solver']
 spec_param['absolute_tolerance'] = float(electrode_parser.getParam('max_abs_error', sim_params))
 spec_param['relative_tolerance'] = float(electrode_parser.getParam('max_rel_error', sim_params))
-spec_param['maximum_iterations'] = 2500
+spec_param['maximum_iterations'] = int(electrode_parser.getParam('max_linear_iters', sim_params))
 
 print("Solving problem...")
 start = time.time()
@@ -223,7 +223,8 @@ mid_y = (boundary_y_min+boundary_y_max)/2.0
 mid_z = (boundary_z_min+boundary_z_max)/2.0
 
 print("Creating 2D data slice")
-nx, ny = (200, 200)
+nx = int(electrode_parser.getParam('image_resolution', sim_params))
+ny = nx
 x = np.linspace(boundary_x_min, boundary_x_max, nx)
 y = np.linspace(boundary_y_min, boundary_y_max, ny)
 X, Y = np.meshgrid(x, y)

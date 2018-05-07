@@ -56,10 +56,7 @@ def getBB(elec_list):
     
 def getZparams(layer_props):
     return float(layer_props['zheight']), float(layer_props['zoffset'])
-    
-def getResolutionScale(sim_params):
-    return float(sim_params['resolution'])
-    
+        
 def getPixPerAngstrom(elec_list):
     return float(elec_list[0]['pixel_per_angstrom'])
 

@@ -17,12 +17,12 @@
           <periodic>Periodic</periodic>
         </value_selection>
       </bcs>
-      <resolution>
+      <sim_resolution>
         <T>float</T>
         <val>1.0</val>
         <label>Resolution</label>
         <tip>Resolution scaling factor. Warning: higher resolution calculations will take longer to complete.</tip>
-      </resolution>
+      </sim_resolution>
       <max_abs_error>
         <T>double</T>
         <val>0.0000001</val>
@@ -35,6 +35,18 @@
         <label>Maximum Relative Error</label>
         <tip>Relative error threshold to stop simulation iterations.</tip>
       </max_rel_error>
+      <max_linear_iters>
+        <T>int</T>
+        <val>2500</val>
+        <label>Maximum Solver Iterations</label>
+        <tip>Maximum number of iterations to run through numerical solver. Smaller absolute and relative errors may require larger number of iterations to achieve a solution.</tip>
+      </max_linear_iters>
+      <image_resolution>
+        <T>int</T>
+        <val>100</val>
+        <label>Image Resolution</label>
+        <tip>Number of pixels in the x and y direction in the resulting potential plot.</tip>
+      </image_resolution>
       <mode>
         <T>string</T>
         <val>Standard</val>
