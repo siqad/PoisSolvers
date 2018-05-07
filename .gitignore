@@ -29,6 +29,7 @@ ubuff/
 #FEM data
 FEM/data
 FEM/bin
+FEM/src/bin
 FEM/build
 FEM/*.txt
 
