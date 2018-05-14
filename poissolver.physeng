@@ -3,7 +3,7 @@
     <name>PoisSolver</name>
     <version>0.1</version>
     <interpreter>python3</interpreter> <!-- used for calling a script with python, java, etc. Leave blank otherwise -->
-    <bin_path>Poisson_3D.py</bin_path> <!-- relative to engines.xml -->
+    <bin_path>poisson3D.py</bin_path> <!-- relative to engines.xml -->
     <sim_params preserve_order="true">
       <bcs>
         <T>string</T>

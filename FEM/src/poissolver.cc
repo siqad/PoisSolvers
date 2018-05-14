@@ -16,12 +16,12 @@ void PoisSolver::runSolver(void)
   std::cout << "Running Solver" << std::endl;
   int argc = 3;
   wchar_t * argv[3];
-  std::string script_name = "Poisson_3D.py";
+  std::string script_name = "poisson3D.py";
   argv[0] = Py_DecodeLocale(&script_name[0u], NULL);
   argv[1] = Py_DecodeLocale(&in_path[0u], NULL);
   argv[2] = Py_DecodeLocale(&out_path[0u], NULL);
 
-  std::string script_path = "./build/debug/src/phys/poissolver/Poisson_3D.py";
+  std::string script_path = "./build/debug/src/phys/poissolver/poisson3D.py";
   FILE* PythonScriptFile = fopen(script_path.c_str(), "r+");
   if(PythonScriptFile)
   {
