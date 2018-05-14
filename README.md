@@ -1,15 +1,8 @@
-To be used as a collection of numerical solvers of the Poisson's equation
-using various implementations.
-
-PoisFFT
-  Uses the fftw library to implement a Fourier transform based solver. This solution is used to verify the simple case for poissonsolver below.
-
-poissonsolver
-  Uses the Successive Over-relaxation method to solve a generalised Poisson's equation. The generalised equation takes into account variable permittivity, and allows for electrodes to be arbitrarily placed within the solving range.
+Holds the 3D FEM Poisson solver.
 
 # PoisSolvers
 
-A C++ solver for the 3D Poisson's equation using the PoisFFT implementation for the Fourier transform
+A Python solver for the 3D Poisson's equation using the FEniCS finite element library.
 
 ## Getting Started
 
@@ -17,65 +10,24 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-#### PoisFFT
+#### FEniCS
 
-You will need to install PoisFFT for the Fourier transform implementation. Visit their github page and follow the installation instructions at
+FEniCS is used to solve the FEM problem posed by the user design.
 
+You can install FEniCS by running:
 ```
-https://github.com/LadaF/PoisFFT
+sudo apt install python3-dolfin
 ```
-
-### Setting up
-
-1. Install PoisFFT
-2. Clone this repository to your preferred directory.
-
-Done!
 
 ## Description
 
-The solver an iterative solver that uses the FFT to complete its iterations. The solver allows for electrodes to be defined within the sample body, essentially setting an internal boundary condition at the defined electrode surface. The FFT is able to handle boundary conditions at the sample edges, but cannot easily handle internal boundary conditions. The solver overcomes this by going through an iterative algorithm, and checking the potential at the electrode at each iteration. It then tweaks the volumetric charge density at the electrode surfaces until the potentials at electrode surfaces are within defined error ranges. The solver continues on tweaking the volumetric charge density until it arrives at a sufficiently correct 3D potential.
+The solver uses the FEM to solve for the 3D electric potential given an arrangement of electrodes. The solver is meant to be used in conjunction with another tool, and may take some effort to get working as a stand-alone application.
+Boundary conditions at the simulation edges are handled using Robin boundary conditions, while the air-material boundary is implicitly handled by aligning the mesh face to the boundary interface.
 
 ## Running the tool
 
-In testpoisson.cc, changes can be made to customize the problem to be solved by the solver.
+The solver is meant to be called from another tool, with the appropriate input and output arguments.
 
-### Setting electrodes
+## Author
 
-Electrodes can be set by calling
-
-```
-Electrodes electrodenamehere(xmin, xmax, ymin, ymax, zmin, zmax, potential, workfunction)
-```
-
-Remember to draw the electrode into electrodemap with
-
-```
-electrodenamehere.draw(ns, ds, Ls, RHS, electrodemap, chi)
-```
-
-### Setting physical parameters
-
-Physical parameters such as permittivity and the volumetric charge density can be set by pointing eps or RHS respectively towards to data set.
-Please ensure that the data is of size (ns[0]*ns[1]*ns[2]).
-An initial guess for the potential can be set by pointing arr to the intial assumption data set.
-
-###
-
-in the PoisFFT/src/ directory, do:
-
-```
-./compileandrun.sh
-```
-
-This will compile the code using g++, and run the resulting executable file. 2D plots of the potential and the associated charge density will also be produced using GNUplot.
-
-## Authors
-
-* **Nathan Chiu**
-
-## Acknowledgments
-
-*  Vladimir Fuka: PoisFFT - a free parallel fast Poisson solver, Applied Mathematics and Computation, 2015
-available online: http://dx.doi.org/10.1016/j.amc.2015.03.011
-preprint: http://arxiv.org/abs/1409.8116
+**Nathan Chiu**
