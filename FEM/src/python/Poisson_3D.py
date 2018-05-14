@@ -1,5 +1,4 @@
 import sys
-sys.path.insert(0, sys.argv[3])
 import dolfin
 import subprocess
 import numpy as np

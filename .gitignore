@@ -30,8 +30,11 @@ ubuff/
 FEM/data
 FEM/bin
 FEM/src/bin
-FEM/build
+FEM/src/build
 FEM/*.txt
+FEM/src/python/phys_connector_swig/__pycache__
+FEM/src/python/phys_connector_swig/*.so
+FEM/src/python/phys_connector_swig/*.cpp
 
 #dependencies directory when building and installing dependencies from script
 dependencies/
