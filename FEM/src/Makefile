@@ -6,11 +6,11 @@ CXX ?= g++
 # Package config
 PKG_CONFIG ?= pkg-config
 # Extension of source files used in the project
-SRC_EXT = cpp
+SRC_EXT = cc
 # Path to the source directory, relative to the makefile
 SRC_PATH = .
 # Space-separated pkg-config libraries used by this project
-LIBS = python2
+LIBS = python3
 # General compiler flags
 COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g
 # Additional release-specific flags
@@ -44,7 +44,7 @@ ifeq ($(FOR_OS),win32)
 	PYTHON_INCLUDE_PATH=/home/samuelngsh/Python36-32/include
 	PYTHON_LIB_PATH=/home/samuelngsh/Python36-32/libs
 
-	BIN_NAME=afmmarcus.exe
+	BIN_NAME=poissolver.exe
 	CXX=i686-w64-mingw32.static-g++ -I $(PYTHON_INCLUDE_PATH) -L $(PYTHON_LIB_PATH) -I $(BOOST_INCLUDE_PATH) -L $(BOOST_LIB_PATH)
 	LIBS=
 	LINK_FLAGS = -lboost_system-mt -lboost_filesystem-mt -lpython36
@@ -63,7 +63,7 @@ ifeq ($(FOR_OS),win64)
 	PYTHON_INCLUDE_PATH=/home/samuelngsh/Python36-64/include
 	PYTHON_LIB_PATH=/home/samuelngsh/Python36-64/libs
 
-	BIN_NAME=afmmarcus.exe
+	BIN_NAME=poissolver.exe
 	CXX=x86_64-w64-mingw32.static-g++ -I $(PYTHON_INCLUDE_PATH) -L $(PYTHON_LIB_PATH) -I $(BOOST_INCLUDE_PATH) -L $(BOOST_LIB_PATH)
 	LIBS=
 	LINK_FLAGS=-lboost_system-mt -lboost_filesystem-mt -lpython36

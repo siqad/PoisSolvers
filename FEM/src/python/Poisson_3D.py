@@ -7,7 +7,11 @@ import mesh_writer_3D as mw
 import electrode_parser
 import time
 import os
+import phys_connector as phys_con
 
+print((sys.argv))
+
+pcon = phys_con.PhysicsConnector("PoisSolver", sys.argv[1], sys.argv[2])
 elec_list, layer_props, sim_params = electrode_parser.xml_parse(sys.argv[1])
 metal_thickness, metal_offset = electrode_parser.getZparams(layer_props)
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
@@ -109,7 +113,7 @@ for i in range(len(elec_list)):
 
 bg_field_ind = mw.addMeanField(fields, 1E-9)
 mw.setBGField(bg_field_ind)
-              
+
 print("Initializing mesh with GMSH...")
 with open(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo', 'w') as f: f.write(mw.file_string)
 subprocess.call(['gmsh -3 '+ os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo -string "General.ExpertMode=1;"'+\
@@ -134,7 +138,7 @@ right.mark(boundaries, 3)
 bottom.mark(boundaries, 4)
 front.mark(boundaries, 5)
 back.mark(boundaries, 6)
-for i in range(len(elec_list)):        
+for i in range(len(elec_list)):
     electrode[i].mark(boundaries, 7+i)
 
 print("Creating boundary values...")
@@ -218,10 +222,6 @@ file_string = os.path.abspath(os.path.dirname(sys.argv[1])) + "/Potential.pvd"
 dolfin.parameters['allow_extrapolation'] = True
 dolfin.File(file_string) << u
 
-mid_x = (boundary_x_min+boundary_x_max)/2.0
-mid_y = (boundary_y_min+boundary_y_max)/2.0
-mid_z = (boundary_z_min+boundary_z_max)/2.0
-
 print("Creating 2D data slice")
 nx = int(electrode_parser.getParam('image_resolution', sim_params))
 ny = nx
@@ -233,9 +233,11 @@ Z = z.reshape(nx, ny)
 
 m_2_pix = 1.0E10 * electrode_parser.getPixPerAngstrom(elec_list)
 
-print("Saving 2D potential data to file")
-f = open(os.path.abspath(os.path.dirname(sys.argv[1])) + "/arrays_tmp.txt", "w")
+print("Saving 2D potential data to XML")
+XYZ = []
 for i in range(nx):
     for j in range(ny):
-        f.write("{:06.2f} {:06.2f} {:06.2e}\n".format(X[i][j]*m_2_pix, Y[i][j]*m_2_pix, Z[i][j]))
+        XYZ.append([X[i,j],Y[i,j],Z[i,j]])
+pcon.setExport(potential=XYZ)
+
 print("Ending.")

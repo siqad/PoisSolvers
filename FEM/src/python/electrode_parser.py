@@ -1,7 +1,7 @@
 import xml.etree.ElementTree
 
-#findall('search') gets all the children where the root's tag matches 'search' 
-#get() gets the attribute 
+#findall('search') gets all the children where the root's tag matches 'search'
+#get() gets the attribute
 
 def xml_parse(path):
     m_per_A = 1.0E-10
@@ -11,7 +11,7 @@ def xml_parse(path):
         for param in sim_param:
             sim_params[param.tag] = param.text
     layer_props = {}
-    for layer_prop in root.findall("layer_prop"):    
+    for layer_prop in root.findall("layer_prop"):
         desired = False
         for prop in layer_prop:
             if prop.tag == "name" and prop.text == "Metal":
@@ -38,7 +38,7 @@ def xml_parse(path):
         elec['x2'] *= m_per_A/float(elec['pixel_per_angstrom'])
         elec['y2'] *= m_per_A/float(elec['pixel_per_angstrom'])
     return elec_list, layer_props, sim_params
-    
+
 def getBB(elec_list):
     x1s = [a['x1'] for a in elec_list]
     y1s = [a['y1'] for a in elec_list]
@@ -49,14 +49,14 @@ def getBB(elec_list):
     min_y = min(y1s)
     max_x = max(x2s)
     max_y = max(y2s)
-    
+
     xs = [min_x-2.0*(max_x-min_x), max_x+2.0*(max_x-min_x)]
     ys = [min_y-2.0*(max_y-min_y), max_y+2.0*(max_y-min_y)]
     return xs, ys
-    
+
 def getZparams(layer_props):
     return float(layer_props['zheight']), float(layer_props['zoffset'])
-        
+
 def getPixPerAngstrom(elec_list):
     return float(elec_list[0]['pixel_per_angstrom'])
 
@@ -65,10 +65,10 @@ def getParam(key, sim_params):
 
 def main():
     elec_list, layer_props, sim_params = xml_parse("../sim_problem.xml")
-    print elec_list
-    print layer_props
+    print(elec_list)
+    print(layer_props)
     [min_x, max_x], [min_y, max_y] = getBB(elec_list)
-    print min_x, max_x, min_y, max_y
-    print sim_params
-    
+    print(min_x, max_x, min_y, max_y)
+    print(sim_params)
+
 # main()
