@@ -651,6 +651,121 @@ class StringVector2D(_object):
 StringVector2D_swigregister = _phys_connector.StringVector2D_swigregister
 StringVector2D_swigregister(StringVector2D)
 
+class StringMap(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, StringMap, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, StringMap, name)
+    __repr__ = _swig_repr
+
+    def iterator(self):
+        return _phys_connector.StringMap_iterator(self)
+    def __iter__(self):
+        return self.iterator()
+
+    def __nonzero__(self):
+        return _phys_connector.StringMap___nonzero__(self)
+
+    def __bool__(self):
+        return _phys_connector.StringMap___bool__(self)
+
+    def __len__(self):
+        return _phys_connector.StringMap___len__(self)
+    def __iter__(self):
+        return self.key_iterator()
+    def iterkeys(self):
+        return self.key_iterator()
+    def itervalues(self):
+        return self.value_iterator()
+    def iteritems(self):
+        return self.iterator()
+
+    def __getitem__(self, key):
+        return _phys_connector.StringMap___getitem__(self, key)
+
+    def __delitem__(self, key):
+        return _phys_connector.StringMap___delitem__(self, key)
+
+    def has_key(self, key):
+        return _phys_connector.StringMap_has_key(self, key)
+
+    def keys(self):
+        return _phys_connector.StringMap_keys(self)
+
+    def values(self):
+        return _phys_connector.StringMap_values(self)
+
+    def items(self):
+        return _phys_connector.StringMap_items(self)
+
+    def __contains__(self, key):
+        return _phys_connector.StringMap___contains__(self, key)
+
+    def key_iterator(self):
+        return _phys_connector.StringMap_key_iterator(self)
+
+    def value_iterator(self):
+        return _phys_connector.StringMap_value_iterator(self)
+
+    def __setitem__(self, *args):
+        return _phys_connector.StringMap___setitem__(self, *args)
+
+    def asdict(self):
+        return _phys_connector.StringMap_asdict(self)
+
+    def __init__(self, *args):
+        this = _phys_connector.new_StringMap(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+
+    def empty(self):
+        return _phys_connector.StringMap_empty(self)
+
+    def size(self):
+        return _phys_connector.StringMap_size(self)
+
+    def swap(self, v):
+        return _phys_connector.StringMap_swap(self, v)
+
+    def begin(self):
+        return _phys_connector.StringMap_begin(self)
+
+    def end(self):
+        return _phys_connector.StringMap_end(self)
+
+    def rbegin(self):
+        return _phys_connector.StringMap_rbegin(self)
+
+    def rend(self):
+        return _phys_connector.StringMap_rend(self)
+
+    def clear(self):
+        return _phys_connector.StringMap_clear(self)
+
+    def get_allocator(self):
+        return _phys_connector.StringMap_get_allocator(self)
+
+    def count(self, x):
+        return _phys_connector.StringMap_count(self, x)
+
+    def erase(self, *args):
+        return _phys_connector.StringMap_erase(self, *args)
+
+    def find(self, x):
+        return _phys_connector.StringMap_find(self, x)
+
+    def lower_bound(self, x):
+        return _phys_connector.StringMap_lower_bound(self, x)
+
+    def upper_bound(self, x):
+        return _phys_connector.StringMap_upper_bound(self, x)
+    __swig_destroy__ = _phys_connector.delete_StringMap
+    __del__ = lambda self: None
+StringMap_swigregister = _phys_connector.StringMap_swigregister
+StringMap_swigregister(StringMap)
+
 class DBDot(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, DBDot, name, value)
@@ -818,6 +933,25 @@ class ElecIterator(_object):
 
     def __ref__(self):
         return _phys_connector.ElecIterator___ref__(self)
+
+    def setCollection(self, coll):
+        return _phys_connector.ElecIterator_setCollection(self, coll)
+    __swig_setmethods__["collection"] = _phys_connector.ElecIterator_collection_set
+    __swig_getmethods__["collection"] = _phys_connector.ElecIterator_collection_get
+    if _newclass:
+        collection = _swig_property(_phys_connector.ElecIterator_collection_get, _phys_connector.ElecIterator_collection_set)
+
+    def __iter__(self):
+        return _phys_connector.ElecIterator___iter__(self)
+
+    def __next__(self):
+      elec = _phys_connector.ElecIterator___next__(self)
+      if elec == None:
+        raise StopIteration
+      else:
+        return elec
+
+
     __swig_destroy__ = _phys_connector.delete_ElecIterator
     __del__ = lambda self: None
 ElecIterator_swigregister = _phys_connector.ElecIterator_swigregister
@@ -846,6 +980,9 @@ class ElectrodeCollection(_object):
     __swig_getmethods__["elec_tree_inner"] = _phys_connector.ElectrodeCollection_elec_tree_inner_get
     if _newclass:
         elec_tree_inner = _swig_property(_phys_connector.ElectrodeCollection_elec_tree_inner_get, _phys_connector.ElectrodeCollection_elec_tree_inner_set)
+
+    def __iter__(self):
+        return _phys_connector.ElectrodeCollection___iter__(self)
     __swig_destroy__ = _phys_connector.delete_ElectrodeCollection
     __del__ = lambda self: None
 ElectrodeCollection_swigregister = _phys_connector.ElectrodeCollection_swigregister

@@ -8,12 +8,25 @@ import time
 import os
 import phys_connector as phys_con
 
-print((sys.argv))
-
 pcon = phys_con.PhysicsConnector("PoisSolver", sys.argv[1], sys.argv[2])
+pcon.setExpectElectrode(True)
+pcon.readProblem()
+pcon.initCollections()
+
+# elec_list = []
+# for elec in pcon.elec_col:
+#     # elec_test.append([[elec.x1, elec.x2],[elec.y1, elec.y2], elec.potential])
+#     elec_curr = {"x1":float(elec.x1), "x2":float(elec.x2), "y1":float(elec.y1), "y2":float(elec.y2), "potential":float(elec.potential)}
+#     elec_list.append(elec_curr)
+#
+# print(elec_list)
+
+metal_offset = float(pcon.getProperty("Metal")["zoffset"])
+metal_thickness = float(pcon.getProperty("Metal")["zheight"])
+
 elec_list, layer_props, sim_params = electrode_parser.xml_parse(sys.argv[1])
-metal_thickness, metal_offset = electrode_parser.getZparams(layer_props)
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
+print(boundary_x_min, boundary_x_max)
 res_scale = float(electrode_parser.getParam('sim_resolution', sim_params))
 
 #prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.

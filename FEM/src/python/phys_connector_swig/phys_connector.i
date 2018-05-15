@@ -2,6 +2,7 @@
 %include <std_pair.i>
 %include <std_vector.i>
 %include <std_string.i>
+%include <std_map.i>
 %include <exception.i>
 
 %{
@@ -14,6 +15,7 @@ namespace std {
     %template(StringPairVector) vector< pair<string, string> >;
     %template(StringVector) vector<string>;
     %template(StringVector2D) vector< vector<string> >;
+    %template(StringMap) map< string, string >;
 }
 
 %{
@@ -30,6 +32,15 @@ namespace std {
       raise StopIteration
     else:
       return db
+%}
+
+%feature("shadow") phys::ElecIterator::__next__() %{
+  def __next__(self):
+    elec = $action(self)
+    if elec == None:
+      raise StopIteration
+    else:
+      return elec
 %}
 
 %extend phys::PhysicsConnector {
@@ -88,5 +99,31 @@ namespace std {
     phys::DBDot *db = &***($self);
     $self->operator++();
     return db;
+  }
+}
+
+%extend phys::ElectrodeCollection {
+  phys::ElecIterator __iter__() {
+    phys::ElecIterator iter = $self->begin();
+    iter.setCollection($self);
+    return iter;
+  }
+}
+
+%extend phys::ElecIterator
+{
+  phys::Electrode *__iter__() {
+    return &***($self);
+  }
+
+  phys::Electrode *__next__() {
+    if (*($self) == $self->collection->end()) {
+      //PyErr_SetString(PyExc_StopIteration,"End of list");
+      //PyErr_SetNone(PyExc_StopIteration);
+      return NULL;
+    }
+    phys::Electrode *elec = &***($self);
+    $self->operator++();
+    return elec;
   }
 }

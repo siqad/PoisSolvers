@@ -33,6 +33,7 @@ FEM/src/bin
 FEM/src/build
 FEM/*.txt
 FEM/src/python/phys_connector_swig/__pycache__
+FEM/src/python/phys_connector_swig/*.cxx
 FEM/src/python/phys_connector_swig/*.so
 FEM/src/python/phys_connector_swig/*.cpp
 

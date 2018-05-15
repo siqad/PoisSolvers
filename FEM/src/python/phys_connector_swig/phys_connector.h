@@ -102,6 +102,9 @@ namespace phys{
     bool operator==(const ElecIterator &other) {return other.elec_iter == elec_iter;}
     bool operator!=(const ElecIterator &other) {return other.elec_iter != elec_iter;}
     std::shared_ptr<Electrode> operator*() const {return *elec_iter;}
+
+    void setCollection(ElectrodeCollection *coll) {collection = coll;}
+    ElectrodeCollection *collection; // needed for python wrapper
   private:
     ElecIter elec_iter;               // points to the current electrode
     std::shared_ptr<Aggregate> curr;  // current working Aggregate
@@ -219,7 +222,7 @@ namespace phys{
     std::shared_ptr<Aggregate> db_tree;
     std::shared_ptr<Aggregate> elec_tree;
     std::map<std::string, std::string> program_props;
-        std::map<std::string, std::string> metal_props;
+    std::map<std::string, std::string> metal_props;
     // std::map<std::string, std::string> material_props; TODO probably need a different structure for this
     std::map<std::string, std::string> sim_params;
 
