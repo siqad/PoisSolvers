@@ -35,8 +35,10 @@ if boundary_x_min == 0:
     boundary_x_min -= 0.01*boundary_x_max
 if boundary_y_min == 0:
     boundary_y_min -= 0.01*boundary_y_max
-boundary_z_min = metal_offset*1.25
-boundary_z_max = np.abs(0.5*boundary_z_min)
+# boundary_z_min = metal_offset*1.25
+# boundary_z_max = np.abs(0.5*boundary_z_min)
+boundary_z_min = -np.abs(metal_offset)*10.0
+boundary_z_max = -boundary_z_min
 boundary_dielectric = 0.0 #at the surface.
 
 # Create classes for defining parts of the boundaries and the interior
@@ -186,7 +188,12 @@ chi_si = 4.05 #eV
 phi_gold = 5.1 #eV
 phi_bi = phi_gold - chi_si
 for i in range(len(elec_list)):
-    bcs.append(dolfin.DirichletBC(V, float(elec_list[i]['potential'])+ phi_bi, boundaries, 7+i))
+    if metal_offset > boundary_dielectric:
+        bcs.append(dolfin.DirichletBC(V, float(elec_list[i]['potential']), boundaries, 7+i))
+        print("Electrode "+str(i)+" is above the dielectric interface.")
+    else:
+        bcs.append(dolfin.DirichletBC(V, float(elec_list[i]['potential'])+phi_bi, boundaries, 7+i))
+        print("Electrode "+str(i)+" is below the dielectric interface.")
 
 # Define new measures associated with the interior domains and
 # exterior boundaries
