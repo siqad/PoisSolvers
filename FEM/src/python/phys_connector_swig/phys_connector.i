@@ -63,7 +63,8 @@ namespace std {
         for elec in self.elec_col:
           elec_curr = {"x1":float(elec.x1), "x2":float(elec.x2), "y1":float(elec.y1), "y2":float(elec.y2), \
                        "potential":float(elec.potential),"layer_id":int(elec.layer_id), \
-                       "electrode_type":int(elec.electrode_type), "pixel_per_angstrom":float(elec.pixel_per_angstrom)}
+                       "electrode_type":int(elec.electrode_type), "pixel_per_angstrom":float(elec.pixel_per_angstrom), \
+                       "phase":float(elec.phase)}
           elec_curr["x1"] *= m_per_A/float(elec.pixel_per_angstrom)
           elec_curr["x2"] *= m_per_A/float(elec.pixel_per_angstrom)
           elec_curr["y1"] *= m_per_A/float(elec.pixel_per_angstrom)

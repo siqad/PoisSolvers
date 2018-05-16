@@ -162,18 +162,6 @@ EPS_0 = 8.854E-12
 Q_E = 1.6E-19
 a0 = dolfin.Constant(11.6*EPS_0)
 a1 = dolfin.Constant(1.0*EPS_0)
-g_L = dolfin.Constant("0.0")
-g_R = dolfin.Constant("0.0")
-g_T = dolfin.Constant("0.0")
-g_Bo = dolfin.Constant("0.0")
-g_F = dolfin.Constant("0.0")
-g_Ba = dolfin.Constant("0.0")
-h_L = dolfin.Constant("0.0")
-h_R = dolfin.Constant("0.0")
-h_T = dolfin.Constant("0.0")
-h_Bo = dolfin.Constant("0.0")
-h_F = dolfin.Constant("0.0")
-h_Ba = dolfin.Constant("0.0")
 f = dolfin.Constant("0.0")
 
 print("Defining function, space, basis...")
@@ -188,12 +176,20 @@ chi_si = 4.05 #eV
 phi_gold = 5.1 #eV
 phi_bi = phi_gold - chi_si
 for i in range(len(elec_list)):
+    elec_str = "Electrode "+str(i)+" is "
+    if elec_list[i]["electrode_type"] == 0:
+        elec_str += "unclocked, "
+        potential_to_set = elec_list[i]["potential"]
+    elif elec_list[i]["electrode_type"] == 1:
+        elec_str += "clocked, "
+        potential_to_set = elec_list[i]["potential"]*np.sin(elec_list[i]["phase"])
     if metal_offset > boundary_dielectric:
-        bcs.append(dolfin.DirichletBC(V, float(elec_list[i]['potential']), boundaries, 7+i))
-        print("Electrode "+str(i)+" is above the dielectric interface.")
+        elec_str += "and above the dielectric interface."
     else:
-        bcs.append(dolfin.DirichletBC(V, float(elec_list[i]['potential'])+phi_bi, boundaries, 7+i))
-        print("Electrode "+str(i)+" is below the dielectric interface.")
+        potential_to_set += phi_bi
+        elec_str += "and below the dielectric interface."
+    print(elec_str)
+    bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+i))
 
 # Define new measures associated with the interior domains and
 # exterior boundaries
@@ -202,16 +198,30 @@ dx = dolfin.dx(subdomain_data=domains)
 ds = dolfin.ds(subdomain_data=boundaries)
 
 print("Defining variational form...")
-# Define variational form
 F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
     + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
-    # - g_L*v*ds(1) - g_R*v*ds(3) \
-    # - g_T*v*ds(2) - g_Bo*v*ds(4) \
-    # - g_F*v*ds(5) - g_Ba*v*ds(6) \
-    + h_L*u*v*ds(1) + h_R*u*v*ds(3) \
-    + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
-    + h_F*u*v*ds(5) + h_Ba*u*v*ds(6) \
     - f*v*dx(0) - f*v*dx(1) )
+
+if sim_params["bcs"] == "robin":
+    h_L = dolfin.Constant("0.0")
+    h_R = dolfin.Constant("0.0")
+    h_T = dolfin.Constant("0.0")
+    h_Bo = dolfin.Constant("0.0")
+    h_F = dolfin.Constant("0.0")
+    h_Ba = dolfin.Constant("0.0")
+    F +=  h_L*u*v*ds(1) + h_R*u*v*ds(3) \
+        + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
+        + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
+elif sim_params["bcs"] == "neumann":
+    g_L = dolfin.Constant("0.0")
+    g_R = dolfin.Constant("0.0")
+    g_T = dolfin.Constant("0.0")
+    g_Bo = dolfin.Constant("0.0")
+    g_F = dolfin.Constant("0.0")
+    g_Ba = dolfin.Constant("0.0")
+    F += - g_L*v*ds(1) - g_R*v*ds(3) \
+         - g_T*v*ds(2) - g_Bo*v*ds(4) \
+         - g_F*v*ds(5) - g_Ba*v*ds(6)
 
 print("Separateing LHS and RHS...")
 # Separate left and right hand sides of equation

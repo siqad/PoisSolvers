@@ -903,6 +903,10 @@ class Electrode(_object):
     __swig_getmethods__["potential"] = _phys_connector.Electrode_potential_get
     if _newclass:
         potential = _swig_property(_phys_connector.Electrode_potential_get, _phys_connector.Electrode_potential_set)
+    __swig_setmethods__["phase"] = _phys_connector.Electrode_phase_set
+    __swig_getmethods__["phase"] = _phys_connector.Electrode_phase_get
+    if _newclass:
+        phase = _swig_property(_phys_connector.Electrode_phase_get, _phys_connector.Electrode_phase_set)
     __swig_setmethods__["electrode_type"] = _phys_connector.Electrode_electrode_type_set
     __swig_getmethods__["electrode_type"] = _phys_connector.Electrode_electrode_type_get
     if _newclass:
@@ -912,8 +916,8 @@ class Electrode(_object):
     if _newclass:
         pixel_per_angstrom = _swig_property(_phys_connector.Electrode_pixel_per_angstrom_get, _phys_connector.Electrode_pixel_per_angstrom_set)
 
-    def __init__(self, in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_electrode_type, in_pixel_per_angstrom):
-        this = _phys_connector.new_Electrode(in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_electrode_type, in_pixel_per_angstrom)
+    def __init__(self, in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom):
+        this = _phys_connector.new_Electrode(in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom)
         try:
             self.this.append(this)
         except __builtin__.Exception:
@@ -1170,7 +1174,8 @@ class PhysicsConnector(_object):
         for elec in self.elec_col:
           elec_curr = {"x1":float(elec.x1), "x2":float(elec.x2), "y1":float(elec.y1), "y2":float(elec.y2), \
                        "potential":float(elec.potential),"layer_id":int(elec.layer_id), \
-                       "electrode_type":int(elec.electrode_type), "pixel_per_angstrom":float(elec.pixel_per_angstrom)}
+                       "electrode_type":int(elec.electrode_type), "pixel_per_angstrom":float(elec.pixel_per_angstrom), \
+                       "phase":float(elec.phase)}
           elec_curr["x1"] *= m_per_A/float(elec.pixel_per_angstrom)
           elec_curr["x2"] *= m_per_A/float(elec.pixel_per_angstrom)
           elec_curr["y1"] *= m_per_A/float(elec.pixel_per_angstrom)
