@@ -3,7 +3,6 @@ import dolfin
 import subprocess
 import numpy as np
 import mesh_writer_3D as mw
-import electrode_parser
 import time
 import os
 import phys_connector as phys_con
@@ -13,16 +12,23 @@ pcon.setExpectElectrode(True)
 pcon.readProblem()
 pcon.initCollections()
 
+def getBB(elec_list):
+    min_x = min([a['x1'] for a in elec_list])
+    max_x = max([a['x2'] for a in elec_list])
+    min_y = min([a['y1'] for a in elec_list])
+    max_y = max([a['y2'] for a in elec_list])
+
+    xs = [min_x-2.0*(max_x-min_x), max_x+2.0*(max_x-min_x)]
+    ys = [min_y-2.0*(max_y-min_y), max_y+2.0*(max_y-min_y)]
+    return xs, ys
+
 metal_offset = float(pcon.getProperty("Metal")["zoffset"])
 metal_thickness = float(pcon.getProperty("Metal")["zheight"])
 
-elec_list, layer_props, sim_params = electrode_parser.xml_parse(sys.argv[1])
-print(elec_list)
 elec_list = pcon.getSimProps("electrodes")
-print(elec_list)
-[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = electrode_parser.getBB(elec_list)
-print(boundary_x_min, boundary_x_max)
-res_scale = float(electrode_parser.getParam('sim_resolution', sim_params))
+[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = getBB(elec_list)
+sim_params = pcon.getSimProps("parameters")
+res_scale = float(sim_params["sim_resolution"])
 
 #prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
 if boundary_x_min == 0:
@@ -213,9 +219,9 @@ solver = dolfin.LinearVariationalSolver(problem)
 solver.parameters['linear_solver'] = 'gmres'
 solver.parameters['preconditioner'] = 'sor'
 spec_param = solver.parameters['krylov_solver']
-spec_param['absolute_tolerance'] = float(electrode_parser.getParam('max_abs_error', sim_params))
-spec_param['relative_tolerance'] = float(electrode_parser.getParam('max_rel_error', sim_params))
-spec_param['maximum_iterations'] = int(electrode_parser.getParam('max_linear_iters', sim_params))
+spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
+spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
+spec_param['maximum_iterations'] = int(sim_params["max_linear_iters"])
 
 print("Solving problem...")
 start = time.time()
@@ -230,15 +236,13 @@ dolfin.parameters['allow_extrapolation'] = True
 dolfin.File(file_string) << u
 
 print("Creating 2D data slice")
-nx = int(electrode_parser.getParam('image_resolution', sim_params))
+nx = int(sim_params['image_resolution'])
 ny = nx
 x = np.linspace(boundary_x_min, boundary_x_max, nx)
 y = np.linspace(boundary_y_min, boundary_y_max, ny)
 X, Y = np.meshgrid(x, y)
 z = np.array([u(i, j, boundary_dielectric) for j in y for i in x])
 Z = z.reshape(nx, ny)
-
-m_2_pix = 1.0E10 * electrode_parser.getPixPerAngstrom(elec_list)
 
 print("Saving 2D potential data to XML")
 XYZ = []
