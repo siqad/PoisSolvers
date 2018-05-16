@@ -88,10 +88,16 @@ namespace phys{
 
   // electrode
   struct Electrode {
-    float x1,x2,y1,y2;      // pixel location of electrode.
-    float potential;  // voltage that the electrode is set to
-    Electrode(float in_x1, float in_x2, float in_y1, float in_y2, float in_potential)
-      : x1(in_x1), x2(in_x2), y1(in_y1), y2(in_y2), potential(in_potential) {};
+    int layer_id;
+    double x1,x2,y1,y2;      // pixel location of electrode.
+    double potential;  // voltage that the electrode is set to
+    int electrode_type;
+    double pixel_per_angstrom;
+    Electrode(int in_layer_id, double in_x1, double in_x2, double in_y1, double in_y2, \
+              double in_potential, int in_electrode_type, double in_pixel_per_angstrom)
+      : layer_id(in_layer_id), x1(in_x1), x2(in_x2), y1(in_y1), y2(in_y2), \
+        potential(in_potential), electrode_type(in_electrode_type), \
+        pixel_per_angstrom(in_pixel_per_angstrom) {};
   };
 
   class ElecIterator

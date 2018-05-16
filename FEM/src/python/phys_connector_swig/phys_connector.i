@@ -56,6 +56,33 @@ namespace std {
   }
 
   %pythoncode{
+    def getSimProps(self, key):
+      if key == "electrodes":
+        elecs = []
+        m_per_A = 1.0E-10
+        for elec in self.elec_col:
+          elec_curr = {"x1":float(elec.x1), "x2":float(elec.x2), "y1":float(elec.y1), "y2":float(elec.y2), \
+                       "potential":float(elec.potential),"layer_id":int(elec.layer_id), \
+                       "electrode_type":int(elec.electrode_type), "pixel_per_angstrom":float(elec.pixel_per_angstrom)}
+          elec_curr["x1"] *= m_per_A/float(elec.pixel_per_angstrom)
+          elec_curr["x2"] *= m_per_A/float(elec.pixel_per_angstrom)
+          elec_curr["y1"] *= m_per_A/float(elec.pixel_per_angstrom)
+          elec_curr["y2"] *= m_per_A/float(elec.pixel_per_angstrom)
+          elecs.append(elec_curr)
+        return elecs
+      elif key == "parameters":
+        sim_keys = ["bcs", "high_pot", "image_resolution", "low_pot", "max_abs_error",\
+                    "max_linear_iters", "max_rel_error", "mode", "sim_resolution", \
+                    "slice_depth", "steps"]
+        sim_params = {}
+        for key in sim_keys:
+          sim_params[key] = self.getParameter(key)
+        return sim_params
+      else:
+        return
+  }
+
+  %pythoncode{
     def exportElecPotentialData(self, data_in):
       self.setElecPotentialData(StringVector2D(self.tuplify(data_in)))
   }
