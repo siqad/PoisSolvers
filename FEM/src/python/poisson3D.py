@@ -6,6 +6,7 @@ import mesh_writer_3D as mw
 import time
 import os
 import phys_connector as phys_con
+import matplotlib.pyplot as plt
 
 pcon = phys_con.PhysicsConnector("PoisSolver", sys.argv[1], sys.argv[2])
 pcon.setExpectElectrode(True)
@@ -164,108 +165,125 @@ a0 = dolfin.Constant(11.6*EPS_0)
 a1 = dolfin.Constant(1.0*EPS_0)
 f = dolfin.Constant("0.0")
 
-print("Defining function, space, basis...")
-# Define function space and basis functions
-V = dolfin.FunctionSpace(mesh, "CG", 3)
-u = dolfin.TrialFunction(V)
-v = dolfin.TestFunction(V)
+mode = str(sim_params["mode"])
+if mode == "standard":
+    steps = 1
+elif mode == "clock":
+    steps = int(sim_params["steps"])
 
-print("Defining Dirichlet boundaries...")
-bcs = []
-chi_si = 4.05 #eV
-phi_gold = 5.1 #eV
-phi_bi = phi_gold - chi_si
-for i in range(len(elec_list)):
-    elec_str = "Electrode "+str(i)+" is "
-    if elec_list[i]["electrode_type"] == 0:
-        elec_str += "unclocked, "
-        potential_to_set = elec_list[i]["potential"]
-    elif elec_list[i]["electrode_type"] == 1:
-        elec_str += "clocked, "
-        potential_to_set = elec_list[i]["potential"]*np.sin(elec_list[i]["phase"])
-    if metal_offset > boundary_dielectric:
-        elec_str += "and above the dielectric interface."
-    else:
-        potential_to_set += phi_bi
-        elec_str += "and below the dielectric interface."
-    print(elec_str)
-    bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+i))
+for step in range(steps):
+    print("Defining function, space, basis...")
+    # Define function space and basis functions
+    V = dolfin.FunctionSpace(mesh, "CG", 3)
+    u = dolfin.TrialFunction(V)
+    v = dolfin.TestFunction(V)
 
-# Define new measures associated with the interior domains and
-# exterior boundaries
-print("Defining measures...")
-dx = dolfin.dx(subdomain_data=domains)
-ds = dolfin.ds(subdomain_data=boundaries)
+    print("Defining Dirichlet boundaries...")
+    bcs = []
+    chi_si = 4.05 #eV
+    phi_gold = 5.1 #eV
+    phi_bi = phi_gold - chi_si
+    for i in range(len(elec_list)):
+        elec_str = "Electrode "+str(i)+" is "
+        if elec_list[i]["electrode_type"] == 0:
+            elec_str += "unclocked, "
+            potential_to_set = elec_list[i]["potential"]
+        elif elec_list[i]["electrode_type"] == 1:
+            elec_str += "clocked, "
+            tot_phase = elec_list[i]["phase"] + step*360/steps
+            potential_to_set = elec_list[i]["potential"]*np.sin( np.deg2rad(tot_phase) )
+        if metal_offset > boundary_dielectric:
+            elec_str += "and above the dielectric interface."
+        else:
+            potential_to_set += phi_bi
+            elec_str += "and below the dielectric interface."
+        print(elec_str)
+        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+i))
 
-print("Defining variational form...")
-F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
-    + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
-    - f*v*dx(0) - f*v*dx(1) )
+    # Define new measures associated with the interior domains and
+    # exterior boundaries
+    print("Defining measures...")
+    dx = dolfin.dx(subdomain_data=domains)
+    ds = dolfin.ds(subdomain_data=boundaries)
 
-if sim_params["bcs"] == "robin":
-    h_L = dolfin.Constant("0.0")
-    h_R = dolfin.Constant("0.0")
-    h_T = dolfin.Constant("0.0")
-    h_Bo = dolfin.Constant("0.0")
-    h_F = dolfin.Constant("0.0")
-    h_Ba = dolfin.Constant("0.0")
-    F +=  h_L*u*v*ds(1) + h_R*u*v*ds(3) \
-        + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
-        + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
-elif sim_params["bcs"] == "neumann":
-    g_L = dolfin.Constant("0.0")
-    g_R = dolfin.Constant("0.0")
-    g_T = dolfin.Constant("0.0")
-    g_Bo = dolfin.Constant("0.0")
-    g_F = dolfin.Constant("0.0")
-    g_Ba = dolfin.Constant("0.0")
-    F += - g_L*v*ds(1) - g_R*v*ds(3) \
-         - g_T*v*ds(2) - g_Bo*v*ds(4) \
-         - g_F*v*ds(5) - g_Ba*v*ds(6)
+    print("Defining variational form...")
+    F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
+        + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
+        - f*v*dx(0) - f*v*dx(1) )
 
-print("Separateing LHS and RHS...")
-# Separate left and right hand sides of equation
-a, L = dolfin.lhs(F), dolfin.rhs(F)
+    if sim_params["bcs"] == "robin":
+        h_L = dolfin.Constant("0.0")
+        h_R = dolfin.Constant("0.0")
+        h_T = dolfin.Constant("0.0")
+        h_Bo = dolfin.Constant("0.0")
+        h_F = dolfin.Constant("0.0")
+        h_Ba = dolfin.Constant("0.0")
+        F +=  h_L*u*v*ds(1) + h_R*u*v*ds(3) \
+            + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
+            + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
+    elif sim_params["bcs"] == "neumann":
+        g_L = dolfin.Constant("0.0")
+        g_R = dolfin.Constant("0.0")
+        g_T = dolfin.Constant("0.0")
+        g_Bo = dolfin.Constant("0.0")
+        g_F = dolfin.Constant("0.0")
+        g_Ba = dolfin.Constant("0.0")
+        F += - g_L*v*ds(1) - g_R*v*ds(3) \
+             - g_T*v*ds(2) - g_Bo*v*ds(4) \
+             - g_F*v*ds(5) - g_Ba*v*ds(6)
 
-# Solve problem
-print("Initializing solver parameters...")
-u = dolfin.Function(V)
+    print("Separateing LHS and RHS...")
+    # Separate left and right hand sides of equation
+    a, L = dolfin.lhs(F), dolfin.rhs(F)
 
-problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
-solver = dolfin.LinearVariationalSolver(problem)
-solver.parameters['linear_solver'] = 'gmres'
-solver.parameters['preconditioner'] = 'sor'
-spec_param = solver.parameters['krylov_solver']
-spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
-spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
-spec_param['maximum_iterations'] = int(sim_params["max_linear_iters"])
+    # Solve problem
+    print("Initializing solver parameters...")
+    u = dolfin.Function(V)
 
-print("Solving problem...")
-start = time.time()
-solver.solve()
-end = time.time()
-print(("Solve finished in " + str(end-start) + " seconds."))
+    problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
+    solver = dolfin.LinearVariationalSolver(problem)
+    solver.parameters['linear_solver'] = 'gmres'
+    solver.parameters['preconditioner'] = 'sor'
+    spec_param = solver.parameters['krylov_solver']
+    spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
+    spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
+    spec_param['maximum_iterations'] = int(sim_params["max_linear_iters"])
 
-# PRINT TO FILE
-print("Saving solution to .pvd file...")
-file_string = os.path.abspath(os.path.dirname(sys.argv[1])) + "/Potential.pvd"
-dolfin.parameters['allow_extrapolation'] = True
-dolfin.File(file_string) << u
+    print("Solving problem...")
+    start = time.time()
+    solver.solve()
+    end = time.time()
+    print(("Solve finished in " + str(end-start) + " seconds."))
 
-print("Creating 2D data slice")
-nx = int(sim_params['image_resolution'])
-ny = nx
-x = np.linspace(boundary_x_min, boundary_x_max, nx)
-y = np.linspace(boundary_y_min, boundary_y_max, ny)
-X, Y = np.meshgrid(x, y)
-z = np.array([u(i, j, boundary_dielectric) for j in y for i in x])
-Z = z.reshape(nx, ny)
+    # PRINT TO FILE
+    print("Saving solution to .pvd file...")
+    file_string = os.path.abspath(os.path.dirname(sys.argv[1])) + "/Potential.pvd"
+    dolfin.parameters['allow_extrapolation'] = True
+    dolfin.File(file_string) << u
 
-print("Saving 2D potential data to XML")
-XYZ = []
-for i in range(nx):
-    for j in range(ny):
-        XYZ.append([X[i,j],Y[i,j],Z[i,j]])
-pcon.setExport(potential=XYZ)
+    print("Creating 2D data slice")
+    nx = int(sim_params['image_resolution'])
+    ny = nx
+    x = np.linspace(boundary_x_min, boundary_x_max, nx)
+    y = np.linspace(boundary_y_min, boundary_y_max, ny)
+    X, Y = np.meshgrid(x, y)
+    z = np.array([u(i, j, boundary_dielectric) for j in y for i in x])
+    Z = z.reshape(nx, ny)
+
+    print("Saving 2D potential data to XML")
+    XYZ = []
+    for i in range(nx):
+        for j in range(ny):
+            XYZ.append([X[i,j],Y[i,j],Z[i,j]])
+    pcon.setExport(potential=XYZ)
+
+    plt.figure()
+    # plt.imshow(XYZ, cmap='hot', interpolation='nearest')
+    plt.pcolormesh(X,Y,Z)
+    plt.gca().invert_yaxis()
+    savestring = os.path.abspath(os.path.dirname(sys.argv[2]))+'/SiAirBoundary%02d.png'%(step)
+    plt.savefig(savestring)
+
+    # plt.show()
 
 print("Ending.")

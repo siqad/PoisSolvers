@@ -59,8 +59,8 @@
         <label>Mode</label>
         <tip>The mode of simulation. Standard mode runs a PoisSolver simulation and disables the potential on the design panel. Clock mode generates a bunch of results stored in a file with clocking potentials on the electrodes.</tip>
         <value_selection type="ComboBox">
-          <Standard>Standard</Standard>
-          <Clock>Clock</Clock>
+          <standard>Standard</standard>
+          <clock>Clock</clock>
         </value_selection>
       </mode>
       <low_pot>
