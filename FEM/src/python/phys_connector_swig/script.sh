@@ -17,3 +17,8 @@ else
 fi
 
 cp phys_connector.py ..
+
+# backup for minimal compilation script on Linux:
+#g++ -O2 -fPIC -Wall -Wextra -std=c++11 -c phys_connector.cc
+#g++ -O2 -fPIC -Wall -Wextra -std=c++11 -c phys_connector_wrap.cxx -I/usr/include/python3.6m
+#g++ -shared -o _phys_connector.so phys_connector.o phys_connector_wrap.o -static-libstdc++
