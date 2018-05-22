@@ -329,7 +329,7 @@ bool PhysicsConnector::readItemTree(const bpt::ptree &subtree, const std::shared
 {
   for (bpt::ptree::value_type const &item_tree : subtree) {
     std::string item_name = item_tree.first;
-
+    std::cout << "item_name: " << item_name << std::endl;
     if (!item_name.compare("aggregate")) {
       // add aggregate child to tree
       agg_parent->aggs.push_back(std::make_shared<Aggregate>());
@@ -350,19 +350,38 @@ bool PhysicsConnector::readItemTree(const bpt::ptree &subtree, const std::shared
 bool PhysicsConnector::readElectrode(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
 {
   double x1, x2, y1, y2;
-  double potential, pixel_per_angstrom, phase;
-  int layer_id, electrode_type;
-
+  double pixel_per_angstrom;
+  int layer_id;
+  int electrode_type = 0;
+  double potential = 0;
+  double phase = 0;
+  for (bpt::ptree::value_type const& i_tree : subtree) {
+    std::string i_name = i_tree.first;
+    if (!i_name.compare("property_map")) {
+      for (bpt::ptree::value_type const &ii_tree : i_tree.second){
+        std::string ii_name = ii_tree.first;
+        if (!ii_name.compare("phase")) {
+          phase = ii_tree.second.get<double>("val");
+        } else if (!ii_name.compare("potential")) {
+          potential = ii_tree.second.get<double>("val");
+        } else if (!ii_name.compare("type")) {
+          std::string type_string = ii_tree.second.get<std::string>("val");
+          if (!type_string.compare("fixed")) {
+            electrode_type = 0;
+          } else if (!type_string.compare("clocked")) {
+            electrode_type = 1;
+          }
+        }
+      }
+    }
+  }
   // read values from XML stream
+  layer_id = subtree.get<int>("layer_id");
   pixel_per_angstrom = subtree.get<double>("pixel_per_angstrom");
-  potential = subtree.get<double>("potential");
   x1 = subtree.get<double>("dim.<xmlattr>.x1");
   x2 = subtree.get<double>("dim.<xmlattr>.x2");
   y1 = subtree.get<double>("dim.<xmlattr>.y1");
   y2 = subtree.get<double>("dim.<xmlattr>.y2");
-  electrode_type = subtree.get<int>("electrode_type");
-  layer_id = subtree.get<int>("layer_id");
-  phase = subtree.get<double>("phase");
   agg_parent->elecs.push_back(std::make_shared<Electrode>(layer_id,x1,x2,y1,y2,potential,phase,electrode_type,pixel_per_angstrom));
 
   std::cout << "Electrode created with x1=" << agg_parent->elecs.back()->x1 << ", y1=" << agg_parent->elecs.back()->y1 <<

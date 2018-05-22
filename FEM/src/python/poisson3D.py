@@ -186,7 +186,7 @@ for step in range(steps):
     for i in range(len(elec_list)):
         elec_str = "Electrode "+str(i)+" is "
         if elec_list[i]["electrode_type"] == 0:
-            elec_str += "unclocked, "
+            elec_str += "fixed, "
             potential_to_set = elec_list[i]["potential"]
         elif elec_list[i]["electrode_type"] == 1:
             elec_str += "clocked, "
