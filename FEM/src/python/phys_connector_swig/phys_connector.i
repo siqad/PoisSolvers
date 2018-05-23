@@ -49,10 +49,12 @@ namespace std {
       for key in kwargs:
         if key == "db_loc":
           self.setDBLocData(StringPairVector(self.tuplify(kwargs[key])))
-        if key == "db_charge":
+        elif key == "db_charge":
           self.setDBChargeData(StringPairVector(self.tuplify(kwargs[key])))
-        if key == "potential":
+        elif key == "potential":
           self.setElecPotentialData(StringVector2D(self.tuplify(kwargs[key])))
+        elif key == "db_pot":
+          self.setDBPotData(StringVector2D(self.tuplify(kwargs[key])))
   }
 
   %pythoncode{
@@ -71,6 +73,12 @@ namespace std {
           elec_curr["y2"] *= m_per_A
           elecs.append(elec_curr)
         return elecs
+      if key == "dbs":
+        dbs = []
+        for db in self.db_col:
+          db_curr = {"x":float(db.x), "y":float(db.y)}
+          dbs.append(db_curr)
+        return dbs
       elif key == "parameters":
         sim_keys = ["bcs", "high_pot", "image_resolution", "low_pot", "max_abs_error",\
                     "max_linear_iters", "max_rel_error", "mode", "sim_resolution", \
@@ -86,6 +94,10 @@ namespace std {
   %pythoncode{
     def exportElecPotentialData(self, data_in):
       self.setElecPotentialData(StringVector2D(self.tuplify(data_in)))
+  }
+  %pythoncode{
+    def exportDBPotData(self, data_in):
+      self.setDBPotData(StringVector2D(self.tuplify(data_in)))
   }
   %pythoncode{
     def exportDBChargeData(self, data_in):

@@ -46,8 +46,7 @@ namespace phys{
   // dangling bond
   struct DBDot {
     float x,y;  // physical location in angstroms
-    float elec;
-    DBDot(float in_x, float in_y, float in_e) : x(in_x), y(in_y), elec(in_e) {};
+    DBDot(float in_x, float in_y) : x(in_x), y(in_y){};
   };
 
   // a constant iterator that iterates through all dangling bonds in the problem
@@ -174,6 +173,7 @@ namespace phys{
     void setExportDBChargeConfig(bool set_val){export_db_charge_config = set_val;}
     void setExportElectrode(bool set_val){export_electrode = set_val;}
     void setExportDBLoc(bool set_val){export_db_loc = set_val;}
+    void setExportDBPot(bool set_val){export_db_pot = set_val;}
 
     //generalosed setExport
     void setExport(std::string key, std::vector< std::pair< std::string, std::string > > &data_in);
@@ -185,6 +185,8 @@ namespace phys{
     void setElectrodeData(std::vector<std::vector<std::string>> &data_in);
     //set vector of strings as db data
     void setDBLocData(std::vector< std::pair< std::string, std::string > > &data_in);
+    //set vector of strings as db data
+    void setDBPotData(std::vector< std::vector< std::string > > &data_in);
     //set vector of strings as db data
     void setDBChargeData(std::vector<std::pair<std::string, std::string> > &data_in);
 
@@ -203,6 +205,7 @@ namespace phys{
 
     //simulation inputs and outputs
     std::vector<std::vector<std::string>> pot_data;
+    std::vector<std::vector<std::string>> db_pot_data;
     std::vector<std::vector<std::string>> elec_data;
     std::vector<std::pair<std::string, std::string>> dbl_data;
     std::vector<std::pair<std::string, std::string>> db_charge_data;
@@ -249,6 +252,7 @@ namespace phys{
     bool export_db_charge_config;
     bool export_electrode;
     bool export_db_loc;
+    bool export_db_pot;
     int return_code;
     std::chrono::time_point<std::chrono::system_clock> start_time;
     std::chrono::time_point<std::chrono::system_clock> end_time;

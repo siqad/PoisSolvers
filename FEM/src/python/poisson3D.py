@@ -1,5 +1,6 @@
 import sys
-import dolfin
+# import dolfin
+import fenics as dolfin
 import subprocess
 import numpy as np
 import mesh_writer_3D as mw
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 
 pcon = phys_con.PhysicsConnector("PoisSolver", sys.argv[1], sys.argv[2])
 pcon.setExpectElectrode(True)
+pcon.setExpectDB(True)
 pcon.readProblem()
 pcon.initCollections()
 
@@ -27,6 +29,9 @@ metal_offset = float(pcon.getProperty("Metal")["zoffset"])
 metal_thickness = float(pcon.getProperty("Metal")["zheight"])
 
 elec_list = pcon.getSimProps("electrodes")
+db_list = pcon.getSimProps("dbs")
+print(elec_list)
+print(db_list)
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = getBB(elec_list)
 sim_params = pcon.getSimProps("parameters")
 res_scale = float(sim_params["sim_resolution"])
@@ -276,14 +281,18 @@ for step in range(steps):
         for j in range(ny):
             XYZ.append([X[i,j],Y[i,j],Z[i,j]])
     pcon.setExport(potential=XYZ)
-
     plt.figure()
-    # plt.imshow(XYZ, cmap='hot', interpolation='nearest')
     plt.pcolormesh(X,Y,Z)
     plt.gca().invert_yaxis()
     savestring = os.path.abspath(os.path.dirname(sys.argv[2]))+'/SiAirBoundary%02d.png'%(step)
     plt.savefig(savestring)
 
-    # plt.show()
+    if len(db_list) > 0:
+        print("Saving potential at db locations")
+        db_pots = []
+        for db in db_list:
+            db_pots.append([db['x'],db['y'], u(float(db['x']*1.0E-10),float(db['y']*1.0E-10), boundary_dielectric)])
+        pcon.setExport(db_pot=db_pots)
+
 
 print("Ending.")

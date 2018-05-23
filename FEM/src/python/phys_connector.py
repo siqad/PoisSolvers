@@ -780,13 +780,9 @@ class DBDot(_object):
     __swig_getmethods__["y"] = _phys_connector.DBDot_y_get
     if _newclass:
         y = _swig_property(_phys_connector.DBDot_y_get, _phys_connector.DBDot_y_set)
-    __swig_setmethods__["elec"] = _phys_connector.DBDot_elec_set
-    __swig_getmethods__["elec"] = _phys_connector.DBDot_elec_get
-    if _newclass:
-        elec = _swig_property(_phys_connector.DBDot_elec_get, _phys_connector.DBDot_elec_set)
 
-    def __init__(self, in_x, in_y, in_e):
-        this = _phys_connector.new_DBDot(in_x, in_y, in_e)
+    def __init__(self, in_x, in_y):
+        this = _phys_connector.new_DBDot(in_x, in_y)
         try:
             self.this.append(this)
         except __builtin__.Exception:
@@ -1089,6 +1085,9 @@ class PhysicsConnector(_object):
     def setExportDBLoc(self, set_val):
         return _phys_connector.PhysicsConnector_setExportDBLoc(self, set_val)
 
+    def setExportDBPot(self, set_val):
+        return _phys_connector.PhysicsConnector_setExportDBPot(self, set_val)
+
     def setExport(self, *args):
         return _phys_connector.PhysicsConnector_setExport(self, *args)
 
@@ -1100,6 +1099,9 @@ class PhysicsConnector(_object):
 
     def setDBLocData(self, data_in):
         return _phys_connector.PhysicsConnector_setDBLocData(self, data_in)
+
+    def setDBPotData(self, data_in):
+        return _phys_connector.PhysicsConnector_setDBPotData(self, data_in)
 
     def setDBChargeData(self, data_in):
         return _phys_connector.PhysicsConnector_setDBChargeData(self, data_in)
@@ -1128,6 +1130,10 @@ class PhysicsConnector(_object):
     __swig_getmethods__["pot_data"] = _phys_connector.PhysicsConnector_pot_data_get
     if _newclass:
         pot_data = _swig_property(_phys_connector.PhysicsConnector_pot_data_get, _phys_connector.PhysicsConnector_pot_data_set)
+    __swig_setmethods__["db_pot_data"] = _phys_connector.PhysicsConnector_db_pot_data_set
+    __swig_getmethods__["db_pot_data"] = _phys_connector.PhysicsConnector_db_pot_data_get
+    if _newclass:
+        db_pot_data = _swig_property(_phys_connector.PhysicsConnector_db_pot_data_get, _phys_connector.PhysicsConnector_db_pot_data_set)
     __swig_setmethods__["elec_data"] = _phys_connector.PhysicsConnector_elec_data_set
     __swig_getmethods__["elec_data"] = _phys_connector.PhysicsConnector_elec_data_get
     if _newclass:
@@ -1161,10 +1167,12 @@ class PhysicsConnector(_object):
       for key in kwargs:
         if key == "db_loc":
           self.setDBLocData(StringPairVector(self.tuplify(kwargs[key])))
-        if key == "db_charge":
+        elif key == "db_charge":
           self.setDBChargeData(StringPairVector(self.tuplify(kwargs[key])))
-        if key == "potential":
+        elif key == "potential":
           self.setElecPotentialData(StringVector2D(self.tuplify(kwargs[key])))
+        elif key == "db_pot":
+          self.setDBPotData(StringVector2D(self.tuplify(kwargs[key])))
 
 
     def getSimProps(self, key):
@@ -1182,6 +1190,12 @@ class PhysicsConnector(_object):
           elec_curr["y2"] *= m_per_A
           elecs.append(elec_curr)
         return elecs
+      if key == "dbs":
+        dbs = []
+        for db in self.db_col:
+          db_curr = {"x":float(db.x), "y":float(db.y)}
+          dbs.append(db_curr)
+        return dbs
       elif key == "parameters":
         sim_keys = ["bcs", "high_pot", "image_resolution", "low_pot", "max_abs_error",\
                     "max_linear_iters", "max_rel_error", "mode", "sim_resolution", \
@@ -1196,6 +1210,10 @@ class PhysicsConnector(_object):
 
     def exportElecPotentialData(self, data_in):
       self.setElecPotentialData(StringVector2D(self.tuplify(data_in)))
+
+
+    def exportDBPotData(self, data_in):
+      self.setDBPotData(StringVector2D(self.tuplify(data_in)))
 
 
     def exportDBChargeData(self, data_in):

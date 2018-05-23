@@ -63,6 +63,8 @@ void PhysicsConnector::setExport(std::string key, std::vector< std::vector< std:
       setElecPotentialData(data_in);
     } else if (key == "electrodes"){
       setElectrodeData(data_in);
+    } else if (key == "db_pot"){
+      setElectrodeData(data_in);
     }
 }
 
@@ -76,6 +78,12 @@ void PhysicsConnector::setElectrodeData(std::vector<std::vector<std::string>> &d
 {
   setExportElectrode(true);
   elec_data = data_in;
+}
+
+
+void PhysicsConnector::setDBPotData(std::vector< std::vector< std::string > > &data_in){
+  setExportDBPot(true);
+  db_pot_data = data_in;
 }
 
 void PhysicsConnector::setDBLocData(std::vector< std::pair< std::string, std::string > > &data_in)
@@ -102,6 +110,7 @@ void PhysicsConnector::initProblem(void)
   setExportDBChargeConfig(false);
   setExportElectrode(false);
   setExportDBLoc(false);
+  setExportDBPot(false);
   start_time = std::chrono::system_clock::now();
 }
 
@@ -377,16 +386,17 @@ bool PhysicsConnector::readElectrode(const bpt::ptree &subtree, const std::share
 
 bool PhysicsConnector::readDBDot(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
 {
-  float x, y, elec;
+  float x, y;
 
   // read x and y from XML stream
-  elec = subtree.get<float>("elec");
+  // elec = subtree.get<float>("elec");
   x = subtree.get<float>("physloc.<xmlattr>.x");
   y = subtree.get<float>("physloc.<xmlattr>.y");
 
-  agg_parent->dbs.push_back(std::make_shared<DBDot>(x,y,elec));
+  agg_parent->dbs.push_back(std::make_shared<DBDot>(x,y));
 
-  std::cout << "DBDot created with x=" << agg_parent->dbs.back()->x << ", y=" << agg_parent->dbs.back()->y << ", elec=" << agg_parent->dbs.back()->elec << std::endl;
+  // std::cout << "DBDot created with x=" << agg_parent->dbs.back()->x << ", y=" << agg_parent->dbs.back()->y << ", elec=" << agg_parent->dbs.back()->elec << std::endl;
+  std::cout << "DBDot created with x=" << agg_parent->dbs.back()->x << ", y=" << agg_parent->dbs.back()->y << std::endl;
 
   return true;
 }
@@ -401,6 +411,7 @@ void PhysicsConnector::writeResultsXml()
   boost::property_tree::ptree node_sim_params; // <sim_params>
   boost::property_tree::ptree node_electrode;  // <electrode>
   boost::property_tree::ptree node_potential_map;  // <potential>
+  boost::property_tree::ptree node_db_potentials;  // <db_potential>
   boost::property_tree::ptree node_physloc;    // <physloc>
   boost::property_tree::ptree node_elec_dist;  // <elec_dist>
 
@@ -477,6 +488,36 @@ void PhysicsConnector::writeResultsXml()
     }
     node_root.add_child("potential_map", node_potential_map);
   }
+
+  //potentials at db locations
+  if (export_db_pot){
+    bpt::ptree node_dbdots;
+    std::cout << "Exporting electric potential data at dbs..." << std::endl;
+    for (unsigned int i = 0; i < db_pot_data.size(); i++){
+      bpt::ptree node_dbdot;
+      bpt::ptree node_physloc;
+      node_physloc.put("<xmlattr>.x", db_pot_data[i][0].c_str());
+      node_physloc.put("<xmlattr>.y", db_pot_data[i][1].c_str());
+      node_dbdot.add_child("physloc", node_physloc);
+      boost::property_tree::ptree node_db_pot;
+      node_db_pot.put("", db_pot_data[i][2].c_str());
+      node_dbdot.add_child("potential", node_db_pot);
+      node_dbdots.add_child("dbdot", node_dbdot);
+    }
+    node_root.add_child("dbdots", node_dbdots);
+  }
+  // if (export_db_loc){
+  //   std::cout << "Exporting DB locations..." << std::endl;
+  //   for (unsigned int i = 0; i < dbl_data.size(); i++){
+  //     bpt::ptree node_dbdot;
+  //     node_dbdot.put("<xmlattr>.x", dbl_data[i].first.c_str());
+  //     node_dbdot.put("<xmlattr>.y", dbl_data[i].second.c_str());
+  //     node_physloc.add_child("dbdot", node_dbdot);
+  //   }
+  //   node_root.add_child("physloc", node_physloc);
+  // }
+
+
 
   tree.add_child("sim_out", node_root);
   // write to file
