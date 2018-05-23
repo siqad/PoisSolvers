@@ -355,7 +355,6 @@ bool PhysicsConnector::readElectrode(const bpt::ptree &subtree, const std::share
   layer_id = subtree.get<int>("layer_id");
   potential = subtree.get<double>("property_map.potential.val");
   phase = subtree.get<double>("property_map.phase.val");
-  std::cout << potential << " " << phase << std::endl;
   std::string electrode_type_s = subtree.get<std::string>("property_map.type.val");
   if (!electrode_type_s.compare("fixed")){
     electrode_type = 0;
