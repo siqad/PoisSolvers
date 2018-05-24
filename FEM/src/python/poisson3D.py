@@ -1,6 +1,5 @@
 import sys
-# import dolfin
-import fenics as dolfin
+import dolfin
 import subprocess
 import numpy as np
 import mesh_writer_3D as mw
