@@ -7,6 +7,7 @@ import time
 import os
 import matplotlib.pyplot as plt
 import siqadconn
+from dolfin_utils.meshconvert import meshconvert
 
 def getBB(elec_list):
     min_x = min([a.x1 for a in elec_list])
@@ -17,6 +18,7 @@ def getBB(elec_list):
     xs = [min_x-2.0*(max_x-min_x), max_x+2.0*(max_x-min_x)]
     ys = [min_y-2.0*(max_y-min_y), max_y+2.0*(max_y-min_y)]
     return xs, ys
+
 in_path = sys.argv[1]
 out_path = sys.argv[2]
 sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
@@ -142,13 +144,17 @@ mw.setBGField(bg_field_ind)
 print("Initializing mesh with GMSH...")
 abs_in_dir = os.path.abspath(os.path.dirname(in_path))
 with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(mw.file_string)
-subprocess.call(['gmsh -3 '+ abs_in_dir + '/domain.geo -string "General.ExpertMode=1;"'+\
-                 ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
-                 ' -string "Mesh.CharacteristicLengthExtendFromBoundary=0;"'], shell=True) #Expert mode to suppress warnings about fine mesh
-subprocess.call(['dolfin-convert ' + abs_in_dir + '/domain.msh ' + \
-                abs_in_dir + '/domain.xml'], shell=True)
-mesh = dolfin.Mesh(abs_in_dir + '/domain.xml')
 
+#Expert mode to suppress warnings about fine mesh
+subprocess.call(["gmsh", "-3",
+                os.path.join(abs_in_dir,"domain.geo"),
+                '-string', '"General.ExpertMode=1;"',
+                '-string', '"Mesh.CharacteristicLengthFromPoints=0;"',
+                '-string', '"Mesh.CharacteristicLengthExtendFromBoundary=0;"'])
+
+meshconvert.convert2xml(os.path.join(abs_in_dir,"domain.msh"), os.path.join(abs_in_dir,"domain.xml"))
+
+mesh = dolfin.Mesh(os.path.join(abs_in_dir,'domain.xml'))
 
 print("Marking boundaries...")
 # Initialize mesh function for interior domains
@@ -267,10 +273,6 @@ for step in range(steps):
 
     # PRINT TO FILE
     abs_out_dir = os.path.abspath(os.path.dirname(out_path))
-    print("Saving solution to .pvd file...")
-    file_string = abs_out_dir + "/Potential.pvd"
-    dolfin.parameters['allow_extrapolation'] = True
-    dolfin.File(file_string) << u
 
     print("Creating 2D data slice")
     nx = int(sim_params['image_resolution'])
@@ -287,10 +289,12 @@ for step in range(steps):
         for j in range(ny):
             XYZ.append([X[i,j],Y[i,j],Z[i,j]])
     sqconn.export(potential=XYZ)
-    plt.figure()
-    plt.pcolormesh(X,Y,Z)
+    plt.figure(frameon=False)
     plt.gca().invert_yaxis()
-    savestring = abs_out_dir+'/SiAirBoundary%02d.png'%(step)
+    plt.axis('off')
+    plt.pcolormesh(X,Y,Z)
+    savestring = os.path.join(abs_out_dir,'SiAirBoundary{}.png'.format(step))
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.savefig(savestring)
 
 print("Ending.")
