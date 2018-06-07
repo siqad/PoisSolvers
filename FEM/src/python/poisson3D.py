@@ -7,6 +7,7 @@ import time
 import os
 import phys_connector as phys_con
 import matplotlib.pyplot as plt
+import dolfin_convert
 
 pcon = phys_con.PhysicsConnector("PoisSolver", sys.argv[1], sys.argv[2])
 pcon.setExpectElectrode(True)
@@ -139,6 +140,11 @@ with open(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo', 'w') as
 subprocess.call(['gmsh -3 '+ os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo -string "General.ExpertMode=1;"'+\
                  ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
                  ' -string "Mesh.CharacteristicLengthExtendFromBoundary=0;"'], shell=True) #Expert mode to suppress warnings about fine mesh
+# sys_call_args = []
+# sys_call_args.append("dolfin-convert")
+# sys_call_args.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[1])),"domain.msh"))
+# sys_call_args.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[1])),"domain.xml"))
+# dolfin_convert.main(sys_call_args)
 subprocess.call(['dolfin-convert ' + os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.msh ' + \
                 os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.xml'], shell=True)
 mesh = dolfin.Mesh(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.xml')
