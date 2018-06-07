@@ -5,35 +5,40 @@ import numpy as np
 import mesh_writer_3D as mw
 import time
 import os
-import phys_connector as phys_con
 import matplotlib.pyplot as plt
-import dolfin_convert
-
-pcon = phys_con.PhysicsConnector("PoisSolver", sys.argv[1], sys.argv[2])
-pcon.setExpectElectrode(True)
-pcon.setExpectDB(True)
-pcon.readProblem()
-pcon.initCollections()
+import siqadconn
 
 def getBB(elec_list):
-    min_x = min([a['x1'] for a in elec_list])
-    max_x = max([a['x2'] for a in elec_list])
-    min_y = min([a['y1'] for a in elec_list])
-    max_y = max([a['y2'] for a in elec_list])
+    min_x = min([a.x1 for a in elec_list])
+    max_x = max([a.x2 for a in elec_list])
+    min_y = min([a.y1 for a in elec_list])
+    max_y = max([a.y2 for a in elec_list])
 
     xs = [min_x-2.0*(max_x-min_x), max_x+2.0*(max_x-min_x)]
     ys = [min_y-2.0*(max_y-min_y), max_y+2.0*(max_y-min_y)]
     return xs, ys
 
-metal_offset = float(pcon.getProperty("Metal")["zoffset"])
-metal_thickness = float(pcon.getProperty("Metal")["zheight"])
+sqconn = siqadconn.SiQADConnector("PoisSolver", sys.argv[1], sys.argv[2])
+for layer in sqconn.getLayers():
+    if layer.name == "Metal":
+        metal_offset = float(layer.zoffset)
+        metal_thickness = float(layer.zheight)
+        break
 
-elec_list = pcon.getSimProps("electrodes")
-db_list = pcon.getSimProps("dbs")
-print(elec_list)
-print(db_list)
+elec_list = []
+m_per_A = 1.0E-10 #metres per angstrom
+for elec in sqconn.electrodeCollection():
+    elec_curr = elec
+    #units given are in angstroms, convert to metres
+    elec_curr.x1 *= m_per_A
+    elec_curr.x2 *= m_per_A
+    elec_curr.y1 *= m_per_A
+    elec_curr.y2 *= m_per_A
+    elec_list.append(elec_curr)
+
+sim_params = sqconn.getAllParameters()
+
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = getBB(elec_list)
-sim_params = pcon.getSimProps("parameters")
 res_scale = float(sim_params["sim_resolution"])
 
 #prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
@@ -41,8 +46,6 @@ if boundary_x_min == 0:
     boundary_x_min -= 0.01*boundary_x_max
 if boundary_y_min == 0:
     boundary_y_min -= 0.01*boundary_y_max
-# boundary_z_min = metal_offset*1.25
-# boundary_z_max = np.abs(0.5*boundary_z_min)
 boundary_z_min = -np.abs(metal_offset)*10.0
 boundary_z_max = -boundary_z_min
 boundary_dielectric = 0.0 #at the surface.
@@ -114,21 +117,21 @@ back = Back() #z
 air = Air()
 electrode = []
 for i in range(len(elec_list)):
-    electrode.append(Electrode([elec_list[i]['x1'], elec_list[i]['x2']], \
-                        [elec_list[i]['y1'], elec_list[i]['y2']], \
+    electrode.append(Electrode([elec_list[i].x1, elec_list[i].x2], \
+                        [elec_list[i].y1, elec_list[i].y2], \
                         [metal_offset, metal_offset+metal_thickness] ) )
-    mw.addBox([elec_list[i]['x1'],elec_list[i]['y1'],metal_offset], \
-              [elec_list[i]['x2'],elec_list[i]['y2'],metal_offset+metal_thickness], 1, "seam")
+    mw.addBox([elec_list[i].x1,elec_list[i].y1,metal_offset], \
+              [elec_list[i].x2,elec_list[i].y2,metal_offset+metal_thickness], 1, "seam")
 
     #make resolution inside electrodes coarse
     fields += [mw.addBoxField(1.0, 0.0, \
-              [elec_list[i]['x1'], elec_list[i]['x2']], \
-              [elec_list[i]['y1'], elec_list[i]['y2']], \
+              [elec_list[i].x1, elec_list[i].x2], \
+              [elec_list[i].y1, elec_list[i].y2], \
               [metal_offset, metal_offset+metal_thickness])]
     fields = [mw.addMaxField(fields)]
     fields += [mw.addBoxField(0.25, 1.0, \
-              [1.1*elec_list[i]['x1'], 1.1*elec_list[i]['x2']], \
-              [1.1*elec_list[i]['y1'], 1.1*elec_list[i]['y2']], \
+              [1.1*elec_list[i].x1, 1.1*elec_list[i].x2], \
+              [1.1*elec_list[i].y1, 1.1*elec_list[i].y2], \
               [1.1*metal_offset, 1.1*(metal_offset+metal_thickness)])]
     fields = [mw.addMinField(fields)]
 
@@ -140,11 +143,6 @@ with open(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo', 'w') as
 subprocess.call(['gmsh -3 '+ os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo -string "General.ExpertMode=1;"'+\
                  ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
                  ' -string "Mesh.CharacteristicLengthExtendFromBoundary=0;"'], shell=True) #Expert mode to suppress warnings about fine mesh
-# sys_call_args = []
-# sys_call_args.append("dolfin-convert")
-# sys_call_args.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[1])),"domain.msh"))
-# sys_call_args.append(os.path.join(os.path.abspath(os.path.dirname(sys.argv[1])),"domain.xml"))
-# dolfin_convert.main(sys_call_args)
 subprocess.call(['dolfin-convert ' + os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.msh ' + \
                 os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.xml'], shell=True)
 mesh = dolfin.Mesh(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.xml')
@@ -180,7 +178,7 @@ if mode == "standard":
     steps = 1
 elif mode == "clock":
     steps = int(sim_params["steps"])
-
+# print(elec_list)
 for step in range(steps):
     print("Defining function, space, basis...")
     # Define function space and basis functions
@@ -195,13 +193,13 @@ for step in range(steps):
     phi_bi = phi_gold - chi_si
     for i in range(len(elec_list)):
         elec_str = "Electrode "+str(i)+" is "
-        if elec_list[i]["electrode_type"] == 0:
-            elec_str += "fixed, "
-            potential_to_set = elec_list[i]["potential"]
-        elif elec_list[i]["electrode_type"] == 1:
+        if elec_list[i].electrode_type == 1:
             elec_str += "clocked, "
-            tot_phase = elec_list[i]["phase"] + step*360/steps
-            potential_to_set = elec_list[i]["potential"]*np.sin( np.deg2rad(tot_phase) )
+            tot_phase = elec_list[i].phase + step*360/steps
+            potential_to_set = elec_list[i].potential*np.sin( np.deg2rad(tot_phase) )
+        else:
+            elec_str += "fixed, "
+            potential_to_set = elec_list[i].potential
         if metal_offset > boundary_dielectric:
             elec_str += "and above the dielectric interface."
         else:
@@ -285,19 +283,11 @@ for step in range(steps):
     for i in range(nx):
         for j in range(ny):
             XYZ.append([X[i,j],Y[i,j],Z[i,j]])
-    pcon.setExport(potential=XYZ)
+    sqconn.export(potential=XYZ)
     plt.figure()
     plt.pcolormesh(X,Y,Z)
     plt.gca().invert_yaxis()
     savestring = os.path.abspath(os.path.dirname(sys.argv[2]))+'/SiAirBoundary%02d.png'%(step)
     plt.savefig(savestring)
-
-    if len(db_list) > 0:
-        print("Saving potential at db locations")
-        db_pots = []
-        for db in db_list:
-            db_pots.append([db['x'],db['y'], u(float(db['x']*1.0E-10),float(db['y']*1.0E-10), boundary_dielectric)])
-        pcon.setExport(db_pot=db_pots)
-
 
 print("Ending.")
