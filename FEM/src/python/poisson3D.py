@@ -292,7 +292,7 @@ for step in range(steps):
     plt.figure(frameon=False)
     plt.gca().invert_yaxis()
     plt.axis('off')
-    plt.pcolormesh(X,Y,Z)
+    plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
     savestring = os.path.join(abs_out_dir,'SiAirBoundary{}.png'.format(step))
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.savefig(savestring)
