@@ -17,8 +17,9 @@ def getBB(elec_list):
     xs = [min_x-2.0*(max_x-min_x), max_x+2.0*(max_x-min_x)]
     ys = [min_y-2.0*(max_y-min_y), max_y+2.0*(max_y-min_y)]
     return xs, ys
-
-sqconn = siqadconn.SiQADConnector("PoisSolver", sys.argv[1], sys.argv[2])
+in_path = sys.argv[1]
+out_path = sys.argv[2]
+sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
 for layer in sqconn.getLayers():
     if layer.name == "Metal":
         metal_offset = float(layer.zoffset)
@@ -139,13 +140,14 @@ bg_field_ind = mw.addMeanField(fields, 1E-9)
 mw.setBGField(bg_field_ind)
 
 print("Initializing mesh with GMSH...")
-with open(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo', 'w') as f: f.write(mw.file_string)
-subprocess.call(['gmsh -3 '+ os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.geo -string "General.ExpertMode=1;"'+\
+abs_in_dir = os.path.abspath(os.path.dirname(in_path))
+with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(mw.file_string)
+subprocess.call(['gmsh -3 '+ abs_in_dir + '/domain.geo -string "General.ExpertMode=1;"'+\
                  ' -string "Mesh.CharacteristicLengthFromPoints=0;"'+\
                  ' -string "Mesh.CharacteristicLengthExtendFromBoundary=0;"'], shell=True) #Expert mode to suppress warnings about fine mesh
-subprocess.call(['dolfin-convert ' + os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.msh ' + \
-                os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.xml'], shell=True)
-mesh = dolfin.Mesh(os.path.abspath(os.path.dirname(sys.argv[1])) + '/domain.xml')
+subprocess.call(['dolfin-convert ' + abs_in_dir + '/domain.msh ' + \
+                abs_in_dir + '/domain.xml'], shell=True)
+mesh = dolfin.Mesh(abs_in_dir + '/domain.xml')
 
 
 print("Marking boundaries...")
@@ -264,8 +266,9 @@ for step in range(steps):
     print(("Solve finished in " + str(end-start) + " seconds."))
 
     # PRINT TO FILE
+    abs_out_dir = os.path.abspath(os.path.dirname(out_path))
     print("Saving solution to .pvd file...")
-    file_string = os.path.abspath(os.path.dirname(sys.argv[1])) + "/Potential.pvd"
+    file_string = abs_out_dir + "/Potential.pvd"
     dolfin.parameters['allow_extrapolation'] = True
     dolfin.File(file_string) << u
 
@@ -287,7 +290,7 @@ for step in range(steps):
     plt.figure()
     plt.pcolormesh(X,Y,Z)
     plt.gca().invert_yaxis()
-    savestring = os.path.abspath(os.path.dirname(sys.argv[2]))+'/SiAirBoundary%02d.png'%(step)
+    savestring = abs_out_dir+'/SiAirBoundary%02d.png'%(step)
     plt.savefig(savestring)
 
 print("Ending.")
