@@ -213,22 +213,6 @@ class SiQADConnector(_object):
         self.setExport(key, StringVector2D(self.tuplify(kwargs[key])))
 
 
-    def exportElecPotentialData(self, data_in):
-      self.setElecPotentialData(StringVector2D(self.tuplify(data_in)))
-
-
-    def exportDBPotData(self, data_in):
-      self.setDBPotData(StringVector2D(self.tuplify(data_in)))
-
-
-    def exportDBChargeData(self, data_in):
-      self.setDBChargeData(StringPairVector(self.tuplify(data_in)))
-
-
-    def exportDBLocData(self, data_in):
-      self.setDBLocData(StringPairVector(self.tuplify(data_in)))
-
-
     def tuplify(self, data):
       if hasattr(data,'__iter__') and not hasattr(data, "strip"):
         return tuple(self.tuplify(i) for i in data)
