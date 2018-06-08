@@ -289,12 +289,33 @@ for step in range(steps):
         for j in range(ny):
             XYZ.append([X[i,j],Y[i,j],Z[i,j]])
     sqconn.export(potential=XYZ)
-    plt.figure(frameon=False)
+    if step == 0:
+        fig = plt.figure()
+        plt.gca().invert_yaxis()
+        plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
+        cbar = plt.colorbar()
+        cbar.set_label("Potential (V)")
+        locs, labels = plt.yticks()
+        labels = []
+        for loc in locs:
+            labels += [str(round(loc*1e9, 2))]
+        plt.yticks(locs, labels)
+        locs, labels = plt.xticks()
+        labels = []
+        for loc in locs:
+            labels += [str(round(loc*1e9, 2))]
+        plt.xticks(locs, labels)
+        plt.xlabel("X (nm)")
+        plt.ylabel("Y (nm)")
+        savestring = os.path.join(abs_out_dir,'SiAirBoundary.png')
+        plt.savefig(savestring, bbox_inces="tight", pad_inches=0)
+        plt.close(fig)
+    fig = plt.figure(frameon=False)
     plt.gca().invert_yaxis()
     plt.axis('off')
     plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
     savestring = os.path.join(abs_out_dir,'SiAirBoundary{}.png'.format(step))
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.savefig(savestring)
-
+    plt.close(fig)
 print("Ending.")
