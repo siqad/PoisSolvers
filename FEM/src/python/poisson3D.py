@@ -39,6 +39,10 @@ for elec in sqconn.electrodeCollection():
     elec_curr.y2 *= m_per_A
     elec_list.append(elec_curr)
 
+db_list = []
+for db in sqconn.dbCollection():
+    db_list.append(db)
+
 sim_params = sqconn.getAllParameters()
 
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = getBB(elec_list)
@@ -270,6 +274,14 @@ for step in range(steps):
     solver.solve()
     end = time.time()
     print(("Solve finished in " + str(end-start) + " seconds."))
+
+    u.set_allow_extrapolation(True)
+    if db_list:
+        db_pots = []
+        for db in db_list:
+            db_pots.append([db.x, db.y, u(db.x*m_per_A,db.y*m_per_A, boundary_dielectric)])
+        sqconn.export(db_pot=db_pots)
+
 
     # PRINT TO FILE
     abs_out_dir = os.path.abspath(os.path.dirname(out_path))
