@@ -258,17 +258,25 @@ for step in range(steps):
 
     # Solve problem
     print("Initializing solver parameters...")
-    u = dolfin.Function(V)
+    if step == 0:
+        u = dolfin.Function(V)
+    else:
+        u = dolfin.interpolate(u_old,V)
 
     problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
     solver = dolfin.LinearVariationalSolver(problem)
     solver.parameters['linear_solver'] = 'gmres'
     solver.parameters['preconditioner'] = 'sor'
     spec_param = solver.parameters['krylov_solver']
+    if step == 0:
+        spec_param['nonzero_initial_guess'] = False
+    else:
+        spec_param['nonzero_initial_guess'] = True
+
     spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
     spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
     spec_param['maximum_iterations'] = int(sim_params["max_linear_iters"])
-
+    # spec_param['monitor_convergence'] = True
     print("Solving problem...")
     start = time.time()
     solver.solve()
@@ -294,6 +302,8 @@ for step in range(steps):
     X, Y = np.meshgrid(x, y)
     z = np.array([u(i, j, boundary_dielectric) for j in y for i in x])
     Z = z.reshape(nx, ny)
+
+    u_old = u
 
     print("Saving 2D potential data to XML")
     XYZ = []
