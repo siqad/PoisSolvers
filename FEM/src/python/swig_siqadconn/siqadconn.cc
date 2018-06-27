@@ -37,8 +37,6 @@ void SiQADConnector::setExport(std::string type, std::vector< std::pair< std::st
     dbl_data = data_in;
   else if (type == "db_charge")
     db_charge_data = data_in;
-  else if (type == "db_pot")
-    db_pot_data = data_in;
   else
     throw std::invalid_argument(std::string("No candidate for export type '") +
         type + std::string("' with class std::vector<std::pair<std::string, std::string>>"));
