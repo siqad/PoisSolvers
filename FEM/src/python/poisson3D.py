@@ -329,7 +329,7 @@ for step in range(steps):
         plt.xticks(locs, labels)
         plt.xlabel("X (nm)")
         plt.ylabel("Y (nm)")
-        savestring = os.path.join(abs_out_dir,'SiAirBoundary.png')
+        savestring = os.path.join(abs_out_dir,'SiAirPlot.png')
         plt.savefig(savestring, bbox_inces="tight", pad_inches=0)
         plt.close(fig)
     fig = plt.figure(frameon=False)
@@ -340,4 +340,8 @@ for step in range(steps):
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.savefig(savestring)
     plt.close(fig)
+if mode == "clock":
+    subprocess.call(["convert", "-delay", "20", "-loop", "0",
+                    os.path.join(abs_in_dir,"SiAirBoundary*.png"),
+                    os.path.join(abs_in_dir,"SiAirBoundary.gif")])
 print("Ending.")
