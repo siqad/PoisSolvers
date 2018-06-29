@@ -1,3 +1,11 @@
+// @file:     siqadconn.i
+// @author:   Samuel
+// @created:  2017.08.23
+// @editted:  2018.06.29 - Nathan
+// @license:  GNU LGPL v3
+//
+// @desc:     Convenient functions for interacting with SiQAD
+
 %module siqadconn
 %include <std_pair.i>
 %include <std_vector.i>

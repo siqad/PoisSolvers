@@ -1,7 +1,7 @@
 // @file:     siqadconn.cc
 // @author:   Samuel
 // @created:  2017.08.23
-// @editted:  2018.06.03 - Samuel
+// @editted:  2018.06.28 - Samuel
 // @license:  GNU LGPL v3
 //
 // @desc:     Convenient functions for interacting with SiQAD
@@ -35,8 +35,6 @@ void SiQADConnector::setExport(std::string type, std::vector< std::pair< std::st
 {
   if (type == "db_loc")
     dbl_data = data_in;
-  else if (type == "db_charge")
-    db_charge_data = data_in;
   else
     throw std::invalid_argument(std::string("No candidate for export type '") +
         type + std::string("' with class std::vector<std::pair<std::string, std::string>>"));
@@ -44,13 +42,14 @@ void SiQADConnector::setExport(std::string type, std::vector< std::pair< std::st
 
 void SiQADConnector::setExport(std::string type, std::vector< std::vector< std::string > > &data_in)
 {
-  std::cout << type << std::endl;
   if (type == "potential")
     pot_data = data_in;
   else if (type == "electrodes")
     elec_data = data_in;
   else if (type == "db_pot")
     db_pot_data = data_in;
+  else if (type == "db_charge")
+    db_charge_data = data_in;
   else
     throw std::invalid_argument(std::string("No candidate for export type '") +
         type + std::string("' with class std::vector<std::vector<std::string>>"));
@@ -143,7 +142,7 @@ void SiQADConnector::readItemTree(const bpt::ptree &subtree, const std::shared_p
 {
   for (bpt::ptree::value_type const &item_tree : subtree) {
     std::string item_name = item_tree.first;
-    // std::cout << "item_name: " << item_name << std::endl;
+    std::cout << "item_name: " << item_name << std::endl;
     if (!item_name.compare("aggregate")) {
       // add aggregate child to tree
       agg_parent->aggs.push_back(std::make_shared<Aggregate>());
@@ -296,8 +295,9 @@ bpt::ptree SiQADConnector::dbChargePropertyTree()
   bpt::ptree node_elec_dist;
   for (unsigned int i = 0; i < db_charge_data.size(); i++){
     bpt::ptree node_dist;
-    node_dist.put("", db_charge_data[i].first);
-    node_dist.put("<xmlattr>.energy", db_charge_data[i].second);
+    node_dist.put("", db_charge_data[i][0]);
+    node_dist.put("<xmlattr>.energy", db_charge_data[i][1]);
+    node_dist.put("<xmlattr>.count", db_charge_data[i][2]);
     node_elec_dist.add_child("dist", node_dist);
   }
   return node_elec_dist;
