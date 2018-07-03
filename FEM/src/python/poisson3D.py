@@ -341,8 +341,9 @@ for step in range(steps):
     plt.savefig(savestring)
     plt.close(fig)
 if mode == "clock":
-    subprocess.call(["convert", "-delay", "20",
-                     "-loop", "0", "-scale", "240x160", "-fuzz", "2%", "+dither",
+    subprocess.call(["convert", "-delay", "50",
+                     "-loop", "0", "-scale", "100x100", "-fuzz", "5%",
+                     "-layers", "Optimize",
                     os.path.join(abs_in_dir,"SiAirBoundary*.png"),
                     os.path.join(abs_in_dir,"SiAirBoundary.gif")])
 print("Ending.")
