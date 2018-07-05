@@ -336,14 +336,14 @@ for step in range(steps):
     plt.gca().invert_yaxis()
     plt.axis('off')
     plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
-    savestring = os.path.join(abs_out_dir,'SiAirBoundary{}.png'.format(step))
+    savestring = os.path.join(abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.savefig(savestring)
     plt.close(fig)
 if mode == "clock":
-    subprocess.call(["convert", "-delay", "50",
-                     "-loop", "0", "-scale", "100x100", "-fuzz", "5%",
-                     "-layers", "Optimize",
+    subprocess.call(["convert", "-delay", "20",
+                     "-loop", "0",
                     os.path.join(abs_in_dir,"SiAirBoundary*.png"),
                     os.path.join(abs_in_dir,"SiAirBoundary.gif")])
-print("Ending.")
+print("Ending...")
+time.sleep(3)
