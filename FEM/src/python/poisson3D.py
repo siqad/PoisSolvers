@@ -350,7 +350,6 @@ if mode == "clock":
     image_files.sort()
     for image_name in image_files:
         images.append(Image.open(image_name))
-            # images.append(Image.open(os.path.join(os.path.dirname(in_path), file)))
     images[0].save(os.path.join(os.path.dirname(in_path), "SiAirBoundary.gif"),
                save_all=True,
                append_images=images[1:],
