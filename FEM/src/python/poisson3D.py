@@ -343,10 +343,14 @@ for step in range(steps):
     plt.close(fig)
 if mode == "clock":
     images = []
+    image_files = []
     for file in os.listdir(os.path.dirname(in_path)):
         if file.startswith("SiAirBoundary"):
-            print(os.path.join(os.path.dirname(in_path), file))
-            images.append(Image.open(os.path.join(os.path.dirname(in_path), file)))
+            image_files.append(os.path.join(os.path.dirname(in_path), file))
+    image_files.sort()
+    for image_name in image_files:
+        images.append(Image.open(image_name))
+            # images.append(Image.open(os.path.join(os.path.dirname(in_path), file)))
     images[0].save(os.path.join(os.path.dirname(in_path), "SiAirBoundary.gif"),
                save_all=True,
                append_images=images[1:],
