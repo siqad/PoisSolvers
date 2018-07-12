@@ -8,6 +8,7 @@ import os
 import matplotlib.pyplot as plt
 import siqadconn
 from dolfin_utils.meshconvert import meshconvert
+from PIL import Image
 
 def getBB(elec_list):
     min_x = min([a.x1 for a in elec_list])
@@ -341,9 +342,15 @@ for step in range(steps):
     plt.savefig(savestring)
     plt.close(fig)
 if mode == "clock":
-    subprocess.call(["convert", "-delay", "20",
-                     "-loop", "0",
-                    os.path.join(abs_in_dir,"SiAirBoundary*.png"),
-                    os.path.join(abs_in_dir,"SiAirBoundary.gif")])
+    images = []
+    for file in os.listdir(os.path.dirname(in_path)):
+        if file.startswith("SiAirBoundary"):
+            print(os.path.join(os.path.dirname(in_path), file))
+            images.append(Image.open(os.path.join(os.path.dirname(in_path), file)))
+    images[0].save(os.path.join(os.path.dirname(in_path), "SiAirBoundary.gif"),
+               save_all=True,
+               append_images=images[1:],
+               delay=0.5,
+               loop=0)
 print("Ending...")
 time.sleep(3)
