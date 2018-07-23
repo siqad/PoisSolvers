@@ -13,8 +13,6 @@
         <value_selection type="ComboBox">
           <robin>Robin</robin>
           <neumann>Neumann</neumann>
-          <dirichlet>Dirichlet</dirichlet>
-          <periodic>Periodic</periodic>
         </value_selection>
       </bcs>
       <sim_resolution>
