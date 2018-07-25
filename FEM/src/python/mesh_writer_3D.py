@@ -11,6 +11,7 @@ class MeshWriter():
         self.ind_vol = 0
         self.ind_phys_vol = 0
         self.ind_field = 1
+        self.ind_phys_surface = 0
 
     #add a point at p, p in form [x, y]
     def addPoint(self, p, scale):
@@ -41,10 +42,13 @@ class MeshWriter():
         self.ind_2d += 1
         self.file_string += "Plane Surface(%d) = {%d};\n"\
             %(self.ind_2d,self.ind_2d-1)
+        self.file_string += "Physical Surface(%d) = {%d};\n"\
+            %(self.ind_phys_surface,self.ind_2d)
         if option == "seam":
             self.file_string += "Surface{%d} In Volume{%d};\n"\
                 %(self.ind_2d,self.ind_vol)
         self.ind_2d += 1
+        self.ind_phys_surface += 1
         return self.ind_2d - 1
     #creates the outer boundary of the mesh
     #p in form [x,y]

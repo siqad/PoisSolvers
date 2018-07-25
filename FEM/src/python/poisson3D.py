@@ -54,7 +54,7 @@ if boundary_x_min == 0:
     boundary_x_min -= 0.01*boundary_x_max
 if boundary_y_min == 0:
     boundary_y_min -= 0.01*boundary_y_max
-boundary_z_min = -np.abs(metal_offset)*10.0
+boundary_z_min = -np.max(np.array([np.abs(metal_offset), np.abs(metal_thickness)]))*10.0
 boundary_z_max = -boundary_z_min
 boundary_dielectric = 0.0 #at the surface.
 
