@@ -42,8 +42,6 @@ class MeshWriter():
         self.ind_2d += 1
         self.file_string += "Plane Surface(%d) = {%d};\n"\
             %(self.ind_2d,self.ind_2d-1)
-        self.file_string += "Physical Surface(%d) = {%d};\n"\
-            %(self.ind_phys_surface,self.ind_2d)
         if option == "seam":
             self.file_string += "Surface{%d} In Volume{%d};\n"\
                 %(self.ind_2d,self.ind_vol)
