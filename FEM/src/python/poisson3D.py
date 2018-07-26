@@ -137,10 +137,10 @@ for i in range(len(elec_list)):
               [elec_list[i].y1, elec_list[i].y2], \
               [metal_offset, metal_offset+metal_thickness])]
     fields = [mw.addMaxField(fields)]
-    fields += [mw.addBoxField(0.25, 1.0, \
-              [1.1*elec_list[i].x1, 1.1*elec_list[i].x2], \
-              [1.1*elec_list[i].y1, 1.1*elec_list[i].y2], \
-              [1.1*metal_offset, 1.1*(metal_offset+metal_thickness)])]
+    fields += [mw.addBoxField(0.1, 1.0, \
+              [2.0*elec_list[i].x1, 2.0*elec_list[i].x2], \
+              [2.0*elec_list[i].y1, 2.0*elec_list[i].y2], \
+              [2.0*metal_offset, 2.0*(metal_offset+metal_thickness)])]
     fields = [mw.addMinField(fields)]
 
 bg_field_ind = mw.addMeanField(fields, 1E-9)
