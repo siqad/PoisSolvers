@@ -145,7 +145,7 @@ for i in range(len(elec_list)):
 
 bg_field_ind = mw.addMeanField(fields, 1E-9)
 mw.setBGField(bg_field_ind)
-
+print(mw.ind_boundaries)
 print("Initializing mesh with GMSH...")
 abs_in_dir = os.path.abspath(os.path.dirname(in_path))
 with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(mw.file_string)

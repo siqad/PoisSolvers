@@ -12,7 +12,7 @@ class MeshWriter():
         self.ind_phys_vol = 0
         self.ind_phys = 1
         self.ind_field = 1
-        self.ind_phys_surf = []
+        self.ind_boundaries = [[]]
 
     #add a point at p, p in form [x, y]
     def addPoint(self, p, scale):
@@ -37,20 +37,24 @@ class MeshWriter():
         return self.ind_2d -1
 
 
-    def addLineLoop(self, a, b, c, d, option="bound"):
+    def addLineLoop(self, a, b, c, d, option="bound", box=False):
         self.file_string += "Line Loop(%d) = {%d,%d,%d,%d};\n"\
             %(self.ind_2d,a,b,c,d)
         self.ind_2d += 1
         self.file_string += "Plane Surface(%d) = {%d};\n"\
             %(self.ind_2d,self.ind_2d-1)
         if option == "seam":
-            self.file_string += "Surface{%d} In Volume{%d};\n"\
-                %(self.ind_2d,self.ind_vol)
-        # self.ind_phys_surf.append(self.ind_2d)
+            self.file_string += "Physical Surface(%d) = {%d};\n"\
+                %(self.ind_phys, self.ind_2d)
+            self.ind_phys += 1
+            # self.file_string += "Surface{%d} In Volume{%d};\n"\
+            #     %(self.ind_2d,self.ind_vol)
+            if box == True:
+                self.ind_boundaries[-1].append(self.ind_2d)
         if option == "bound":
             self.file_string += "Physical Surface(%d) = {%d};\n"\
                 %(self.ind_phys, self.ind_2d)
-            self.ind_phys_vol += 1
+            self.ind_phys += 1
         self.ind_2d += 1
         return self.ind_2d - 1
     #creates the outer boundary of the mesh
@@ -91,18 +95,18 @@ class MeshWriter():
         l1 = self.addLineByIndex(self.ind_point-1, self.ind_point-5, scale)
 
         #z=min
-        self.addLineLoop(l12,l11,l10,l9,option)
+        self.addLineLoop(l12,l11,l10,l9,option,True)
         #z=max
-        self.addLineLoop(l8,l7,l6,l5,option)
+        self.addLineLoop(l8,l7,l6,l5,option,True)
         #x=min
-        self.addLineLoop(l4,-l9,-l1,l5,option)
+        self.addLineLoop(l4,-l9,-l1,l5,option,True)
         #x=max
-        self.addLineLoop(l3,l11,-l2,-l7,option)
+        self.addLineLoop(l3,l11,-l2,-l7,option,True)
         #y=min
-        self.addLineLoop(l4,l12,-l3,-l8,option)
+        self.addLineLoop(l4,l12,-l3,-l8,option,True)
         #y=max
-        self.addLineLoop(l1,-l10,-l2,l6,option)
-
+        self.addLineLoop(l1,-l10,-l2,l6,option,True)
+        self.ind_boundaries.append([])
         if option == "bound":
             #Create the surface loop from the surfaces made, and define the volume
             self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
@@ -114,7 +118,23 @@ class MeshWriter():
             self.ind_2d += 1
             self.file_string += "Physical Volume(%d) = {%d};\n"\
                 %(self.ind_phys_vol, self.ind_2d-1)
+        # if option == "seam":
+        #     #Create the surface loop from the surfaces made, and define the volume
+        #     self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
+        #         %(self.ind_2d,self.ind_2d-1,self.ind_2d-3,self.ind_2d-5,self.ind_2d-7,self.ind_2d-9,self.ind_2d-11)
+        #     self.ind_2d += 1
+        #     self.file_string += "Volume(%d) = {%d};\n"\
+        #         %(self.ind_2d,self.ind_2d-1)
+        #     self.ind_2d += 1
+        #
+            # self.ind_vol = self.ind_2d
+            # self.file_string += "Physical Volume(%d) = {%d};\n"\
+            #     %(self.ind_phys, self.ind_2d-1)
         return
+
+    def addPhysicalVolume(self):
+        self.file_string += "Physical Volume(%d) = {%d};\n"\
+            %(self.ind_phys_vol, self.ind_vol)
 
     def addSurface(self, p1, p2, p3, p4, scale, option):
         self.addPoint(p1, scale)
