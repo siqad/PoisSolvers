@@ -284,6 +284,9 @@ for step in range(steps):
     end = time.time()
     print(("Solve finished in " + str(end-start) + " seconds."))
 
+    # V_vec = dolfin.VectorFunctionSpace(mesh, "CG", 2)
+    # grad_u = dolfin.project(dolfin.grad(u),V_vec)
+
     u.set_allow_extrapolation(True)
     if db_list:
         db_pots = []
@@ -356,4 +359,3 @@ if mode == "clock":
                delay=0.5,
                loop=0)
 print("Ending...")
-time.sleep(3)
