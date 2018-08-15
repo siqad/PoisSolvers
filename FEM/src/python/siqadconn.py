@@ -199,6 +199,9 @@ class SiQADConnector(_object):
     def electrodeCollection(self):
         return _siqadconn.SiQADConnector_electrodeCollection(self)
 
+    def electrodePolyCollection(self):
+        return _siqadconn.SiQADConnector_electrodePolyCollection(self)
+
     def inputPath(self):
         return _siqadconn.SiQADConnector_inputPath(self)
 
@@ -371,6 +374,125 @@ class DBCollection(_object):
 DBCollection_swigregister = _siqadconn.DBCollection_swigregister
 DBCollection_swigregister(DBCollection)
 
+class ElectrodePoly(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ElectrodePoly, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ElectrodePoly, name)
+    __repr__ = _swig_repr
+    __swig_setmethods__["layer_id"] = _siqadconn.ElectrodePoly_layer_id_set
+    __swig_getmethods__["layer_id"] = _siqadconn.ElectrodePoly_layer_id_get
+    if _newclass:
+        layer_id = _swig_property(_siqadconn.ElectrodePoly_layer_id_get, _siqadconn.ElectrodePoly_layer_id_set)
+    __swig_setmethods__["vertices"] = _siqadconn.ElectrodePoly_vertices_set
+    __swig_getmethods__["vertices"] = _siqadconn.ElectrodePoly_vertices_get
+    if _newclass:
+        vertices = _swig_property(_siqadconn.ElectrodePoly_vertices_get, _siqadconn.ElectrodePoly_vertices_set)
+    __swig_setmethods__["potential"] = _siqadconn.ElectrodePoly_potential_set
+    __swig_getmethods__["potential"] = _siqadconn.ElectrodePoly_potential_get
+    if _newclass:
+        potential = _swig_property(_siqadconn.ElectrodePoly_potential_get, _siqadconn.ElectrodePoly_potential_set)
+    __swig_setmethods__["phase"] = _siqadconn.ElectrodePoly_phase_set
+    __swig_getmethods__["phase"] = _siqadconn.ElectrodePoly_phase_get
+    if _newclass:
+        phase = _swig_property(_siqadconn.ElectrodePoly_phase_get, _siqadconn.ElectrodePoly_phase_set)
+    __swig_setmethods__["electrode_type"] = _siqadconn.ElectrodePoly_electrode_type_set
+    __swig_getmethods__["electrode_type"] = _siqadconn.ElectrodePoly_electrode_type_get
+    if _newclass:
+        electrode_type = _swig_property(_siqadconn.ElectrodePoly_electrode_type_get, _siqadconn.ElectrodePoly_electrode_type_set)
+    __swig_setmethods__["pixel_per_angstrom"] = _siqadconn.ElectrodePoly_pixel_per_angstrom_set
+    __swig_getmethods__["pixel_per_angstrom"] = _siqadconn.ElectrodePoly_pixel_per_angstrom_get
+    if _newclass:
+        pixel_per_angstrom = _swig_property(_siqadconn.ElectrodePoly_pixel_per_angstrom_get, _siqadconn.ElectrodePoly_pixel_per_angstrom_set)
+
+    def __init__(self, in_layer_id, in_vertices, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom):
+        this = _siqadconn.new_ElectrodePoly(in_layer_id, in_vertices, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _siqadconn.delete_ElectrodePoly
+    __del__ = lambda self: None
+ElectrodePoly_swigregister = _siqadconn.ElectrodePoly_swigregister
+ElectrodePoly_swigregister(ElectrodePoly)
+
+class ElecPolyIterator(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ElecPolyIterator, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ElecPolyIterator, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, root, begin=True):
+        this = _siqadconn.new_ElecPolyIterator(root, begin)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+
+    def __eq__(self, other):
+        return _siqadconn.ElecPolyIterator___eq__(self, other)
+
+    def __ne__(self, other):
+        return _siqadconn.ElecPolyIterator___ne__(self, other)
+
+    def __ref__(self):
+        return _siqadconn.ElecPolyIterator___ref__(self)
+
+    def setCollection(self, coll):
+        return _siqadconn.ElecPolyIterator_setCollection(self, coll)
+    __swig_setmethods__["collection"] = _siqadconn.ElecPolyIterator_collection_set
+    __swig_getmethods__["collection"] = _siqadconn.ElecPolyIterator_collection_get
+    if _newclass:
+        collection = _swig_property(_siqadconn.ElecPolyIterator_collection_get, _siqadconn.ElecPolyIterator_collection_set)
+
+    def __iter__(self):
+        return _siqadconn.ElecPolyIterator___iter__(self)
+
+    def __next__(self):
+      elec_poly = _siqadconn.ElecPolyIterator___next__(self)
+      if elec_poly == None:
+        raise StopIteration
+      else:
+        return elec_poly
+
+
+    __swig_destroy__ = _siqadconn.delete_ElecPolyIterator
+    __del__ = lambda self: None
+ElecPolyIterator_swigregister = _siqadconn.ElecPolyIterator_swigregister
+ElecPolyIterator_swigregister(ElecPolyIterator)
+
+class ElectrodePolyCollection(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, ElectrodePolyCollection, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, ElectrodePolyCollection, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, elec_poly_tree_in):
+        this = _siqadconn.new_ElectrodePolyCollection(elec_poly_tree_in)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+
+    def begin(self):
+        return _siqadconn.ElectrodePolyCollection_begin(self)
+
+    def end(self):
+        return _siqadconn.ElectrodePolyCollection_end(self)
+    __swig_setmethods__["elec_poly_tree_inner"] = _siqadconn.ElectrodePolyCollection_elec_poly_tree_inner_set
+    __swig_getmethods__["elec_poly_tree_inner"] = _siqadconn.ElectrodePolyCollection_elec_poly_tree_inner_get
+    if _newclass:
+        elec_poly_tree_inner = _swig_property(_siqadconn.ElectrodePolyCollection_elec_poly_tree_inner_get, _siqadconn.ElectrodePolyCollection_elec_poly_tree_inner_set)
+
+    def __iter__(self):
+        return _siqadconn.ElectrodePolyCollection___iter__(self)
+    __swig_destroy__ = _siqadconn.delete_ElectrodePolyCollection
+    __del__ = lambda self: None
+ElectrodePolyCollection_swigregister = _siqadconn.ElectrodePolyCollection_swigregister
+ElectrodePolyCollection_swigregister(ElectrodePolyCollection)
+
 class Electrode(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Electrode, name, value)
@@ -520,6 +642,10 @@ class Aggregate(_object):
     __swig_getmethods__["elecs"] = _siqadconn.Aggregate_elecs_get
     if _newclass:
         elecs = _swig_property(_siqadconn.Aggregate_elecs_get, _siqadconn.Aggregate_elecs_set)
+    __swig_setmethods__["elec_polys"] = _siqadconn.Aggregate_elec_polys_set
+    __swig_getmethods__["elec_polys"] = _siqadconn.Aggregate_elec_polys_get
+    if _newclass:
+        elec_polys = _swig_property(_siqadconn.Aggregate_elec_polys_get, _siqadconn.Aggregate_elec_polys_set)
 
     def size(self):
         return _siqadconn.Aggregate_size(self)
@@ -534,6 +660,159 @@ class Aggregate(_object):
     __del__ = lambda self: None
 Aggregate_swigregister = _siqadconn.Aggregate_swigregister
 Aggregate_swigregister(Aggregate)
+
+class DoublePair(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, DoublePair, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, DoublePair, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        this = _siqadconn.new_DoublePair(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_setmethods__["first"] = _siqadconn.DoublePair_first_set
+    __swig_getmethods__["first"] = _siqadconn.DoublePair_first_get
+    if _newclass:
+        first = _swig_property(_siqadconn.DoublePair_first_get, _siqadconn.DoublePair_first_set)
+    __swig_setmethods__["second"] = _siqadconn.DoublePair_second_set
+    __swig_getmethods__["second"] = _siqadconn.DoublePair_second_get
+    if _newclass:
+        second = _swig_property(_siqadconn.DoublePair_second_get, _siqadconn.DoublePair_second_set)
+    def __len__(self):
+        return 2
+    def __repr__(self):
+        return str((self.first, self.second))
+    def __getitem__(self, index): 
+        if not (index % 2):
+            return self.first
+        else:
+            return self.second
+    def __setitem__(self, index, val):
+        if not (index % 2):
+            self.first = val
+        else:
+            self.second = val
+    __swig_destroy__ = _siqadconn.delete_DoublePair
+    __del__ = lambda self: None
+DoublePair_swigregister = _siqadconn.DoublePair_swigregister
+DoublePair_swigregister(DoublePair)
+
+class DoublePairVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, DoublePairVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, DoublePairVector, name)
+    __repr__ = _swig_repr
+
+    def iterator(self):
+        return _siqadconn.DoublePairVector_iterator(self)
+    def __iter__(self):
+        return self.iterator()
+
+    def __nonzero__(self):
+        return _siqadconn.DoublePairVector___nonzero__(self)
+
+    def __bool__(self):
+        return _siqadconn.DoublePairVector___bool__(self)
+
+    def __len__(self):
+        return _siqadconn.DoublePairVector___len__(self)
+
+    def __getslice__(self, i, j):
+        return _siqadconn.DoublePairVector___getslice__(self, i, j)
+
+    def __setslice__(self, *args):
+        return _siqadconn.DoublePairVector___setslice__(self, *args)
+
+    def __delslice__(self, i, j):
+        return _siqadconn.DoublePairVector___delslice__(self, i, j)
+
+    def __delitem__(self, *args):
+        return _siqadconn.DoublePairVector___delitem__(self, *args)
+
+    def __getitem__(self, *args):
+        return _siqadconn.DoublePairVector___getitem__(self, *args)
+
+    def __setitem__(self, *args):
+        return _siqadconn.DoublePairVector___setitem__(self, *args)
+
+    def pop(self):
+        return _siqadconn.DoublePairVector_pop(self)
+
+    def append(self, x):
+        return _siqadconn.DoublePairVector_append(self, x)
+
+    def empty(self):
+        return _siqadconn.DoublePairVector_empty(self)
+
+    def size(self):
+        return _siqadconn.DoublePairVector_size(self)
+
+    def swap(self, v):
+        return _siqadconn.DoublePairVector_swap(self, v)
+
+    def begin(self):
+        return _siqadconn.DoublePairVector_begin(self)
+
+    def end(self):
+        return _siqadconn.DoublePairVector_end(self)
+
+    def rbegin(self):
+        return _siqadconn.DoublePairVector_rbegin(self)
+
+    def rend(self):
+        return _siqadconn.DoublePairVector_rend(self)
+
+    def clear(self):
+        return _siqadconn.DoublePairVector_clear(self)
+
+    def get_allocator(self):
+        return _siqadconn.DoublePairVector_get_allocator(self)
+
+    def pop_back(self):
+        return _siqadconn.DoublePairVector_pop_back(self)
+
+    def erase(self, *args):
+        return _siqadconn.DoublePairVector_erase(self, *args)
+
+    def __init__(self, *args):
+        this = _siqadconn.new_DoublePairVector(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+
+    def push_back(self, x):
+        return _siqadconn.DoublePairVector_push_back(self, x)
+
+    def front(self):
+        return _siqadconn.DoublePairVector_front(self)
+
+    def back(self):
+        return _siqadconn.DoublePairVector_back(self)
+
+    def assign(self, n, x):
+        return _siqadconn.DoublePairVector_assign(self, n, x)
+
+    def resize(self, *args):
+        return _siqadconn.DoublePairVector_resize(self, *args)
+
+    def insert(self, *args):
+        return _siqadconn.DoublePairVector_insert(self, *args)
+
+    def reserve(self, n):
+        return _siqadconn.DoublePairVector_reserve(self, n)
+
+    def capacity(self):
+        return _siqadconn.DoublePairVector_capacity(self)
+    __swig_destroy__ = _siqadconn.delete_DoublePairVector
+    __del__ = lambda self: None
+DoublePairVector_swigregister = _siqadconn.DoublePairVector_swigregister
+DoublePairVector_swigregister(DoublePairVector)
 
 class IntVector(_object):
     __swig_setmethods__ = {}
