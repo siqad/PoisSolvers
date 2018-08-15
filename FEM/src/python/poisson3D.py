@@ -155,9 +155,14 @@ for i in range(len(elec_list)):
               [2.0*metal_offset, 2.0*(metal_offset+metal_thickness)])]
     fields = [mw.addMinField(fields)]
 
+electrode_poly = []
+for elec_poly in elec_poly_list:
+    electrode_poly.append(ElectrodePoly(elec_poly.vertex_list, \
+        [metal_offset, metal_offset+metal_thickness]))
+
+
 bg_field_ind = mw.addMeanField(fields, 1E-9)
 mw.setBGField(bg_field_ind)
-print(mw.ind_boundaries)
 print("Initializing mesh with GMSH...")
 abs_in_dir = os.path.abspath(os.path.dirname(in_path))
 with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(mw.file_string)

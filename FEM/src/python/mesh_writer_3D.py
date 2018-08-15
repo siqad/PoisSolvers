@@ -8,6 +8,7 @@ class MeshWriter():
         self.file_string = ""
         self.ind_point = 0
         self.ind_2d = 0
+        self.ind_bounding_vol = 0
         self.ind_vol = 0
         self.ind_phys_vol = 0
         self.ind_phys = 1
@@ -44,11 +45,8 @@ class MeshWriter():
         self.file_string += "Plane Surface(%d) = {%d};\n"\
             %(self.ind_2d,self.ind_2d-1)
         if option == "seam":
-            # self.file_string += "Physical Surface(%d) = {%d};\n"\
-            #     %(self.ind_phys, self.ind_2d)
-            # self.ind_phys += 1
             self.file_string += "Surface{%d} In Volume{%d};\n"\
-                %(self.ind_2d,self.ind_vol)
+                %(self.ind_2d,self.ind_bounding_vol)
             if box == True:
                 self.ind_boundaries[-1].append(self.ind_2d)
         if option == "bound":
@@ -114,34 +112,21 @@ class MeshWriter():
             self.ind_2d += 1
             self.file_string += "Volume(%d) = {%d};\n"\
                 %(self.ind_2d,self.ind_2d-1)
-            self.ind_vol = self.ind_2d
+            self.ind_bounding_vol = self.ind_2d
             self.ind_2d += 1
             self.file_string += "Physical Volume(%d) = {%d};\n"\
                 %(self.ind_phys_vol, self.ind_2d-1)
-        # if option == "seam":
-        #     #Create the surface loop from the surfaces made, and define the volume
-        #     self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
-        #         %(self.ind_2d,self.ind_2d-1,self.ind_2d-3,self.ind_2d-5,self.ind_2d-7,self.ind_2d-9,self.ind_2d-11)
-        #     self.ind_2d += 1
-        #     self.file_string += "Volume(%d) = {%d};\n"\
-        #         %(self.ind_2d,self.ind_2d-1)
-        #     self.ind_2d += 1
-        #
-            # self.ind_vol = self.ind_2d
-            # self.file_string += "Physical Volume(%d) = {%d};\n"\
-            #     %(self.ind_phys, self.ind_2d-1)
         return
 
     def addPhysicalVolume(self):
         self.file_string += "Physical Volume(%d) = {%d};\n"\
-            %(self.ind_phys_vol, self.ind_vol)
+            %(self.ind_phys_vol, self.ind_bounding_vol)
 
     def addSurface(self, p1, p2, p3, p4, scale, option):
         self.addPoint(p1, scale)
         self.addPoint(p2, scale)
         self.addPoint(p3, scale)
         self.addPoint(p4, scale)
-        # print p1, p2, p3, p4
         l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
         l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)
         l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
@@ -152,7 +137,6 @@ class MeshWriter():
     #creates the outer boundary, and sets it as a volume.
     def addOuterBound(self, p1, p2, scale, option):
         self.addBox(p1, p2, scale, option)
-        # if option == "bound"
         return
 
     #returns index of threshold field
@@ -180,7 +164,6 @@ class MeshWriter():
         fields_string = ",".join(map(str, field_list))
         self.file_string += 'Field[%d] = Min;\n'%(self.ind_field)
         self.file_string += 'Field[%d].FieldsList = {%s};\n'%(self.ind_field, fields_string)
-        # self.file_string += 'Background Field = %d;\n'%(self.ind_field)
         self.ind_field += 1
         return self.ind_field-1
 
@@ -190,7 +173,6 @@ class MeshWriter():
         fields_string = ",".join(map(str, field_list))
         self.file_string += 'Field[%d] = Max;\n'%(self.ind_field)
         self.file_string += 'Field[%d].FieldsList = {%s};\n'%(self.ind_field, fields_string)
-        # self.file_string += 'Background Field = %d;\n'%(self.ind_field)
         self.ind_field += 1
         return self.ind_field-1
 
@@ -201,14 +183,11 @@ class MeshWriter():
         self.file_string += 'Field[%d] = Mean;\n'%(self.ind_field)
         self.file_string += 'Field[%d].IField = %s;\n'%(self.ind_field, fields_string)
         self.file_string += 'Field[%d].Delta = %.15f;\n'%(self.ind_field, delta)
-        # self.file_string += 'Background Field = %d;\n'%(self.ind_field)
         self.ind_field += 1
         return self.ind_field-1
 
     def setBGField(self, ind):
         self.file_string += 'Background Field = %d;\n'%(ind)
-
-
 
     def addBoxField(self, res_in_scale, res_out_scale, xs, ys, zs):
         self.file_string += "Field[%d] = Box;\n"%(self.ind_field)
@@ -222,20 +201,3 @@ class MeshWriter():
         self.file_string += "Field[%d].ZMax = %.15f;\n"%(self.ind_field, zs[1])
         self.ind_field += 1
         return self.ind_field-1
-
-
-# mw = MeshWriter()
-# mw.addBox([0.0,0.0,0.0], [1.0,1.0,1.0], 1, "bound")
-# mw.addBox([0.4,0.4,0.4], [0.6,0.6,0.6], 1, "seam")
-# fields = []
-# mw.addSurface([0.01,0.01,0.8],[0.99,0.01,0.8],[0.99,0.99,0.8],[0.01,0.99,0.8],1, "seam")
-# fields += [mw.addTHField(0.5, 1, 0.01, 0.1)]
-# mw.addSurface([0.0,0.0,0.5],[1.0,0.0,0.5],[1.0,1.0,0.5],[0.0,1.0,0.5],1, "bound")
-# fields += [mw.addTHField(0.5, 1, 0.1, 0.3)]
-# mw.addMinField(fields)
-# with open('../data/domain.geo', 'w') as f: f.write(mw.file_string)
-# subprocess.call(['gmsh -3 ../data/domain.geo'], shell=True)
-# subprocess.call(['dolfin-convert ../data/domain.msh domain.xml'], shell=True)
-# mesh = dolfin.Mesh('domain.xml')
-# file_string = "../data/mesh.pvd"
-# dolfin.File(file_string) << mesh

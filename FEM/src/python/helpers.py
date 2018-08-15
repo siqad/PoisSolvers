@@ -6,8 +6,9 @@ def getBB(elec_list, elec_poly_list):
         x_list += [a.x1 for a in elec_list] + [b.x2 for b in elec_list]
         y_list += [a.y1 for a in elec_list] + [b.y2 for b in elec_list]
     if elec_poly_list:
-        x_list += [c[0] for c in elec_poly_list.vertex_list]
-        y_list += [c[1] for c in elec_poly_list.vertex_list]
+        for elec_poly in elec_poly_list:
+            x_list += [c[0] for c in elec_poly.vertex_list]
+            y_list += [c[1] for c in elec_poly.vertex_list]
 
     min_x = min(x_list)
     max_x = max(x_list)
