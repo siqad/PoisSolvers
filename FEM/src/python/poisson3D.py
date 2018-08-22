@@ -104,8 +104,52 @@ class ElectrodePoly(dolfin.SubDomain):
         self.zs = zs
         dolfin.SubDomain.__init__(self) # Call base class constructor!
     def inside(self, x, on_boundary):
-        return ( helpers.point_inside_polygon(x[0], x[1], self.vertices, False) \
+        if self.point_inside_polygon(x[0], x[1]):
+            print ("Matched xy")
+            print (x[2], self.zs)
+        if dolfin.between(x[2], (self.zs[0], self.zs[1])):
+            print ("Matched z")
+        # print ( self.point_inside_polygon(x[0], x[1]), dolfin.between(x[2], (self.zs[0], self.zs[1])) )
+        return ( self.point_inside_polygon(x[0], x[1]) \
             and dolfin.between(x[2], (self.zs[0], self.zs[1])) )
+    def point_inside_polygon(self, x, y, include_edges=True):
+        '''
+        Test if point (x,y) is inside polygon poly.
+
+        poly is N-vertices polygon defined as
+        [(x1,y1),...,(xN,yN)] or [(x1,y1),...,(xN,yN),(x1,y1)]
+        (function works fine in both cases)
+
+        Geometrical idea: point is inside polygon if horisontal beam
+        to the right from point crosses polygon even number of times.
+        Works fine for non-convex polygons.
+
+        Returns True if point (x, y) is inside poly, else False
+        '''
+        n = len(self.vertices)
+        inside = False
+        p1x, p1y = self.vertices[0]
+        for i in range(1, n + 1):
+            p2x, p2y = self.vertices[i % n]
+            if p1y == p2y:
+                if y == p1y:
+                    if min(p1x, p2x) <= x <= max(p1x, p2x):
+                        # point is on horizontal edge
+                        inside = include_edges
+                        break
+                    elif x < min(p1x, p2x):  # point is to the left from current edge
+                        inside = not inside
+            else:  # p1y!= p2y
+                if min(p1y, p2y) <= y <= max(p1y, p2y):
+                    xinters = (y - p1y) * (p2x - p1x) / float(p2y - p1y) + p1x
+                    if x == xinters:  # point is right on the edge
+                        inside = include_edges
+                        break
+                    if x < xinters:  # point is to the left from current edge
+                        inside = not inside
+            p1x, p1y = p2x, p2y
+        return inside
+
 
 print("Create mesh boundaries...")
 mw = mw.MeshWriter()
@@ -159,6 +203,7 @@ electrode_poly = []
 for elec_poly in elec_poly_list:
     electrode_poly.append(ElectrodePoly(elec_poly.vertex_list, \
         [metal_offset, metal_offset+metal_thickness]))
+    mw.addPolygonVolume(elec_poly.vertex_list, [metal_offset, metal_thickness], 1.0)
 
 
 bg_field_ind = mw.addMeanField(fields, 1E-9)
@@ -194,6 +239,8 @@ front.mark(boundaries, 5)
 back.mark(boundaries, 6)
 for i in range(len(elec_list)):
     electrode[i].mark(boundaries, 7+i)
+for i in range(len(elec_poly_list)):
+    electrode_poly[i].mark(boundaries, 7+len(elec_list)+i)
 
 print("Creating boundary values...")
 # Define input data
@@ -237,7 +284,22 @@ for step in range(steps):
             elec_str += "and below the dielectric interface."
         print(elec_str)
         bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+i))
-
+    for i in range(len(elec_poly_list)):
+        elec_str = "ElectrodePoly "+str(i)+" is "
+        if elec_poly_list[i].electrode_type == 1:
+            elec_str += "clocked, "
+            tot_phase = elec_poly_list[i].phase + step*360/steps
+            potential_to_set = elec_poly_list[i].potential*np.sin( np.deg2rad(tot_phase) )
+        else:
+            elec_str += "fixed, "
+            potential_to_set = elec_poly_list[i].potential
+        if metal_offset > boundary_dielectric:
+            elec_str += "and above the dielectric interface."
+        else:
+            potential_to_set += phi_bi
+            elec_str += "and below the dielectric interface."
+        print(elec_str)
+        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+len(elec_list)+i))
     # Define new measures associated with the interior domains and
     # exterior boundaries
     print("Defining measures...")
