@@ -1,3 +1,10 @@
+ # @author:   Nathan
+ # @created:  2018.08.23
+ # @editted:  2017.08.23 - Nathan
+ # @license:  GNU LGPL v3
+ #
+ # @desc:     Main function for physics engine
+
 import sys
 import dolfin
 import subprocess
@@ -101,15 +108,10 @@ class Electrode(dolfin.SubDomain):
 class ElectrodePoly(dolfin.SubDomain):
     def __init__(self, vertices, zs):
         self.vertices = vertices
+        print(self.vertices)
         self.zs = zs
         dolfin.SubDomain.__init__(self) # Call base class constructor!
     def inside(self, x, on_boundary):
-        if self.point_inside_polygon(x[0], x[1]):
-            print ("Matched xy")
-            print (x[2], self.zs)
-        if dolfin.between(x[2], (self.zs[0], self.zs[1])):
-            print ("Matched z")
-        # print ( self.point_inside_polygon(x[0], x[1]), dolfin.between(x[2], (self.zs[0], self.zs[1])) )
         return ( self.point_inside_polygon(x[0], x[1]) \
             and dolfin.between(x[2], (self.zs[0], self.zs[1])) )
     def point_inside_polygon(self, x, y, include_edges=True):
@@ -203,7 +205,7 @@ electrode_poly = []
 for elec_poly in elec_poly_list:
     electrode_poly.append(ElectrodePoly(elec_poly.vertex_list, \
         [metal_offset, metal_offset+metal_thickness]))
-    mw.addPolygonVolume(elec_poly.vertex_list, [metal_offset, metal_thickness], 1.0)
+    mw.addPolygonVolume(elec_poly.vertex_list, [metal_offset, metal_thickness], 0.1)
 
 
 bg_field_ind = mw.addMeanField(fields, 1E-9)
@@ -217,7 +219,8 @@ subprocess.call(["gmsh", "-3",
                 os.path.join(abs_in_dir,"domain.geo"),
                 '-string', '"General.ExpertMode=1;"',
                 '-string', '"Mesh.CharacteristicLengthFromPoints=0;"',
-                '-string', '"Mesh.CharacteristicLengthExtendFromBoundary=0;"'])
+                '-string', '"Mesh.CharacteristicLengthExtendFromBoundary=0;"',
+                '-string', '"Geometry.AutoCoherence=1;"'])
 
 meshconvert.convert2xml(os.path.join(abs_in_dir,"domain.msh"), os.path.join(abs_in_dir,"domain.xml"))
 
@@ -241,7 +244,6 @@ for i in range(len(elec_list)):
     electrode[i].mark(boundaries, 7+i)
 for i in range(len(elec_poly_list)):
     electrode_poly[i].mark(boundaries, 7+len(elec_list)+i)
-
 print("Creating boundary values...")
 # Define input data
 EPS_0 = 8.854E-12

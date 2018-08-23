@@ -1,5 +1,11 @@
+ # @author:   Nathan
+ # @created:  2018.08.23
+ # @editted:  2018.08.23 - Nathan
+ # @license:  Apache License 2.0
+ #
+ # @desc:     Functions that create the GMSH .geo file
+
 import matplotlib.pyplot as plt
-import dolfin
 import subprocess
 
 class MeshWriter():
@@ -41,14 +47,20 @@ class MeshWriter():
         self.ind_2d += 1
         self.file_string += "poly%d[] = Extrude {0,0,%.15f} { Surface{%d};};\n"\
             %(self.ind_poly, zs[1], self.ind_2d-1)
-        self.file_string += "Surface{%d} in Volume{%d};\n"\
+        self.file_string += "Surface{%d} In Volume{%d};\n"\
             %(self.ind_2d-1, self.ind_bounding_vol)
         walls = range(len(vertices)+2)
+        #increase for extra surfaces from extrude
+        self.ind_2d += len(vertices) + 1
+        #increase for extra lines from extrude
+        self.ind_2d += 5*len(vertices)
+        self.ind_point += 4*len(vertices)
         for wall in walls:
             if wall != 1:
-                self.file_string += "Surface{poly%d[%d]} in Volume{%d};\n"\
+                self.file_string += "Surface{poly%d[%d]} In Volume{%d};\n"\
                     %(self.ind_poly, wall, self.ind_bounding_vol)
-
+        self.file_string += "Delete { Volume{poly%d[1]}; }\n"%(self.ind_poly)
+        self.ind_poly += 1
 
     #add a point at p, p in form [x, y]
     def addPoint(self, p, scale):
