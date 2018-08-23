@@ -35,6 +35,7 @@ FEM/*.txt
 FEM/src/python/phys_connector_swig/__pycache__
 FEM/src/python/phys_connector_swig/*.cxx
 FEM/src/python/phys_connector_swig/*.so
+FEM/src/python/*.so
 FEM/src/python/phys_connector_swig/*.cpp
 
 #dependencies directory when building and installing dependencies from script
