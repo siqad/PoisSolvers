@@ -1,3 +1,9 @@
+ # @author:   Nathan
+ # @created:  2018.08.23
+ # @editted:  2018.08.23 - Nathan
+ # @license:  Apache License 2.0
+ #
+ # @desc:     Functions that create the GMSH .geo file
 
 def getBB(elec_list, elec_poly_list):
     x_list = []
