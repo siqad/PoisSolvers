@@ -378,14 +378,14 @@ for step in range(steps):
 
     # PRINT TO FILE
     abs_out_dir = os.path.abspath(os.path.dirname(out_path))
-
+    depth = float(sim_params['slice_depth'])*1e-9
     print("Creating 2D data slice")
     nx = int(sim_params['image_resolution'])
     ny = nx
     x = np.linspace(boundary_x_min, boundary_x_max, nx)
     y = np.linspace(boundary_y_min, boundary_y_max, ny)
     X, Y = np.meshgrid(x, y)
-    z = np.array([u(i, j, boundary_dielectric) for j in y for i in x])
+    z = np.array([u(i, j, boundary_dielectric-depth) for j in y for i in x])
     Z = z.reshape(nx, ny)
 
     u_old = u
