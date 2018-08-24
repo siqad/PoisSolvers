@@ -342,7 +342,6 @@ for step in range(steps):
     print("Initializing solver parameters...")
 
     init_guess = str(sim_params["init_guess"])
-    print(init_guess)
     if init_guess == "prev":
         if step == 0:
             u = dolfin.Function(V)
@@ -356,10 +355,15 @@ for step in range(steps):
     solver.parameters['linear_solver'] = 'gmres'
     solver.parameters['preconditioner'] = 'sor'
     spec_param = solver.parameters['krylov_solver']
-    if step == 0:
+
+
+    if init_guess == "prev":
+        if step == 0:
+            spec_param['nonzero_initial_guess'] = False
+        else:
+            spec_param['nonzero_initial_guess'] = True
+    elif init_guess == "zero":
         spec_param['nonzero_initial_guess'] = False
-    else:
-        spec_param['nonzero_initial_guess'] = True
 
     spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
     spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
@@ -370,9 +374,6 @@ for step in range(steps):
     solver.solve()
     end = time.time()
     print(("Solve finished in " + str(end-start) + " seconds."))
-
-    # V_vec = dolfin.VectorFunctionSpace(mesh, "CG", 2)
-    # grad_u = dolfin.project(dolfin.grad(u),V_vec)
 
     u.set_allow_extrapolation(True)
     if db_list:
