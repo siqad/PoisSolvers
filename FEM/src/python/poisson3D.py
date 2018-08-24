@@ -340,10 +340,16 @@ for step in range(steps):
 
     # Solve problem
     print("Initializing solver parameters...")
-    if step == 0:
+
+    init_guess = str(sim_params["init_guess"])
+    print(init_guess)
+    if init_guess == "prev":
+        if step == 0:
+            u = dolfin.Function(V)
+        else:
+            u = dolfin.interpolate(u_old,V)
+    elif init_guess == "zero":
         u = dolfin.Function(V)
-    else:
-        u = dolfin.interpolate(u_old,V)
 
     problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
     solver = dolfin.LinearVariationalSolver(problem)

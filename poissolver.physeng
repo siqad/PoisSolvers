@@ -61,18 +61,16 @@
           <clock>Clock</clock>
         </value_selection>
       </mode>
-      <low_pot>
-        <T>float</T>
-        <val>0</val>
-        <label>Low potential (clocking)</label>
-        <tip></tip>
-      </low_pot>
-      <high_pot>
-        <T>float</T>
-        <val>0</val>
-        <label>High potential (clocking)</label>
-        <tip></tip>
-      </high_pot>
+      <init_guess>
+        <T>string</T>
+        <val>Previous solution</val>
+        <label>Initial Guess</label>
+        <tip>Whether to use the previous solution or zero as the initial guess in the current iteration. Using the previous solution will converge more quickly, but using zero will sometimes help with overall convergence issues.</tip>
+        <value_selection type="ComboBox">
+          <prev>Previous solution</prev>
+          <zero>Zero</zero>
+        </value_selection>
+      </init_guess>
       <steps>
         <T>int</T>
         <val>20</val>
