@@ -19,56 +19,28 @@ import subdomains as sd
 from dolfin_utils.meshconvert import meshconvert
 from PIL import Image
 
+
+######################PREAMBLE
+
 in_path = sys.argv[1]
 out_path = sys.argv[2]
-sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
-for layer in sqconn.getLayers():
-    if layer.name == "Metal":
-        metal_offset = float(layer.zoffset)
-        metal_thickness = float(layer.zheight)
-        break
-
-elec_list = []
 m_per_A = 1.0E-10 #metres per angstrom
-for elec in sqconn.electrodeCollection():
-    elec_curr = elec
-    #units given are in angstroms, convert to metres
-    elec_curr.x1 *= m_per_A
-    elec_curr.x2 *= m_per_A
-    elec_curr.y1 *= m_per_A
-    elec_curr.y2 *= m_per_A
-    elec_list.append(elec_curr)
+sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
+metal_offset, metal_thickness = helpers.getMetalParams(sqconn)
 
-elec_poly_list = []
-for elec_poly in sqconn.electrodePolyCollection():
-    # pass
-    elec_poly_curr = elec_poly
-    #convert units to metres
-    vertex_list = [list(n) for n in elec_poly_curr.vertices]
-    for i in range(len(vertex_list)):
-        vertex_list[i][0] *= m_per_A
-        vertex_list[i][1] *= m_per_A
-    elec_poly_curr.vertex_list = vertex_list
-    elec_poly_list.append(elec_poly_curr)
-
-db_list = []
-for db in sqconn.dbCollection():
-    db_list.append(db)
-
+elec_list = helpers.getElectrodeCollections(sqconn)
+elec_poly_list = helpers.getElectrodePolyCollections(sqconn)
+db_list = helpers.getDBCollections(sqconn)
 sim_params = sqconn.getAllParameters()
-
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list)
 res_scale = float(sim_params["sim_resolution"])
 
-#prevent the minimum values from being exactly 0. Problems arise when defining dielectric surface.
-if boundary_x_min == 0:
-    boundary_x_min -= 0.01*boundary_x_max
-if boundary_y_min == 0:
-    boundary_y_min -= 0.01*boundary_y_max
-boundary_z_min = -np.max(np.array([np.abs(metal_offset), np.abs(metal_thickness)]))*10.0
-boundary_z_max = -boundary_z_min
-boundary_dielectric = 0.0 #at the surface.
+vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
+                                boundary_y_min,boundary_y_max,\
+                                metal_offset, metal_thickness)
+boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
 
+######################MESH AND SUBDOMAIN DEFINITION
 print("Create mesh boundaries...")
 mw = mw.MeshWriter()
 mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/res_scale
@@ -126,6 +98,8 @@ for elec_poly in elec_poly_list:
 
 bg_field_ind = mw.addMeanField(fields, 1E-9)
 mw.setBGField(bg_field_ind)
+
+######################MESHING WITH GMSH
 print("Initializing mesh with GMSH...")
 abs_in_dir = os.path.abspath(os.path.dirname(in_path))
 with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(mw.file_string)
@@ -142,6 +116,7 @@ meshconvert.convert2xml(os.path.join(abs_in_dir,"domain.msh"), os.path.join(abs_
 
 mesh = dolfin.Mesh(os.path.join(abs_in_dir,'domain.xml'))
 
+######################MARKING BOUNDARIES
 print("Marking boundaries...")
 # Initialize mesh function for interior domains
 domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
@@ -160,6 +135,9 @@ for i in range(len(elec_list)):
     electrode[i].mark(boundaries, 7+i)
 for i in range(len(elec_poly_list)):
     electrode_poly[i].mark(boundaries, 7+len(elec_list)+i)
+
+
+######################SETTING BOUNDARY VALUES
 print("Creating boundary values...")
 # Define input data
 EPS_0 = 8.854E-12
@@ -218,6 +196,7 @@ for step in range(steps):
             elec_str += "and below the dielectric interface."
         print(elec_str)
         bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+len(elec_list)+i))
+    ######################DEFINE MEASURES DX AND DS
     # Define new measures associated with the interior domains and
     # exterior boundaries
     print("Defining measures...")

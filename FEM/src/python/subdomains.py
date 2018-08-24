@@ -76,11 +76,11 @@ class Electrode(dolfin.SubDomain):
 class ElectrodePoly(dolfin.SubDomain):
     def __init__(self, vertices, zs):
         self.vertices = vertices
-        print(self.vertices)
         self.zs = zs
         dolfin.SubDomain.__init__(self) # Call base class constructor!
     def inside(self, x, on_boundary):
         return ( self.point_inside_polygon(x[0], x[1]) \
+            and dolfin.between(x[2], (self.zs[0], self.zs[1])) )
     def point_inside_polygon(self, x, y, include_edges=True):
         '''
         Test if point (x,y) is inside polygon poly.
