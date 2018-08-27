@@ -10,6 +10,7 @@ import dolfin
 import subprocess
 import numpy as np
 import mesh_writer_3D as mw
+import poisson_class as ps_class
 import helpers
 import time
 import os
@@ -18,6 +19,7 @@ import siqadconn
 import subdomains as sd
 from dolfin_utils.meshconvert import meshconvert
 from PIL import Image
+
 
 
 ######################PREAMBLE
@@ -40,25 +42,33 @@ vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
                                 metal_offset, metal_thickness)
 boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
 
+bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
+
 ######################MESH AND SUBDOMAIN DEFINITION
 print("Create mesh boundaries...")
-mw = mw.MeshWriter()
-mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/res_scale
-mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
+ps = ps_class.PoissonSolver(bounds)
+ps.setResolution(res_scale)
+# mw = mw.MeshWriter()
+# ps.mw.resolution = min((boundary_x_max-boundary_x_min), (boundary_y_max-boundary_y_min), (boundary_z_max-boundary_z_min))/res_scale
+
+ps.createOuterBounds(resolution=1.0)
+# ps.mw.addBox([boundary_x_min,boundary_y_min,boundary_z_min], [boundary_x_max,boundary_y_max,boundary_z_max], 1, "bound")
 
 #dielectric seam
-mw.addSurface([boundary_x_min+0.01*np.abs(boundary_x_min),boundary_y_min+0.01*np.abs(boundary_y_min),boundary_dielectric],\
-              [boundary_x_max-0.01*np.abs(boundary_x_max),boundary_y_min+0.01*np.abs(boundary_y_min),boundary_dielectric],\
-              [boundary_x_max-0.01*np.abs(boundary_x_max),boundary_y_max-0.01*np.abs(boundary_y_max),boundary_dielectric],\
-              [boundary_x_min+0.01*np.abs(boundary_x_min),boundary_y_max-0.01*np.abs(boundary_y_max),boundary_dielectric],1.0, "seam")
+ps.addDielectricSurface(resolution=1.0)
+# ps.mw.addSurface([boundary_x_min+0.01*np.abs(boundary_x_min),boundary_y_min+0.01*np.abs(boundary_y_min),boundary_dielectric],\
+#               [boundary_x_max-0.01*np.abs(boundary_x_max),boundary_y_min+0.01*np.abs(boundary_y_min),boundary_dielectric],\
+#               [boundary_x_max-0.01*np.abs(boundary_x_max),boundary_y_max-0.01*np.abs(boundary_y_max),boundary_dielectric],\
+#               [boundary_x_min+0.01*np.abs(boundary_x_min),boundary_y_max-0.01*np.abs(boundary_y_max),boundary_dielectric],1.0, "seam")
 
 #over-extend a little, to ensure that the higher resolution appears.
-fields = []
-fields += [mw.addBoxField(0.25, 1.0, \
-          [boundary_x_min-0.001*np.abs(boundary_x_min), boundary_x_max+0.001*np.abs(boundary_x_max)], \
-          [boundary_y_min-0.001*np.abs(boundary_y_min), boundary_y_max+0.001*np.abs(boundary_y_max)], \
-          [boundary_dielectric-0.05*np.abs(boundary_z_max), boundary_dielectric+0.05*np.abs(boundary_z_max)])]
-fields = [mw.addMinField(fields)]
+ps.addDielectricField(res_in=0.25, res_out=1.0)
+# fields = []
+# fields += [ps.mw.addBoxField(0.25, 1.0, \
+#           [boundary_x_min-0.001*np.abs(boundary_x_min), boundary_x_max+0.001*np.abs(boundary_x_max)], \
+#           [boundary_y_min-0.001*np.abs(boundary_y_min), boundary_y_max+0.001*np.abs(boundary_y_max)], \
+#           [boundary_dielectric-0.05*np.abs(boundary_z_max), boundary_dielectric+0.05*np.abs(boundary_z_max)])]
+# fields = [ps.mw.addMinField(fields)]
 
 # Initialize sub-domain instances
 print("Create subdomains and fields...")
@@ -72,37 +82,41 @@ air = sd.Air((boundary_dielectric, boundary_z_max))
 electrode = []
 for i in range(len(elec_list)):
     electrode.append(sd.Electrode([elec_list[i].x1, elec_list[i].x2], \
-                        [elec_list[i].y1, elec_list[i].y2], \
-                        [metal_offset, metal_offset+metal_thickness] ) )
-    mw.addBox([elec_list[i].x1,elec_list[i].y1,metal_offset], \
-              [elec_list[i].x2,elec_list[i].y2,metal_offset+metal_thickness], 1, "seam")
-
-    #make resolution inside electrodes coarse
-    fields += [mw.addBoxField(1.0, 0.0, \
-              [elec_list[i].x1, elec_list[i].x2], \
-              [elec_list[i].y1, elec_list[i].y2], \
-              [metal_offset, metal_offset+metal_thickness])]
-    fields = [mw.addMaxField(fields)]
-    fields += [mw.addBoxField(0.1, 1.0, \
-              [2.0*elec_list[i].x1, 2.0*elec_list[i].x2], \
-              [2.0*elec_list[i].y1, 2.0*elec_list[i].y2], \
-              [2.0*metal_offset, 2.0*(metal_offset+metal_thickness)])]
-    fields = [mw.addMinField(fields)]
+                                  [elec_list[i].y1, elec_list[i].y2], \
+                                  [metal_offset, metal_offset+metal_thickness] ) )
+    ps.addElectrode([elec_list[i].x1, elec_list[i].x2], \
+                    [elec_list[i].y1, elec_list[i].y2], \
+                    [metal_offset, metal_offset+metal_thickness], resolution=1.0)
+    # ps.mw.addBox([elec_list[i].x1,elec_list[i].y1,metal_offset], \
+    #           [elec_list[i].x2,elec_list[i].y2,metal_offset+metal_thickness], 1, "seam")
+    #
+    # #make resolution inside electrodes coarse
+    # ps.fields += [ps.mw.addBoxField(1.0, 0.0, \
+    #           [elec_list[i].x1, elec_list[i].x2], \
+    #           [elec_list[i].y1, elec_list[i].y2], \
+    #           [metal_offset, metal_offset+metal_thickness])]
+    # ps.fields = [ps.mw.addMaxField(ps.fields)]
+    # ps.fields += [ps.mw.addBoxField(0.1, 1.0, \
+    #           [2.0*elec_list[i].x1, 2.0*elec_list[i].x2], \
+    #           [2.0*elec_list[i].y1, 2.0*elec_list[i].y2], \
+    #           [2.0*metal_offset, 2.0*(metal_offset+metal_thickness)])]
+    # ps.fields = [ps.mw.addMinField(ps.fields)]
 
 electrode_poly = []
 for elec_poly in elec_poly_list:
     electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
         [metal_offset, metal_offset+metal_thickness]))
-    mw.addPolygonVolume(elec_poly.vertex_list, [metal_offset, metal_thickness], 0.1)
+    ps.addElectrodePoly(elec_poly.vertex_list, [metal_offset, metal_thickness], resolution=0.1)
+    # ps.mw.addPolygonVolume(elec_poly.vertex_list, [metal_offset, metal_thickness], 0.1)
 
-
-bg_field_ind = mw.addMeanField(fields, 1E-9)
-mw.setBGField(bg_field_ind)
+ps.setBGField(delta=1E-9)
+# bg_field_ind = ps.mw.addMeanField(ps.fields, 1E-9)
+# ps.mw.setBGField(bg_field_ind)
 
 ######################MESHING WITH GMSH
 print("Initializing mesh with GMSH...")
 abs_in_dir = os.path.abspath(os.path.dirname(in_path))
-with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(mw.file_string)
+with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(ps.mw.file_string)
 
 #Expert mode to suppress warnings about fine mesh
 subprocess.call(["gmsh", "-3",
