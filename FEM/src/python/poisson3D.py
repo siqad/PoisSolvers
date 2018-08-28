@@ -69,32 +69,17 @@ mesh = dolfin.Mesh(os.path.join(ps.abs_in_dir,'domain.xml'))
 
 ######################MARKING BOUNDARIES
 print("Marking boundaries...")
-# Initialize mesh function for interior domains
-domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
-domains.set_all(0)
-ps.air.mark(domains, 1)
+ps.markDomains(mesh)
 # Initialize mesh function for boundary domains
-boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
-boundaries.set_all(0)
-ps.left.mark(boundaries, 1)
-ps.top.mark(boundaries, 2)
-ps.right.mark(boundaries, 3)
-ps.bottom.mark(boundaries, 4)
-ps.front.mark(boundaries, 5)
-ps.back.mark(boundaries, 6)
-for i in range(len(elec_list)):
-    ps.electrode[i].mark(boundaries, 7+i)
-for i in range(len(elec_poly_list)):
-    ps.electrode_poly[i].mark(boundaries, 7+len(elec_list)+i)
-
+ps.markBoundaries(mesh, elec_list, elec_poly_list)
 
 ######################SETTING BOUNDARY VALUES
 print("Creating boundary values...")
 # Define input data
 EPS_0 = 8.854E-12
 Q_E = 1.6E-19
-a0 = dolfin.Constant(11.6*EPS_0)
-a1 = dolfin.Constant(1.0*EPS_0)
+EPS_SI = dolfin.Constant(11.6*EPS_0)
+EPS_AIR = dolfin.Constant(1.0*EPS_0)
 f = dolfin.Constant("0.0")
 
 mode = str(sim_params["mode"])
@@ -130,7 +115,7 @@ for step in range(steps):
             potential_to_set += phi_bi
             elec_str += "and below the dielectric interface."
         print(elec_str)
-        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+i))
+        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+i))
     for i in range(len(elec_poly_list)):
         elec_str = "ElectrodePoly "+str(i)+" is "
         if elec_poly_list[i].electrode_type == 1:
@@ -146,17 +131,17 @@ for step in range(steps):
             potential_to_set += phi_bi
             elec_str += "and below the dielectric interface."
         print(elec_str)
-        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), boundaries, 7+len(elec_list)+i))
+        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+len(elec_list)+i))
     ######################DEFINE MEASURES DX AND DS
     # Define new measures associated with the interior domains and
     # exterior boundaries
     print("Defining measures...")
-    dx = dolfin.dx(subdomain_data=domains)
-    ds = dolfin.ds(subdomain_data=boundaries)
+    dx = dolfin.dx(subdomain_data=ps.domains)
+    ds = dolfin.ds(subdomain_data=ps.boundaries)
 
     print("Defining variational form...")
-    F = ( dolfin.inner(a0*dolfin.grad(u), dolfin.grad(v))*dx(0) \
-        + dolfin.inner(a1*dolfin.grad(u), dolfin.grad(v))*dx(1) \
+    F = ( dolfin.inner(EPS_SI*dolfin.grad(u), dolfin.grad(v))*dx(0) \
+        + dolfin.inner(EPS_AIR*dolfin.grad(u), dolfin.grad(v))*dx(1) \
         - f*v*dx(0) - f*v*dx(1) )
 
     if sim_params["bcs"] == "robin":

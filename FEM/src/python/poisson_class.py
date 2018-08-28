@@ -1,7 +1,15 @@
+ # @author:   Nathan
+ # @created:  2018.08.23
+ # @editted:  2017.08.23 - Nathan
+ # @license:  GNU LGPL v3
+ #
+ # @desc:     Class definition for physics engine
+
 import mesh_writer_3D as mw
 import numpy as np
 import os
 import subdomains as sd
+import dolfin
 
 class PoissonSolver():
     def __init__(self, bounds):
@@ -94,3 +102,23 @@ class PoissonSolver():
             self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
                 zs))
             ps.addElectrodePoly(elec_poly.vertex_list, zs, resolution=0.1)
+
+    def markDomains(self, mesh):
+        # Initialize mesh function for interior domains
+        self.domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
+        self.domains.set_all(0)
+        self.air.mark(self.domains, 1)
+
+    def markBoundaries(self, mesh, elec_list, elec_poly_list):
+        self.boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
+        self.boundaries.set_all(0)
+        self.left.mark(self.boundaries, 1)
+        self.top.mark(self.boundaries, 2)
+        self.right.mark(self.boundaries, 3)
+        self.bottom.mark(self.boundaries, 4)
+        self.front.mark(self.boundaries, 5)
+        self.back.mark(self.boundaries, 6)
+        for i in range(len(elec_list)):
+            self.electrode[i].mark(self.boundaries, 7+i)
+        for i in range(len(elec_poly_list)):
+            self.electrode_poly[i].mark(self.boundaries, 7+len(elec_list)+i)
