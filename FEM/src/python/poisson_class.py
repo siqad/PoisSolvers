@@ -1,11 +1,21 @@
 import mesh_writer_3D as mw
 import numpy as np
+import os
+import subdomains as sd
 
 class PoissonSolver():
     def __init__(self, bounds):
         self.bounds = bounds
         self.mw = mw.MeshWriter()
         self.fields = []
+
+    def setPaths(self, in_path="", out_path=""):
+        if in_path != "":
+            self.in_path = in_path
+            self.abs_in_dir = os.path.abspath(os.path.dirname(self.in_path))
+        if out_path != "":
+            self.out_path = out_path
+            self.abs_out_dir = os.path.abspath(os.path.dirname(self.out_path))
 
     def setResolution(self, res_scale):
         self.mw.resolution = min((self.bounds[1]-self.bounds[0]), \
@@ -54,3 +64,33 @@ class PoissonSolver():
     def setBGField(self, delta):
         bg_field_ind = self.mw.addMeanField(self.fields, delta)
         self.mw.setBGField(bg_field_ind)
+
+    def writeGeoFile(self):
+        # abs_in_dir = os.path.abspath(os.path.dirname(self.in_path))
+        with open(os.path.join(self.abs_in_dir, 'domain.geo'), 'w') as f: f.write(self.mw.file_string)
+
+    def setSubdomains(self):
+        self.left = sd.Left(self.bounds[0]) #x
+        self.top = sd.Top(self.bounds[3]) #y
+        self.right = sd.Right(self.bounds[1]) #x
+        self.bottom = sd.Bottom(self.bounds[2]) #y
+        self.front = sd.Front(self.bounds[5]) #z
+        self.back = sd.Back(self.bounds[4]) #z
+        self.air = sd.Air((self.bounds[6], self.bounds[5]))
+
+    def setElectrodeSubdomains(self, elec_list, zs):
+        self.electrode = []
+        for i in range(len(elec_list)):
+            self.electrode.append(sd.Electrode([elec_list[i].x1, elec_list[i].x2], \
+                                          [elec_list[i].y1, elec_list[i].y2], \
+                                          zs ) )
+            self.addElectrode([elec_list[i].x1, elec_list[i].x2], \
+                            [elec_list[i].y1, elec_list[i].y2], \
+                            zs, resolution=1.0)
+
+    def setElectrodePolySubdomains(self, elec_poly_list, zs):
+        self.electrode_poly = []
+        for elec_poly in elec_poly_list:
+            self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
+                zs))
+            ps.addElectrodePoly(elec_poly.vertex_list, zs, resolution=0.1)

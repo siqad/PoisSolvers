@@ -21,7 +21,6 @@ from dolfin_utils.meshconvert import meshconvert
 from PIL import Image
 
 ######################PREAMBLE
-
 in_path = sys.argv[1]
 out_path = sys.argv[2]
 m_per_A = 1.0E-10 #metres per angstrom
@@ -40,83 +39,53 @@ vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
                                 metal_offset, metal_thickness)
 boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
 
-
-######################MESH AND SUBDOMAIN DEFINITION
 print("Create mesh boundaries...")
 bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
 ps = ps_class.PoissonSolver(bounds)
+ps.setPaths(in_path=in_path, out_path=out_path)
 ps.setResolution(res_scale)
-
 ps.createOuterBounds(resolution=1.0)
-
-#dielectric seam
-ps.addDielectricSurface(resolution=1.0)
-
+ps.addDielectricSurface(resolution=1.0) #dielectric seam
 #over-extend a little, to ensure that the higher resolution appears.
 ps.addDielectricField(res_in=0.25, res_out=1.0)
 
-# Initialize sub-domain instances
 print("Create subdomains and fields...")
-left = sd.Left(boundary_x_min) #x
-top = sd.Top(boundary_y_max) #y
-right = sd.Right(boundary_x_max) #x
-bottom = sd.Bottom(boundary_y_min) #y
-front = sd.Front(boundary_z_max) #z
-back = sd.Back(boundary_z_min) #z
-air = sd.Air((boundary_dielectric, boundary_z_max))
-electrode = []
-for i in range(len(elec_list)):
-    electrode.append(sd.Electrode([elec_list[i].x1, elec_list[i].x2], \
-                                  [elec_list[i].y1, elec_list[i].y2], \
-                                  [metal_offset, metal_offset+metal_thickness] ) )
-    ps.addElectrode([elec_list[i].x1, elec_list[i].x2], \
-                    [elec_list[i].y1, elec_list[i].y2], \
-                    [metal_offset, metal_offset+metal_thickness], resolution=1.0)
-
-electrode_poly = []
-for elec_poly in elec_poly_list:
-    electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
-        [metal_offset, metal_offset+metal_thickness]))
-    ps.addElectrodePoly(elec_poly.vertex_list, [metal_offset, metal_thickness], resolution=0.1)
-
+ps.setSubdomains()
+ps.setElectrodeSubdomains(elec_list, [metal_offset, metal_offset+metal_thickness])
+ps.setElectrodePolySubdomains(elec_poly_list, [metal_offset, metal_offset+metal_thickness])
 ps.setBGField(delta=1E-9)
 
-######################MESHING WITH GMSH
 print("Initializing mesh with GMSH...")
-abs_in_dir = os.path.abspath(os.path.dirname(in_path))
-with open(os.path.join(abs_in_dir, 'domain.geo'), 'w') as f: f.write(ps.mw.file_string)
-
+ps.writeGeoFile()
 #Expert mode to suppress warnings about fine mesh
 subprocess.call(["gmsh", "-3",
-                os.path.join(abs_in_dir,"domain.geo"),
+                os.path.join(ps.abs_in_dir,"domain.geo"),
                 '-string', '"General.ExpertMode=1;"',
                 '-string', '"Mesh.CharacteristicLengthFromPoints=0;"',
                 '-string', '"Mesh.CharacteristicLengthExtendFromBoundary=0;"',
                 '-string', '"Geometry.AutoCoherence=1;"'])
-
-meshconvert.convert2xml(os.path.join(abs_in_dir,"domain.msh"), os.path.join(abs_in_dir,"domain.xml"))
-
-mesh = dolfin.Mesh(os.path.join(abs_in_dir,'domain.xml'))
+meshconvert.convert2xml(os.path.join(ps.abs_in_dir,"domain.msh"), os.path.join(ps.abs_in_dir,"domain.xml"))
+mesh = dolfin.Mesh(os.path.join(ps.abs_in_dir,'domain.xml'))
 
 ######################MARKING BOUNDARIES
 print("Marking boundaries...")
 # Initialize mesh function for interior domains
 domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
 domains.set_all(0)
-air.mark(domains, 1)
+ps.air.mark(domains, 1)
 # Initialize mesh function for boundary domains
 boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
 boundaries.set_all(0)
-left.mark(boundaries, 1)
-top.mark(boundaries, 2)
-right.mark(boundaries, 3)
-bottom.mark(boundaries, 4)
-front.mark(boundaries, 5)
-back.mark(boundaries, 6)
+ps.left.mark(boundaries, 1)
+ps.top.mark(boundaries, 2)
+ps.right.mark(boundaries, 3)
+ps.bottom.mark(boundaries, 4)
+ps.front.mark(boundaries, 5)
+ps.back.mark(boundaries, 6)
 for i in range(len(elec_list)):
-    electrode[i].mark(boundaries, 7+i)
+    ps.electrode[i].mark(boundaries, 7+i)
 for i in range(len(elec_poly_list)):
-    electrode_poly[i].mark(boundaries, 7+len(elec_list)+i)
+    ps.electrode_poly[i].mark(boundaries, 7+len(elec_list)+i)
 
 
 ######################SETTING BOUNDARY VALUES
@@ -261,7 +230,7 @@ for step in range(steps):
 
 
     # PRINT TO FILE
-    abs_out_dir = os.path.abspath(os.path.dirname(out_path))
+    # abs_out_dir = os.path.abspath(os.path.dirname(out_path))
     depth = float(sim_params['slice_depth'])*1e-9
     print("Creating 2D data slice")
     nx = int(sim_params['image_resolution'])
@@ -298,14 +267,14 @@ for step in range(steps):
         plt.xticks(locs, labels)
         plt.xlabel("X (nm)")
         plt.ylabel("Y (nm)")
-        savestring = os.path.join(abs_out_dir,'SiAirPlot.png')
+        savestring = os.path.join(ps.abs_out_dir,'SiAirPlot.png')
         plt.savefig(savestring, bbox_inces="tight", pad_inches=0)
         plt.close(fig)
     fig = plt.figure(frameon=False)
     plt.gca().invert_yaxis()
     plt.axis('off')
     plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
-    savestring = os.path.join(abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
+    savestring = os.path.join(ps.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.savefig(savestring)
     plt.close(fig)
