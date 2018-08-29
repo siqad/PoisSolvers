@@ -87,7 +87,6 @@ if mode == "standard":
     steps = 1
 elif mode == "clock":
     steps = int(sim_params["steps"])
-# print(elec_list)
 for step in range(steps):
     print("Defining function, space, basis...")
     # Define function space and basis functions
@@ -96,42 +95,18 @@ for step in range(steps):
     v = dolfin.TestFunction(V)
 
     print("Defining Dirichlet boundaries...")
+    # ps.setDirichletBoundaries()
     bcs = []
-    chi_si = 4.05 #eV
-    phi_gold = 5.1 #eV
-    phi_bi = phi_gold - chi_si
+    # chi_si = 4.05 #eV
+    # phi_gold = 5.1 #eV
+    # phi_bi = phi_gold - chi_si
     for i in range(len(elec_list)):
-        elec_str = "Electrode "+str(i)+" is "
-        if elec_list[i].electrode_type == 1:
-            elec_str += "clocked, "
-            tot_phase = elec_list[i].phase + step*360/steps
-            potential_to_set = elec_list[i].potential*np.sin( np.deg2rad(tot_phase) )
-        else:
-            elec_str += "fixed, "
-            potential_to_set = elec_list[i].potential
-        if metal_offset > boundary_dielectric:
-            elec_str += "and above the dielectric interface."
-        else:
-            potential_to_set += phi_bi
-            elec_str += "and below the dielectric interface."
-        print(elec_str)
+        potential_to_set = ps.getElecPotential(elec_list, step, steps, i, metal_offset, boundary_dielectric)
         bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+i))
     for i in range(len(elec_poly_list)):
-        elec_str = "ElectrodePoly "+str(i)+" is "
-        if elec_poly_list[i].electrode_type == 1:
-            elec_str += "clocked, "
-            tot_phase = elec_poly_list[i].phase + step*360/steps
-            potential_to_set = elec_poly_list[i].potential*np.sin( np.deg2rad(tot_phase) )
-        else:
-            elec_str += "fixed, "
-            potential_to_set = elec_poly_list[i].potential
-        if metal_offset > boundary_dielectric:
-            elec_str += "and above the dielectric interface."
-        else:
-            potential_to_set += phi_bi
-            elec_str += "and below the dielectric interface."
-        print(elec_str)
+        potential_to_set = ps.getElecPotential(elec_poly_list, step, steps, i, metal_offset, boundary_dielectric)
         bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+len(elec_list)+i))
+
     ######################DEFINE MEASURES DX AND DS
     # Define new measures associated with the interior domains and
     # exterior boundaries
@@ -144,28 +119,10 @@ for step in range(steps):
         + dolfin.inner(EPS_AIR*dolfin.grad(u), dolfin.grad(v))*dx(1) \
         - f*v*dx(0) - f*v*dx(1) )
 
-    if sim_params["bcs"] == "robin":
-        h_L = dolfin.Constant("0.0")
-        h_R = dolfin.Constant("0.0")
-        h_T = dolfin.Constant("0.0")
-        h_Bo = dolfin.Constant("0.0")
-        h_F = dolfin.Constant("0.0")
-        h_Ba = dolfin.Constant("0.0")
-        F +=  h_L*u*v*ds(1) + h_R*u*v*ds(3) \
-            + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
-            + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
-    elif sim_params["bcs"] == "neumann":
-        g_L = dolfin.Constant("0.0")
-        g_R = dolfin.Constant("0.0")
-        g_T = dolfin.Constant("0.0")
-        g_Bo = dolfin.Constant("0.0")
-        g_F = dolfin.Constant("0.0")
-        g_Ba = dolfin.Constant("0.0")
-        F += - g_L*v*ds(1) - g_R*v*ds(3) \
-             - g_T*v*ds(2) - g_Bo*v*ds(4) \
-             - g_F*v*ds(5) - g_Ba*v*ds(6)
+    boundary_component = ps.getBoundaryComponent(sim_params, u, v, ds)
+    F += boundary_component
 
-    print("Separateing LHS and RHS...")
+    print("Separating LHS and RHS...")
     # Separate left and right hand sides of equation
     a, L = dolfin.lhs(F), dolfin.rhs(F)
 

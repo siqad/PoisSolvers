@@ -122,3 +122,65 @@ class PoissonSolver():
             self.electrode[i].mark(self.boundaries, 7+i)
         for i in range(len(elec_poly_list)):
             self.electrode_poly[i].mark(self.boundaries, 7+len(elec_list)+i)
+
+    def getElecPotential(self, elec_list, step, steps, i, metal_offset, boundary_dielectric):
+        chi_si = 4.05 #eV
+        phi_gold = 5.1 #eV
+        phi_bi = phi_gold - chi_si
+        elec_str = "Electrode "+str(i)+" is "
+        if elec_list[i].electrode_type == 1:
+            elec_str += "clocked, "
+            tot_phase = elec_list[i].phase + step*360/steps
+            potential_to_set = elec_list[i].potential*np.sin( np.deg2rad(tot_phase) )
+        else:
+            elec_str += "fixed, "
+            potential_to_set = elec_list[i].potential
+        if metal_offset > boundary_dielectric:
+            elec_str += "and above the dielectric interface."
+        else:
+            potential_to_set += phi_bi
+            elec_str += "and below the dielectric interface."
+        print(elec_str)
+        return potential_to_set
+
+    def getElecPolyPotential(self, elec_poly_list, step, steps, i, metal_offset, boundary_dielectric):
+        chi_si = 4.05 #eV
+        phi_gold = 5.1 #eV
+        phi_bi = phi_gold - chi_si
+        elec_str = "ElectrodePoly "+str(i)+" is "
+        if elec_poly_list[i].electrode_type == 1:
+            elec_str += "clocked, "
+            tot_phase = elec_poly_list[i].phase + step*360/steps
+            potential_to_set = elec_poly_list[i].potential*np.sin( np.deg2rad(tot_phase) )
+        else:
+            elec_str += "fixed, "
+            potential_to_set = elec_poly_list[i].potential
+        if metal_offset > boundary_dielectric:
+            elec_str += "and above the dielectric interface."
+        else:
+            potential_to_set += phi_bi
+            elec_str += "and below the dielectric interface."
+        print(elec_str)
+
+    def getBoundaryComponent(self, sim_params, u, v, ds):
+        if sim_params["bcs"] == "robin":
+            h_L = dolfin.Constant("0.0")
+            h_R = dolfin.Constant("0.0")
+            h_T = dolfin.Constant("0.0")
+            h_Bo = dolfin.Constant("0.0")
+            h_F = dolfin.Constant("0.0")
+            h_Ba = dolfin.Constant("0.0")
+            component =  h_L*u*v*ds(1) + h_R*u*v*ds(3) \
+                + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
+                + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
+        elif sim_params["bcs"] == "neumann":
+            g_L = dolfin.Constant("0.0")
+            g_R = dolfin.Constant("0.0")
+            g_T = dolfin.Constant("0.0")
+            g_Bo = dolfin.Constant("0.0")
+            g_F = dolfin.Constant("0.0")
+            g_Ba = dolfin.Constant("0.0")
+            component = - g_L*v*ds(1) - g_R*v*ds(3) \
+                 - g_T*v*ds(2) - g_Bo*v*ds(4) \
+                 - g_F*v*ds(5) - g_Ba*v*ds(6)
+        return component
