@@ -101,7 +101,7 @@ class PoissonSolver():
         for elec_poly in elec_poly_list:
             self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
                 zs))
-            ps.addElectrodePoly(elec_poly.vertex_list, zs, resolution=0.1)
+            self.addElectrodePoly(elec_poly.vertex_list, zs, resolution=0.1)
 
     def markDomains(self, mesh):
         # Initialize mesh function for interior domains
