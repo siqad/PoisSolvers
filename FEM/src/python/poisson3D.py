@@ -170,6 +170,18 @@ for step in range(steps):
             db_pots.append([db.x, db.y, u(db.x*m_per_A,db.y*m_per_A, boundary_dielectric)])
         sqconn.export(db_pot=db_pots)
 
+    # V_vec = dolfin.VectorFunctionSpace(mesh, "CG", 2)
+    # grad_u = dolfin.project(dolfin.grad(u),V_vec)
+    dS = dolfin.Measure("dS")[ps.boundaries]
+    n = dolfin.FacetNormal(mesh)
+    m1 = dolfin.avg(dolfin.dot(dolfin.grad(u), n))*dS(7)
+    v1 = dolfin.assemble(m1)
+    print("\int grad(u) * n ds(7) = ", v1)
+    dS = dolfin.Measure("dS")[ps.boundaries]
+    n = dolfin.FacetNormal(mesh)
+    m1 = dolfin.avg(dolfin.dot(dolfin.grad(u), n))*dS(8)
+    v1 = dolfin.assemble(m1)
+    print("\int grad(u) * n ds(8) = ", v1)
 
     # PRINT TO FILE
     # abs_out_dir = os.path.abspath(os.path.dirname(out_path))
