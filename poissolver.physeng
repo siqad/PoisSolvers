@@ -59,6 +59,7 @@
         <value_selection type="ComboBox">
           <standard>Standard</standard>
           <clock>Clock</clock>
+          <cap>Capacitance</cap>
         </value_selection>
       </mode>
       <init_guess>

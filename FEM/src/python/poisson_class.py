@@ -13,9 +13,22 @@ import dolfin
 
 class PoissonSolver():
     def __init__(self, bounds):
+        # keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
+        # self.bounds = dict(zip(keys, bounds))
         self.bounds = bounds
         self.mw = mw.MeshWriter()
         self.fields = []
+        self.sim_params = None
+        self.in_path = None
+        self.out_path_path = None
+        self.elec_list = None
+        self.elec_poly_list = None
+        self.metal_offset = None
+        self.metal_thickness = None
+
+    def setMetals(self, m_off, m_thick):
+        self.metal_offset = m_off
+        self.metal_thickness = m_thick
 
     def setPaths(self, in_path="", out_path=""):
         if in_path != "":
@@ -25,7 +38,12 @@ class PoissonSolver():
             self.out_path = out_path
             self.abs_out_dir = os.path.abspath(os.path.dirname(self.out_path))
 
-    def setResolution(self, res_scale):
+    def setSimParams(self, sim_params=None):
+        if sim_params:
+            self.sim_params = sim_params
+
+    def setResolution(self):
+        res_scale = float(self.sim_params["sim_resolution"])
         self.mw.resolution = min((self.bounds[1]-self.bounds[0]), \
                                  (self.bounds[3]-self.bounds[2]), \
                                  (self.bounds[5]-self.bounds[4])) / res_scale
@@ -86,19 +104,21 @@ class PoissonSolver():
         self.back = sd.Back(self.bounds[4]) #z
         self.air = sd.Air((self.bounds[6], self.bounds[5]))
 
-    def setElectrodeSubdomains(self, elec_list, zs):
+    def setElectrodeSubdomains(self):
         self.electrode = []
-        for i in range(len(elec_list)):
-            self.electrode.append(sd.Electrode([elec_list[i].x1, elec_list[i].x2], \
-                                          [elec_list[i].y1, elec_list[i].y2], \
+        zs = [self.metal_offset, self.metal_offset+self.metal_thickness]
+        for i in range(len(self.elec_list)):
+            self.electrode.append(sd.Electrode([self.elec_list[i].x1, self.elec_list[i].x2], \
+                                          [self.elec_list[i].y1, self.elec_list[i].y2], \
                                           zs ) )
-            self.addElectrode([elec_list[i].x1, elec_list[i].x2], \
-                            [elec_list[i].y1, elec_list[i].y2], \
+            self.addElectrode([self.elec_list[i].x1, self.elec_list[i].x2], \
+                            [self.elec_list[i].y1, self.elec_list[i].y2], \
                             zs, resolution=1.0)
 
-    def setElectrodePolySubdomains(self, elec_poly_list, zs):
+    def setElectrodePolySubdomains(self):
         self.electrode_poly = []
-        for elec_poly in elec_poly_list:
+        zs = [self.metal_offset, self.metal_offset+self.metal_thickness]
+        for elec_poly in self.elec_poly_list:
             self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
                 zs))
             self.addElectrodePoly(elec_poly.vertex_list, zs, resolution=0.1)
@@ -109,7 +129,7 @@ class PoissonSolver():
         self.domains.set_all(0)
         self.air.mark(self.domains, 1)
 
-    def markBoundaries(self, mesh, elec_list, elec_poly_list):
+    def markBoundaries(self, mesh):
         self.boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
         self.boundaries.set_all(0)
         self.left.mark(self.boundaries, 1)
@@ -118,10 +138,10 @@ class PoissonSolver():
         self.bottom.mark(self.boundaries, 4)
         self.front.mark(self.boundaries, 5)
         self.back.mark(self.boundaries, 6)
-        for i in range(len(elec_list)):
+        for i in range(len(self.elec_list)):
             self.electrode[i].mark(self.boundaries, 7+i)
-        for i in range(len(elec_poly_list)):
-            self.electrode_poly[i].mark(self.boundaries, 7+len(elec_list)+i)
+        for i in range(len(self.elec_poly_list)):
+            self.electrode_poly[i].mark(self.boundaries, 7+len(self.elec_list)+i)
 
     def getElecPotential(self, elec_list, step, steps, i, metal_offset, boundary_dielectric):
         chi_si = 4.05 #eV
@@ -162,8 +182,8 @@ class PoissonSolver():
             elec_str += "and below the dielectric interface."
         print(elec_str)
 
-    def getBoundaryComponent(self, sim_params, u, v, ds):
-        if sim_params["bcs"] == "robin":
+    def getBoundaryComponent(self, u, v, ds):
+        if self.sim_params["bcs"] == "robin":
             h_L = dolfin.Constant("0.0")
             h_R = dolfin.Constant("0.0")
             h_T = dolfin.Constant("0.0")
@@ -173,7 +193,7 @@ class PoissonSolver():
             component =  h_L*u*v*ds(1) + h_R*u*v*ds(3) \
                 + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
                 + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
-        elif sim_params["bcs"] == "neumann":
+        elif self.sim_params["bcs"] == "neumann":
             g_L = dolfin.Constant("0.0")
             g_R = dolfin.Constant("0.0")
             g_T = dolfin.Constant("0.0")
@@ -184,3 +204,13 @@ class PoissonSolver():
                  - g_T*v*ds(2) - g_Bo*v*ds(4) \
                  - g_F*v*ds(5) - g_Ba*v*ds(6)
         return component
+
+    def getSteps(self):
+        mode = str(self.sim_params["mode"])
+        if mode == "standard":
+            steps = 1
+        elif mode == "clock":
+            steps = int(sim_params["steps"])
+        elif mode == "cap":
+            steps = len(self.elec_list) + len(self.elec_poly_list)
+        return steps

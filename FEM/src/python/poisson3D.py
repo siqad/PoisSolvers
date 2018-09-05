@@ -32,7 +32,7 @@ elec_poly_list = helpers.getElectrodePolyCollections(sqconn)
 db_list = helpers.getDBCollections(sqconn)
 sim_params = sqconn.getAllParameters()
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list)
-res_scale = float(sim_params["sim_resolution"])
+# res_scale = float(sim_params["sim_resolution"])
 
 vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
                                 boundary_y_min,boundary_y_max,\
@@ -42,8 +42,10 @@ boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,bound
 print("Create mesh boundaries...")
 bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
 ps = ps_class.PoissonSolver(bounds)
+ps.setSimParams(sim_params)
+ps.setMetals(metal_offset, metal_thickness)
 ps.setPaths(in_path=in_path, out_path=out_path)
-ps.setResolution(res_scale)
+ps.setResolution()
 ps.createOuterBounds(resolution=1.0)
 ps.addDielectricSurface(resolution=1.0) #dielectric seam
 #over-extend a little, to ensure that the higher resolution appears.
@@ -51,8 +53,10 @@ ps.addDielectricField(res_in=0.25, res_out=1.0)
 
 print("Create subdomains and fields...")
 ps.setSubdomains()
-ps.setElectrodeSubdomains(elec_list, [metal_offset, metal_offset+metal_thickness])
-ps.setElectrodePolySubdomains(elec_poly_list, [metal_offset, metal_offset+metal_thickness])
+ps.elec_list = elec_list
+ps.elec_poly_list = elec_poly_list
+ps.setElectrodeSubdomains()
+ps.setElectrodePolySubdomains()
 ps.setBGField(delta=1E-9)
 
 print("Initializing mesh with GMSH...")
@@ -71,7 +75,7 @@ mesh = dolfin.Mesh(os.path.join(ps.abs_in_dir,'domain.xml'))
 print("Marking boundaries...")
 ps.markDomains(mesh)
 # Initialize mesh function for boundary domains
-ps.markBoundaries(mesh, elec_list, elec_poly_list)
+ps.markBoundaries(mesh)
 
 ######################SETTING BOUNDARY VALUES
 print("Creating boundary values...")
@@ -82,11 +86,8 @@ EPS_SI = dolfin.Constant(11.6*EPS_0)
 EPS_AIR = dolfin.Constant(1.0*EPS_0)
 f = dolfin.Constant("0.0")
 
-mode = str(sim_params["mode"])
-if mode == "standard":
-    steps = 1
-elif mode == "clock":
-    steps = int(sim_params["steps"])
+mode = str(ps.sim_params["mode"])
+steps = ps.getSteps()
 for step in range(steps):
     print("Defining function, space, basis...")
     # Define function space and basis functions
@@ -96,16 +97,16 @@ for step in range(steps):
 
     print("Defining Dirichlet boundaries...")
     # ps.setDirichletBoundaries()
-    bcs = []
+    ps.bcs = []
     # chi_si = 4.05 #eV
     # phi_gold = 5.1 #eV
     # phi_bi = phi_gold - chi_si
     for i in range(len(elec_list)):
         potential_to_set = ps.getElecPotential(elec_list, step, steps, i, metal_offset, boundary_dielectric)
-        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+i))
+        ps.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+i))
     for i in range(len(elec_poly_list)):
         potential_to_set = ps.getElecPotential(elec_poly_list, step, steps, i, metal_offset, boundary_dielectric)
-        bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+len(elec_list)+i))
+        ps.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+len(elec_list)+i))
 
     ######################DEFINE MEASURES DX AND DS
     # Define new measures associated with the interior domains and
@@ -119,7 +120,7 @@ for step in range(steps):
         + dolfin.inner(EPS_AIR*dolfin.grad(u), dolfin.grad(v))*dx(1) \
         - f*v*dx(0) - f*v*dx(1) )
 
-    boundary_component = ps.getBoundaryComponent(sim_params, u, v, ds)
+    boundary_component = ps.getBoundaryComponent(u, v, ds)
     F += boundary_component
 
     print("Separating LHS and RHS...")
@@ -138,13 +139,12 @@ for step in range(steps):
     elif init_guess == "zero":
         u = dolfin.Function(V)
 
-    problem = dolfin.LinearVariationalProblem(a, L, u, bcs)
+    problem = dolfin.LinearVariationalProblem(a, L, u, ps.bcs)
     solver = dolfin.LinearVariationalSolver(problem)
     solver.parameters['linear_solver'] = 'gmres'
     solver.parameters['preconditioner'] = 'sor'
+
     spec_param = solver.parameters['krylov_solver']
-
-
     if init_guess == "prev":
         if step == 0:
             spec_param['nonzero_initial_guess'] = False
@@ -156,7 +156,7 @@ for step in range(steps):
     spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
     spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
     spec_param['maximum_iterations'] = int(sim_params["max_linear_iters"])
-    # spec_param['monitor_convergence'] = True
+    spec_param['monitor_convergence'] = True
     print("Solving problem...")
     start = time.time()
     solver.solve()
@@ -170,21 +170,21 @@ for step in range(steps):
             db_pots.append([db.x, db.y, u(db.x*m_per_A,db.y*m_per_A, boundary_dielectric)])
         sqconn.export(db_pot=db_pots)
 
-    # V_vec = dolfin.VectorFunctionSpace(mesh, "CG", 2)
-    # grad_u = dolfin.project(dolfin.grad(u),V_vec)
+    x0, x1, x2 = dolfin.MeshCoordinates(mesh)
+    eps = dolfin.conditional(x2 <= 0.0, EPS_SI, EPS_AIR)
     dS = dolfin.Measure("dS")[ps.boundaries]
     n = dolfin.FacetNormal(mesh)
-    m1 = dolfin.avg(dolfin.dot(dolfin.grad(u), n))*dS(7)
+    m1 = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7)
+    # average is used since +/- sides of facet are arbitrary
     v1 = dolfin.assemble(m1)
     print("\int grad(u) * n ds(7) = ", v1)
     dS = dolfin.Measure("dS")[ps.boundaries]
     n = dolfin.FacetNormal(mesh)
-    m1 = dolfin.avg(dolfin.dot(dolfin.grad(u), n))*dS(8)
+    m1 = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(8)
     v1 = dolfin.assemble(m1)
     print("\int grad(u) * n ds(8) = ", v1)
 
     # PRINT TO FILE
-    # abs_out_dir = os.path.abspath(os.path.dirname(out_path))
     depth = float(sim_params['slice_depth'])*1e-9
     print("Creating 2D data slice")
     nx = int(sim_params['image_resolution'])
