@@ -13,9 +13,9 @@ import dolfin
 
 class PoissonSolver():
     def __init__(self, bounds):
-        # keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
-        # self.bounds = dict(zip(keys, bounds))
-        self.bounds = bounds
+        keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
+        self.bounds = dict(zip(keys, bounds))
+        # self.bounds = bounds
         self.mw = mw.MeshWriter()
         self.fields = []
         self.sim_params = None
@@ -44,30 +44,30 @@ class PoissonSolver():
 
     def setResolution(self):
         res_scale = float(self.sim_params["sim_resolution"])
-        self.mw.resolution = min((self.bounds[1]-self.bounds[0]), \
-                                 (self.bounds[3]-self.bounds[2]), \
-                                 (self.bounds[5]-self.bounds[4])) / res_scale
+        self.mw.resolution = min((self.bounds['xmax']-self.bounds['xmin']), \
+                                 (self.bounds['ymax']-self.bounds['ymin']), \
+                                 (self.bounds['zmax']-self.bounds['zmin'])) / res_scale
 
     def createOuterBounds(self, resolution):
-        self.mw.addBox([self.bounds[0],self.bounds[2],self.bounds[4]], \
-                       [self.bounds[1],self.bounds[3],self.bounds[5]], resolution, "bound")
+        self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
+                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], resolution, "bound")
 
     def addDielectricSurface(self, resolution):
-        self.mw.addSurface([self.bounds[0]+0.01*np.abs(self.bounds[0]),self.bounds[2]+0.01*np.abs(self.bounds[2]),self.bounds[6]],\
-                      [self.bounds[1]-0.01*np.abs(self.bounds[1]),self.bounds[2]+0.01*np.abs(self.bounds[2]),self.bounds[6]],\
-                      [self.bounds[1]-0.01*np.abs(self.bounds[1]),self.bounds[3]-0.01*np.abs(self.bounds[3]),self.bounds[6]],\
-                      [self.bounds[0]+0.01*np.abs(self.bounds[0]),self.bounds[3]-0.01*np.abs(self.bounds[3]),self.bounds[6]],\
+        self.mw.addSurface([self.bounds['xmin']+0.01*np.abs(self.bounds['xmin']),self.bounds['ymin']+0.01*np.abs(self.bounds['ymin']),self.bounds['dielectric']],\
+                      [self.bounds['xmax']-0.01*np.abs(self.bounds['xmax']),self.bounds['ymin']+0.01*np.abs(self.bounds['ymin']),self.bounds['dielectric']],\
+                      [self.bounds['xmax']-0.01*np.abs(self.bounds['xmax']),self.bounds['ymax']-0.01*np.abs(self.bounds['ymax']),self.bounds['dielectric']],\
+                      [self.bounds['xmin']+0.01*np.abs(self.bounds['xmin']),self.bounds['ymax']-0.01*np.abs(self.bounds['ymax']),self.bounds['dielectric']],\
                       resolution, "seam")
 
     def addDielectricField(self, res_in, res_out):
         self.fields = []
         self.fields += [self.mw.addBoxField(res_in, res_out, \
-                  [self.bounds[0]-0.001*np.abs(self.bounds[0]), \
-                   self.bounds[1]+0.001*np.abs(self.bounds[1])], \
-                  [self.bounds[2]-0.001*np.abs(self.bounds[2]), \
-                   self.bounds[3]+0.001*np.abs(self.bounds[3])], \
-                  [self.bounds[6]-0.05*np.abs(self.bounds[5]), \
-                   self.bounds[6]+0.05*np.abs(self.bounds[5])])]
+                  [self.bounds['xmin']-0.001*np.abs(self.bounds['xmin']), \
+                   self.bounds['xmax']+0.001*np.abs(self.bounds['xmax'])], \
+                  [self.bounds['ymin']-0.001*np.abs(self.bounds['ymin']), \
+                   self.bounds['ymax']+0.001*np.abs(self.bounds['ymax'])], \
+                  [self.bounds['dielectric']-0.05*np.abs(self.bounds['zmax']), \
+                   self.bounds['dielectric']+0.05*np.abs(self.bounds['zmax'])])]
         self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrode(self, xs, ys, zs, resolution):
@@ -96,13 +96,13 @@ class PoissonSolver():
         with open(os.path.join(self.abs_in_dir, 'domain.geo'), 'w') as f: f.write(self.mw.file_string)
 
     def setSubdomains(self):
-        self.left = sd.Left(self.bounds[0]) #x
-        self.top = sd.Top(self.bounds[3]) #y
-        self.right = sd.Right(self.bounds[1]) #x
-        self.bottom = sd.Bottom(self.bounds[2]) #y
-        self.front = sd.Front(self.bounds[5]) #z
-        self.back = sd.Back(self.bounds[4]) #z
-        self.air = sd.Air((self.bounds[6], self.bounds[5]))
+        self.left = sd.Left(self.bounds['xmin']) #x
+        self.top = sd.Top(self.bounds['ymax']) #y
+        self.right = sd.Right(self.bounds['xmax']) #x
+        self.bottom = sd.Bottom(self.bounds['ymin']) #y
+        self.front = sd.Front(self.bounds['zmax']) #z
+        self.back = sd.Back(self.bounds['zmin']) #z
+        self.air = sd.Air((self.bounds['dielectric'], self.bounds['zmax']))
 
     def setElectrodeSubdomains(self):
         self.electrode = []
@@ -143,7 +143,7 @@ class PoissonSolver():
         for i in range(len(self.elec_poly_list)):
             self.electrode_poly[i].mark(self.boundaries, 7+len(self.elec_list)+i)
 
-    def getElecPotential(self, elec_list, step, steps, i, metal_offset, boundary_dielectric):
+    def getElecPotential(self, elec_list, step, steps, i):
         chi_si = 4.05 #eV
         phi_gold = 5.1 #eV
         phi_bi = phi_gold - chi_si
@@ -155,32 +155,13 @@ class PoissonSolver():
         else:
             elec_str += "fixed, "
             potential_to_set = elec_list[i].potential
-        if metal_offset > boundary_dielectric:
+        if self.metal_offset > self.bounds['dielectric']:
             elec_str += "and above the dielectric interface."
         else:
             potential_to_set += phi_bi
             elec_str += "and below the dielectric interface."
         print(elec_str)
         return potential_to_set
-
-    def getElecPolyPotential(self, elec_poly_list, step, steps, i, metal_offset, boundary_dielectric):
-        chi_si = 4.05 #eV
-        phi_gold = 5.1 #eV
-        phi_bi = phi_gold - chi_si
-        elec_str = "ElectrodePoly "+str(i)+" is "
-        if elec_poly_list[i].electrode_type == 1:
-            elec_str += "clocked, "
-            tot_phase = elec_poly_list[i].phase + step*360/steps
-            potential_to_set = elec_poly_list[i].potential*np.sin( np.deg2rad(tot_phase) )
-        else:
-            elec_str += "fixed, "
-            potential_to_set = elec_poly_list[i].potential
-        if metal_offset > boundary_dielectric:
-            elec_str += "and above the dielectric interface."
-        else:
-            potential_to_set += phi_bi
-            elec_str += "and below the dielectric interface."
-        print(elec_str)
 
     def getBoundaryComponent(self, u, v, ds):
         if self.sim_params["bcs"] == "robin":
@@ -210,7 +191,15 @@ class PoissonSolver():
         if mode == "standard":
             steps = 1
         elif mode == "clock":
-            steps = int(sim_params["steps"])
+            steps = int(self.sim_params["steps"])
         elif mode == "cap":
             steps = len(self.elec_list) + len(self.elec_poly_list)
         return steps
+
+    def setElectrodePotentials(self, step, steps, V):
+        for i in range(len(self.elec_list)):
+            potential_to_set = self.getElecPotential(self.elec_list, step, steps, i)
+            self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+i))
+        for i in range(len(self.elec_poly_list)):
+            potential_to_set = self.getElecPotential(self.elec_poly_list, step, steps, i)
+            self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))

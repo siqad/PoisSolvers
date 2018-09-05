@@ -101,12 +101,7 @@ for step in range(steps):
     # chi_si = 4.05 #eV
     # phi_gold = 5.1 #eV
     # phi_bi = phi_gold - chi_si
-    for i in range(len(elec_list)):
-        potential_to_set = ps.getElecPotential(elec_list, step, steps, i, metal_offset, boundary_dielectric)
-        ps.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+i))
-    for i in range(len(elec_poly_list)):
-        potential_to_set = ps.getElecPotential(elec_poly_list, step, steps, i, metal_offset, boundary_dielectric)
-        ps.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), ps.boundaries, 7+len(elec_list)+i))
+    ps.setElectrodePotentials(step, steps, V)
 
     ######################DEFINE MEASURES DX AND DS
     # Define new measures associated with the interior domains and
