@@ -86,6 +86,7 @@ Q_E = 1.6E-19
 EPS_SI = dolfin.Constant(11.6*EPS_0)
 EPS_AIR = dolfin.Constant(1.0*EPS_0)
 f = dolfin.Constant("0.0")
+cap_matrix = []
 
 mode = str(ps.sim_params["mode"])
 steps = ps.getSteps()
@@ -165,19 +166,25 @@ for step in range(steps):
             db_pots.append([db.x, db.y, u(db.x*m_per_A,db.y*m_per_A, boundary_dielectric)])
         sqconn.export(db_pot=db_pots)
 
+
+    num_electrodes = len(ps.elec_list) + len(ps.elec_poly_list)
     x0, x1, x2 = dolfin.MeshCoordinates(mesh)
     eps = dolfin.conditional(x2 <= 0.0, EPS_SI, EPS_AIR)
-    dS = dolfin.Measure("dS")[ps.boundaries]
-    n = dolfin.FacetNormal(mesh)
-    m1 = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7)
-    # average is used since +/- sides of facet are arbitrary
-    v1 = dolfin.assemble(m1)
-    print("\int grad(u) * n ds(7) = ", v1)
-    dS = dolfin.Measure("dS")[ps.boundaries]
-    n = dolfin.FacetNormal(mesh)
-    m1 = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(8)
-    v1 = dolfin.assemble(m1)
-    print("\int grad(u) * n ds(8) = ", v1)
+    cap_list = []
+    for i in range(num_electrodes):
+        dS = dolfin.Measure("dS")[ps.boundaries]
+        n = dolfin.FacetNormal(mesh)
+        m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+i)
+        # average is used since +/- sides of facet are arbitrary
+        v = dolfin.assemble(m)
+        print("\int grad(u) * n ds({}) = ".format(7+i), v)
+        cap_list.append(v)
+    cap_matrix.append(cap_list)
+        # dS = dolfin.Measure("dS")[ps.boundaries]
+        # n = dolfin.FacetNormal(mesh)
+        # m1 = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(8)
+        # v1 = dolfin.assemble(m1)
+        # print("\int grad(u) * n ds(8) = ", v1)
 
     # PRINT TO FILE
     depth = float(sim_params['slice_depth'])*1e-9
@@ -189,7 +196,7 @@ for step in range(steps):
     X, Y = np.meshgrid(x, y)
     z = np.array([u(i, j, boundary_dielectric-depth) for j in y for i in x])
     Z = z.reshape(nx, ny)
-    print(Z)
+    # print(Z)
 
     u_old = u
 
@@ -202,7 +209,9 @@ for step in range(steps):
     if step == 0:
         fig = plt.figure()
         plt.gca().invert_yaxis()
-        plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
+        maxval = np.max(np.abs(Z))
+        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
+        plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         cbar = plt.colorbar()
         cbar.set_label("Potential (V)")
         locs, labels = plt.yticks()
@@ -225,6 +234,21 @@ for step in range(steps):
         plt.gca().invert_yaxis()
         Z = z.reshape(nx, ny)
         Zgrad = np.gradient(Z)
+        maxval = np.max(np.abs(Zgrad[0]))
+        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
+        plt.pcolormesh(X,Y,Zgrad[1],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        # plt.pcolormesh(X,Y,Zgrad[1],cmap=plt.cm.get_cmap('RdBu_r'))
+        cbar = plt.colorbar()
+        cbar.set_label("E field (V/m)")
+        savestring = os.path.join(ps.abs_out_dir,'grad0.png'.format(step))
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+        plt.savefig(savestring)
+        plt.close(fig)
+
+        fig = plt.figure(frameon=False)
+        plt.gca().invert_yaxis()
+        Z = z.reshape(nx, ny)
+        Zgrad = np.gradient(Z)
         maxval = np.max(np.abs(Zgrad[1]))
         norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
         plt.pcolormesh(X,Y,Zgrad[1],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
@@ -240,7 +264,9 @@ for step in range(steps):
     plt.gca().invert_yaxis()
     plt.axis('off')
     Z = z.reshape(nx, ny)
-    plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
+    maxval = np.max(np.abs(Z))
+    norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
+    plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
     savestring = os.path.join(ps.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.savefig(savestring)
@@ -260,3 +286,10 @@ if mode == "clock":
                delay=0.5,
                loop=0)
 print("Ending...")
+cap_matrix = np.array(cap_matrix)
+for i in range(len(cap_matrix)):
+    tot_cap = 2*cap_matrix[i][i]
+    for cap in cap_matrix[i]:
+        tot_cap = tot_cap-cap
+    print("C{} = {}".format(i,tot_cap))
+print(cap_matrix)
