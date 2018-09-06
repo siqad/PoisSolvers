@@ -197,9 +197,17 @@ class PoissonSolver():
         return steps
 
     def setElectrodePotentials(self, step, steps, V):
-        for i in range(len(self.elec_list)):
-            potential_to_set = self.getElecPotential(self.elec_list, step, steps, i)
-            self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+i))
-        for i in range(len(self.elec_poly_list)):
-            potential_to_set = self.getElecPotential(self.elec_poly_list, step, steps, i)
-            self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))
+        mode = str(self.sim_params["mode"])
+        if mode == "standard" or mode == "clock":
+            for i in range(len(self.elec_list)):
+                potential_to_set = self.getElecPotential(self.elec_list, step, steps, i)
+                self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+i))
+            for i in range(len(self.elec_poly_list)):
+                potential_to_set = self.getElecPotential(self.elec_poly_list, step, steps, i)
+                self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))
+        elif mode == "cap":
+            for i in range(len(self.elec_list)+len(self.elec_poly_list)):
+                if i == step:
+                    self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+i))
+                else:
+                    self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+i))

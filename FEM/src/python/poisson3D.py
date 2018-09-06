@@ -15,6 +15,7 @@ import helpers
 import time
 import os
 import matplotlib.pyplot as plt
+import matplotlib.colors as clrs
 import siqadconn
 import subdomains as sd
 from dolfin_utils.meshconvert import meshconvert
@@ -96,7 +97,6 @@ for step in range(steps):
     v = dolfin.TestFunction(V)
 
     print("Defining Dirichlet boundaries...")
-    # ps.setDirichletBoundaries()
     ps.bcs = []
     # chi_si = 4.05 #eV
     # phi_gold = 5.1 #eV
@@ -151,7 +151,7 @@ for step in range(steps):
     spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
     spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
     spec_param['maximum_iterations'] = int(sim_params["max_linear_iters"])
-    spec_param['monitor_convergence'] = True
+    # spec_param['monitor_convergence'] = True
     print("Solving problem...")
     start = time.time()
     solver.solve()
@@ -189,6 +189,7 @@ for step in range(steps):
     X, Y = np.meshgrid(x, y)
     z = np.array([u(i, j, boundary_dielectric-depth) for j in y for i in x])
     Z = z.reshape(nx, ny)
+    print(Z)
 
     u_old = u
 
@@ -219,9 +220,26 @@ for step in range(steps):
         savestring = os.path.join(ps.abs_out_dir,'SiAirPlot.png')
         plt.savefig(savestring, bbox_inces="tight", pad_inches=0)
         plt.close(fig)
+
+        fig = plt.figure(frameon=False)
+        plt.gca().invert_yaxis()
+        Z = z.reshape(nx, ny)
+        Zgrad = np.gradient(Z)
+        maxval = np.max(np.abs(Zgrad[1]))
+        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
+        plt.pcolormesh(X,Y,Zgrad[1],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        # plt.pcolormesh(X,Y,Zgrad[1],cmap=plt.cm.get_cmap('RdBu_r'))
+        cbar = plt.colorbar()
+        cbar.set_label("E field (V/m)")
+        savestring = os.path.join(ps.abs_out_dir,'grad1.png'.format(step))
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+        plt.savefig(savestring)
+        plt.close(fig)
+
     fig = plt.figure(frameon=False)
     plt.gca().invert_yaxis()
     plt.axis('off')
+    Z = z.reshape(nx, ny)
     plt.pcolormesh(X,Y,Z,cmap=plt.cm.get_cmap('RdBu_r'))
     savestring = os.path.join(ps.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
