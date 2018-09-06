@@ -180,11 +180,6 @@ for step in range(steps):
         print("\int grad(u) * n ds({}) = ".format(7+i), v)
         cap_list.append(v)
     cap_matrix.append(cap_list)
-        # dS = dolfin.Measure("dS")[ps.boundaries]
-        # n = dolfin.FacetNormal(mesh)
-        # m1 = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(8)
-        # v1 = dolfin.assemble(m1)
-        # print("\int grad(u) * n ds(8) = ", v1)
 
     # PRINT TO FILE
     depth = float(sim_params['slice_depth'])*1e-9
@@ -196,7 +191,6 @@ for step in range(steps):
     X, Y = np.meshgrid(x, y)
     z = np.array([u(i, j, boundary_dielectric-depth) for j in y for i in x])
     Z = z.reshape(nx, ny)
-    # print(Z)
 
     u_old = u
 
@@ -236,7 +230,7 @@ for step in range(steps):
         Zgrad = np.gradient(Z)
         maxval = np.max(np.abs(Zgrad[0]))
         norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
-        plt.pcolormesh(X,Y,Zgrad[1],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        plt.pcolormesh(X,Y,Zgrad[0],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         # plt.pcolormesh(X,Y,Zgrad[1],cmap=plt.cm.get_cmap('RdBu_r'))
         cbar = plt.colorbar()
         cbar.set_label("E field (V/m)")
@@ -288,8 +282,8 @@ if mode == "clock":
 print("Ending...")
 cap_matrix = np.array(cap_matrix)
 for i in range(len(cap_matrix)):
-    tot_cap = 2*cap_matrix[i][i]
+    tot_cap = 0
     for cap in cap_matrix[i]:
-        tot_cap = tot_cap-cap
-    print("C{} = {}".format(i,tot_cap))
+        tot_cap = tot_cap+cap
+    print("C{} = {}F".format(i,tot_cap))
 print(cap_matrix)

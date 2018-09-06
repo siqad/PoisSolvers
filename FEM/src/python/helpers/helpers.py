@@ -23,8 +23,8 @@ def getBB(elec_list, elec_poly_list):
     max_x = max(x_list)
     min_y = min(y_list)
     max_y = max(y_list)
-    xs = [min_x-2.0*(max_x-min_x), max_x+2.0*(max_x-min_x)]
-    ys = [min_y-2.0*(max_y-min_y), max_y+2.0*(max_y-min_y)]
+    xs = [min_x-4.0*(max_x-min_x), max_x+4.0*(max_x-min_x)]
+    ys = [min_y-4.0*(max_y-min_y), max_y+4.0*(max_y-min_y)]
     return xs, ys
 
 def getMetalParams(sqconn):
@@ -74,7 +74,7 @@ def adjustBoundaries(xmin, xmax, ymin, ymax, moff, mthick):
         xmin -= 0.01*xmax
     if ymin == 0:
         ymin -= 0.01*ymax
-    zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*10.0
+    zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*20.0
     zmax = -zmin
     b_di = 0.0 #at the surface.
     return xmin, xmax, ymin, ymax, zmin, zmax, b_di
