@@ -10,6 +10,8 @@ import numpy as np
 import os
 import subdomains as sd
 import dolfin
+import matplotlib.pyplot as plt
+import matplotlib.colors as clrs
 
 class PoissonSolver():
     def __init__(self, bounds):
@@ -211,3 +213,53 @@ class PoissonSolver():
                     self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+i))
                 else:
                     self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+i))
+
+    def saveAxesPotential(self,X,Y,Z,filename):
+        fig = plt.figure()
+        plt.gca().invert_yaxis()
+        maxval = np.max(np.abs(Z))
+        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
+        plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        cbar = plt.colorbar()
+        cbar.set_label("Potential (V)")
+        locs, labels = plt.yticks()
+        labels = []
+        for loc in locs:
+            labels += [str(round(loc*1e9, 2))]
+        plt.yticks(locs, labels)
+        locs, labels = plt.xticks()
+        labels = []
+        for loc in locs:
+            labels += [str(round(loc*1e9, 2))]
+        plt.xticks(locs, labels)
+        plt.xlabel("X (nm)")
+        plt.ylabel("Y (nm)")
+        savestring = os.path.join(self.abs_out_dir,filename)
+        plt.savefig(savestring, bbox_inces="tight", pad_inches=0)
+        plt.close(fig)
+
+    def saveGrad(self, X, Y, Z, index):
+        fig = plt.figure(frameon=False)
+        plt.gca().invert_yaxis()
+        Zgrad = np.gradient(Z)
+        maxval = np.max(np.abs(Zgrad[index]))
+        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
+        plt.pcolormesh(X,Y,Zgrad[index],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        cbar = plt.colorbar()
+        cbar.set_label("E field (V/m)")
+        savestring = os.path.join(self.abs_out_dir,'grad{}.png'.format(index))
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+        plt.savefig(savestring)
+        plt.close(fig)
+
+    def savePotential(self, X, Y, Z, step):
+        fig = plt.figure(frameon=False)
+        plt.gca().invert_yaxis()
+        plt.axis('off')
+        maxval = np.max(np.abs(Z))
+        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
+        plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        savestring = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+        plt.savefig(savestring)
+        plt.close(fig)
