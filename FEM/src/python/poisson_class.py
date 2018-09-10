@@ -263,3 +263,14 @@ class PoissonSolver():
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plt.savefig(savestring)
         plt.close(fig)
+
+    def create2DSlice(self, u):
+        depth = float(self.sim_params['slice_depth'])*1e-9
+        nx = int(self.sim_params['image_resolution'])
+        ny = nx
+        x = np.linspace(self.bounds['xmin'], self.bounds['xmax'], nx)
+        y = np.linspace(self.bounds['ymin'], self.bounds['ymax'], ny)
+        X, Y = np.meshgrid(x, y)
+        z = np.array([u(i, j, self.bounds['dielectric']-depth) for j in y for i in x])
+        Z = z.reshape(nx, ny)
+        return X, Y, Z, nx, ny

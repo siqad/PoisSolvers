@@ -182,17 +182,9 @@ for step in range(steps):
     cap_matrix.append(cap_list)
 
     # PRINT TO FILE
-    depth = float(sim_params['slice_depth'])*1e-9
     print("Creating 2D data slice")
-    nx = int(sim_params['image_resolution'])
-    ny = nx
-    x = np.linspace(boundary_x_min, boundary_x_max, nx)
-    y = np.linspace(boundary_y_min, boundary_y_max, ny)
-    X, Y = np.meshgrid(x, y)
-    z = np.array([u(i, j, boundary_dielectric-depth) for j in y for i in x])
-    Z = z.reshape(nx, ny)
-
-    u_old = u
+    X, Y, Z, nx, ny = ps.create2DSlice(u)
+    u_old = u #Set the potential to use as initial guess
 
     print("Saving 2D potential data to XML")
     XYZ = []
