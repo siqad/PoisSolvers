@@ -12,6 +12,7 @@ import subdomains as sd
 import dolfin
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
+from PIL import Image
 
 class PoissonSolver():
     def __init__(self, bounds):
@@ -274,3 +275,30 @@ class PoissonSolver():
         z = np.array([u(i, j, self.bounds['dielectric']-depth) for j in y for i in x])
         Z = z.reshape(nx, ny)
         return X, Y, Z, nx, ny
+
+    def makeGif(self):
+        mode = str(self.sim_params["mode"])
+        if mode == "clock":
+            images = []
+            image_files = []
+            for file in os.listdir(os.path.dirname(self.in_path)):
+                if file.startswith("SiAirBoundary"):
+                    image_files.append(os.path.join(self.abs_in_dir, file))
+            image_files.sort()
+            for image_name in image_files:
+                images.append(Image.open(image_name))
+            images[0].save(os.path.join(self.abs_in_dir, "SiAirBoundary.gif"),
+                       save_all=True,
+                       append_images=images[1:],
+                       delay=0.5,
+                       loop=0)
+    def getCaps(self, cap_matrix):
+        mode = str(self.sim_params["mode"])
+        if mode == "cap":
+            cap_matrix = np.array(cap_matrix)
+            for i in range(len(cap_matrix)):
+                tot_cap = 0
+                for cap in cap_matrix[i]:
+                    tot_cap = tot_cap+cap
+                print("C{} = {}F".format(i,tot_cap))
+            print(cap_matrix)

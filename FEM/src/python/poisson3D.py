@@ -19,7 +19,6 @@ import matplotlib.colors as clrs
 import siqadconn
 import subdomains as sd
 from dolfin_utils.meshconvert import meshconvert
-from PIL import Image
 
 ######################PREAMBLE
 in_path = sys.argv[1]
@@ -198,25 +197,7 @@ for step in range(steps):
         ps.saveGrad(X,Y,Z,1)
     ps.savePotential(X,Y,Z,step)
 
-if mode == "clock":
-    images = []
-    image_files = []
-    for file in os.listdir(os.path.dirname(in_path)):
-        if file.startswith("SiAirBoundary"):
-            image_files.append(os.path.join(os.path.dirname(in_path), file))
-    image_files.sort()
-    for image_name in image_files:
-        images.append(Image.open(image_name))
-    images[0].save(os.path.join(os.path.dirname(in_path), "SiAirBoundary.gif"),
-               save_all=True,
-               append_images=images[1:],
-               delay=0.5,
-               loop=0)
+ps.makeGif()
+ps.getCaps(cap_matrix)
+
 print("Ending...")
-cap_matrix = np.array(cap_matrix)
-for i in range(len(cap_matrix)):
-    tot_cap = 0
-    for cap in cap_matrix[i]:
-        tot_cap = tot_cap+cap
-    print("C{} = {}F".format(i,tot_cap))
-print(cap_matrix)
