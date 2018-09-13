@@ -201,6 +201,10 @@ class PoissonSolver():
 
     def setElectrodePotentials(self, step, steps, V):
         mode = str(self.sim_params["mode"])
+        for i in range(len(self.elec_list)):
+            print("Net", self.elec_list[i].net)
+        for i in range(len(self.elec_poly_list)):
+            print("Net", self.elec_poly_list[i].net)
         if mode == "standard" or mode == "clock":
             for i in range(len(self.elec_list)):
                 potential_to_set = self.getElecPotential(self.elec_list, step, steps, i)
