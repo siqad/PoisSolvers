@@ -28,6 +28,8 @@ class PoissonSolver():
         self.elec_poly_list = None
         self.metal_offset = None
         self.metal_thickness = None
+        self.cap_matrix = []
+        self.net_list = []
 
     def setMetals(self, m_off, m_thick):
         self.metal_offset = m_off
@@ -196,15 +198,19 @@ class PoissonSolver():
         elif mode == "clock":
             steps = int(self.sim_params["steps"])
         elif mode == "cap":
-            steps = len(self.elec_list) + len(self.elec_poly_list)
+            steps = len(self.net_list)
         return steps
+
+    def createNetlist(self):
+        for i in range(len(self.elec_list)):
+            if self.elec_list[i].net not in self.net_list:
+                self.net_list.append(self.elec_list[i].net)
+        for i in range(len(self.elec_poly_list)):
+            if self.elec_poly_list[i].net not in self.net_list:
+                self.net_list.append(self.elec_poly_list[i].net)
 
     def setElectrodePotentials(self, step, steps, V):
         mode = str(self.sim_params["mode"])
-        for i in range(len(self.elec_list)):
-            print("Net", self.elec_list[i].net)
-        for i in range(len(self.elec_poly_list)):
-            print("Net", self.elec_poly_list[i].net)
         if mode == "standard" or mode == "clock":
             for i in range(len(self.elec_list)):
                 potential_to_set = self.getElecPotential(self.elec_list, step, steps, i)
@@ -213,11 +219,21 @@ class PoissonSolver():
                 potential_to_set = self.getElecPotential(self.elec_poly_list, step, steps, i)
                 self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))
         elif mode == "cap":
-            for i in range(len(self.elec_list)+len(self.elec_poly_list)):
-                if i == step:
+            # for i in range(len(self.elec_list)+len(self.elec_poly_list)):
+            #     if i == step:
+            #         self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+i))
+            #     else:
+            #         self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+i))
+            for i in range(len(self.elec_list)):
+                if self.net_list[step] == self.elec_list[i].net:
                     self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+i))
                 else:
                     self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+i))
+            for i in range(len(self.elec_poly_list)):
+                if self.net_list[step] == self.elec_poly_list[i].net:
+                    self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+len(self.elec_list)+i))
+                else:
+                    self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+len(self.elec_list)+i))
 
     def saveAxesPotential(self,X,Y,Z,filename):
         fig = plt.figure()
@@ -296,13 +312,14 @@ class PoissonSolver():
                        append_images=images[1:],
                        delay=0.5,
                        loop=0)
-    def getCaps(self, cap_matrix):
+
+    def getCaps(self):
         mode = str(self.sim_params["mode"])
         if mode == "cap":
-            cap_matrix = np.array(cap_matrix)
+            cap_matrix = np.array(self.cap_matrix)
             for i in range(len(cap_matrix)):
                 tot_cap = 0
                 for cap in cap_matrix[i]:
                     tot_cap = tot_cap+cap
-                print("C{} = {}F".format(i,tot_cap))
+                print("C_net{} = {}F".format(self.net_list[i],tot_cap))
             print(cap_matrix)
