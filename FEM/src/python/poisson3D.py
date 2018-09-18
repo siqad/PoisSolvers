@@ -166,33 +166,34 @@ for step in range(steps):
             db_pots.append([db.x, db.y, u(db.x*m_per_A,db.y*m_per_A, boundary_dielectric)])
         sqconn.export(db_pot=db_pots)
 
-    if mode == "cap":
-        x0, x1, x2 = dolfin.MeshCoordinates(mesh)
-        eps = dolfin.conditional(x2 <= 0.0, EPS_SI, EPS_AIR)
-        cap_list = [0.0]*len(ps.net_list)
-        for i in range(len(ps.elec_list)):
-            curr_net = ps.elec_list[i].net
-            dS = dolfin.Measure("dS")[ps.boundaries]
-            n = dolfin.FacetNormal(mesh)
-            m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+i)
-            # average is used since +/- sides of facet are arbitrary
-            v = dolfin.assemble(m)
-            print("\int grad(u) * n ds({}) = ".format(7+i), v)
-            print(ps.net_list.index(curr_net))
-            cap_list[ps.net_list.index(curr_net)] = cap_list[ps.net_list.index(curr_net)] + v
-            print(cap_list)
-        for i in range(len(ps.elec_poly_list)):
-            curr_net = ps.elec_poly_list[i].net
-            dS = dolfin.Measure("dS")[ps.boundaries]
-            n = dolfin.FacetNormal(mesh)
-            m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+len(ps.elec_list)+i)
-            # average is used since +/- sides of facet are arbitrary
-            v = dolfin.assemble(m)
-            print("\int grad(u) * n ds({}) = ".format(7+len(ps.elec_list)+i), v)
-            print(ps.net_list.index(curr_net))
-            cap_list[ps.net_list.index(curr_net)] = cap_list[ps.net_list.index(curr_net)] + v
-            print(cap_list)
-        ps.cap_matrix.append(cap_list)
+    ps.calcCaps(u, mesh, EPS_SI, EPS_AIR)
+    # if mode == "cap":
+    #     x0, x1, x2 = dolfin.MeshCoordinates(mesh)
+    #     eps = dolfin.conditional(x2 <= 0.0, EPS_SI, EPS_AIR)
+    #     cap_list = [0.0]*len(ps.net_list)
+    #     for i in range(len(ps.elec_list)):
+    #         curr_net = ps.elec_list[i].net
+    #         dS = dolfin.Measure("dS")[ps.boundaries]
+    #         n = dolfin.FacetNormal(mesh)
+    #         m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+i)
+    #         # average is used since +/- sides of facet are arbitrary
+    #         v = dolfin.assemble(m)
+    #         print("\int grad(u) * n ds({}) = ".format(7+i), v)
+    #         print(ps.net_list.index(curr_net))
+    #         cap_list[ps.net_list.index(curr_net)] = cap_list[ps.net_list.index(curr_net)] + v
+    #         print(cap_list)
+    #     for i in range(len(ps.elec_poly_list)):
+    #         curr_net = ps.elec_poly_list[i].net
+    #         dS = dolfin.Measure("dS")[ps.boundaries]
+    #         n = dolfin.FacetNormal(mesh)
+    #         m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+len(ps.elec_list)+i)
+    #         # average is used since +/- sides of facet are arbitrary
+    #         v = dolfin.assemble(m)
+    #         print("\int grad(u) * n ds({}) = ".format(7+len(ps.elec_list)+i), v)
+    #         print(ps.net_list.index(curr_net))
+    #         cap_list[ps.net_list.index(curr_net)] = cap_list[ps.net_list.index(curr_net)] + v
+    #         print(cap_list)
+    #     ps.cap_matrix.append(cap_list)
 
     # PRINT TO FILE
     print("Creating 2D data slice")

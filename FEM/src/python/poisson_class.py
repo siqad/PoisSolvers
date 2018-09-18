@@ -323,3 +323,33 @@ class PoissonSolver():
                     tot_cap = tot_cap+cap
                 print("C_net{} = {}F".format(self.net_list[i],tot_cap))
             print(cap_matrix)
+
+    def calcCaps(self, u, mesh, EPS_SI, EPS_AIR):
+        mode = str(self.sim_params["mode"])
+        if mode == "cap":
+            x0, x1, x2 = dolfin.MeshCoordinates(mesh)
+            eps = dolfin.conditional(x2 <= 0.0, EPS_SI, EPS_AIR)
+            cap_list = [0.0]*len(self.net_list)
+            for i in range(len(self.elec_list)):
+                curr_net = self.elec_list[i].net
+                dS = dolfin.Measure("dS")[self.boundaries]
+                n = dolfin.FacetNormal(mesh)
+                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+i)
+                # average is used since +/- sides of facet are arbitrary
+                v = dolfin.assemble(m)
+                print("\int grad(u) * n ds({}) = ".format(7+i), v)
+                print(self.net_list.index(curr_net))
+                cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
+                print(cap_list)
+            for i in range(len(self.elec_poly_list)):
+                curr_net = self.elec_poly_list[i].net
+                dS = dolfin.Measure("dS")[self.boundaries]
+                n = dolfin.FacetNormal(mesh)
+                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+len(self.elec_list)+i)
+                # average is used since +/- sides of facet are arbitrary
+                v = dolfin.assemble(m)
+                print("\int grad(u) * n ds({}) = ".format(7+len(self.elec_list)+i), v)
+                print(self.net_list.index(curr_net))
+                cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
+                print(cap_list)
+            self.cap_matrix.append(cap_list)
