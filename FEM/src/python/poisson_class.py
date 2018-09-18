@@ -10,6 +10,7 @@ import numpy as np
 import os
 import subdomains as sd
 import dolfin
+import sys
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 from PIL import Image
@@ -316,13 +317,16 @@ class PoissonSolver():
     def getCaps(self):
         mode = str(self.sim_params["mode"])
         if mode == "cap":
+            matrix_string = ""
             cap_matrix = np.array(self.cap_matrix)
             for i in range(len(cap_matrix)):
                 tot_cap = 0
                 for cap in cap_matrix[i]:
                     tot_cap = tot_cap+cap
+                    matrix_string = matrix_string + "{} ".format(cap)
                 print("C_net{} = {}F".format(self.net_list[i],tot_cap))
-            print(cap_matrix)
+                matrix_string = matrix_string + "\n"
+            print(matrix_string)
 
     def calcCaps(self, u, mesh, EPS_SI, EPS_AIR):
         mode = str(self.sim_params["mode"])
