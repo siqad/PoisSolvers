@@ -35,7 +35,7 @@
       </max_abs_error>
       <max_rel_error>
         <T>double</T>
-        <val>0.0001</val>
+        <val>0.001</val>
         <label>Maximum Relative Error</label>
         <tip>Relative error threshold to stop simulation iterations.</tip>
       </max_rel_error>
@@ -74,7 +74,7 @@
       </init_guess>
       <steps>
         <T>int</T>
-        <val>20</val>
+        <val>10</val>
         <label>Steps</label>
         <tip>Number of steps between low and high potentials when generating clock results</tip>
       </steps>
