@@ -8,7 +8,7 @@
 import numpy as np
 
 #elec_list and elec_poly_list are a list of electrodes and list of polygonal electrodes
-def getBB(elec_list, elec_poly_list):
+def getBB(elec_list, elec_poly_list, bcs):
     x_list = []
     y_list = []
     if elec_list:
@@ -23,8 +23,12 @@ def getBB(elec_list, elec_poly_list):
     max_x = max(x_list)
     min_y = min(y_list)
     max_y = max(y_list)
-    xs = [min_x-4.0*(max_x-min_x), max_x+4.0*(max_x-min_x)]
-    ys = [min_y-4.0*(max_y-min_y), max_y+4.0*(max_y-min_y)]
+    if bcs == "periodic":
+        scale = 1.0
+    else:
+        scale = 4.0
+    xs = [min_x-scale*(max_x-min_x), max_x+scale*(max_x-min_x)]
+    ys = [min_y-scale*(max_y-min_y), max_y+scale*(max_y-min_y)]
     return xs, ys
 
 def getMetalParams(sqconn):

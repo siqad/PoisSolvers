@@ -13,6 +13,7 @@
         <value_selection type="ComboBox">
           <robin>Robin</robin>
           <neumann>Neumann</neumann>
+          <periodic>Periodic</periodic>
         </value_selection>
       </bcs>
       <sim_resolution>
@@ -35,7 +36,7 @@
       </max_abs_error>
       <max_rel_error>
         <T>double</T>
-        <val>0.001</val>
+        <val>0.0001</val>
         <label>Maximum Relative Error</label>
         <tip>Relative error threshold to stop simulation iterations.</tip>
       </max_rel_error>

@@ -51,6 +51,93 @@ class Front(dolfin.SubDomain): #z_max
     def inside(self, x, on_boundary):
         return dolfin.near(x[2], self.boundary_z_max)
 
+
+
+
+# this is correct
+# class PeriodicBoundary(dolfin.SubDomain):
+#     def __init__(self, x_min, x_max, y_min, y_max):
+#         self.x_min = x_min
+#         self.x_max = x_max
+#         self.y_min = y_min
+#         self.y_max = y_max
+#         dolfin.SubDomain.__init__(self)
+#
+#     def inside(self, x, on_boundary):
+#         # the boundary minus the top and right sides
+#         return on_boundary and not (dolfin.near(x[0], self.x_max) or dolfin.near(x[1], self.y_max))
+#     def map(self, x, y):
+#             if dolfin.near(x[0], self.x_max):
+#                 y[0] = self.x_min
+#             elif dolfin.near(x[1], self.y_max):
+#                 y[1] = self.x_min
+#             else:
+#                 y[i] = x[i]
+
+
+# Sub domain for Periodic boundary condition in x and y
+class PeriodicBoundary(dolfin.SubDomain):
+    def __init__(self, x_min, x_max, y_min, y_max):
+        self.x_min = x_min
+        self.x_max = x_max
+        self.y_min = y_min
+        self.y_max = y_max
+        print(x_min, x_max, y_min, y_max)
+        dolfin.SubDomain.__init__(self)
+    def inside(self, x, on_boundary):
+        return bool((dolfin.near(x[0], self.x_min) or dolfin.near(x[1], self.y_min)) and
+                (not ((dolfin.near(x[0], self.x_min) and dolfin.near(x[1], self.y_max)) or
+                        (dolfin.near(x[0], self.x_max) and dolfin.near(x[1], self.y_min)))) and on_boundary)
+    def map(self, x, y):
+        if dolfin.near(x[0], self.x_max) and dolfin.near(x[1], self.y_max):
+            y[0] = self.x_min
+            y[1] = self.y_min
+            y[2] = x[2]
+        elif dolfin.near(x[0], self.x_max):
+            y[0] = self.x_min
+            y[1] = x[1]
+            y[2] = x[2]
+        elif dolfin.near(x[1], self.y_max):
+            y[0] = x[0]
+            y[1] = self.y_min
+            y[2] = x[2]
+        else:
+            y[0] = 1000
+            y[1] = 1000
+            y[2] = 1000
+    # def map(self, x, y):
+    #     if dolfin.near(x[0], self.x_max) and dolfin.near(x[1], self.y_max):
+    #         y[0] = x[0] - self.x_max
+    #         y[1] = x[1] - self.y_max
+    #         y[2] = x[2]
+    #     elif dolfin.near(x[0], self.x_max):
+    #         y[0] = x[0] - self.x_max
+    #         y[1] = x[1]
+    #         y[2] = x[2]
+    #     elif dolfin.near(x[1], self.y_max):
+    #         y[0] = x[0]
+    #         y[1] = x[1] - self.y_max
+    #         y[2] = x[2]
+    #     else:
+    #         y[0] = 1000
+    #         y[1] = 1000
+    #         y[2] = 1000
+        # if dolfin.dolfin.near(x[0], self.x_max) and dolfin.dolfin.near(x[1], self.y_max):
+        #     y[0] = x[0] - self.x_max
+        #     y[1] = x[1]
+        #     y[2] = x[2]
+        #     # y[0] = x[0] - self.x_max
+        #     # y[1] = x[1] - self.y_max
+        #     # y[2] = x[2]
+        # elif dolfin.near(x[0], self.x_max):
+        #     y[0] = x[0] - self.x_max
+        #     y[1] = x[1]
+        #     y[2] = x[2]
+        # else:   # near(x[1], 1)
+        #     y[0] = x[0]
+        #     y[1] = x[1] - self.y_max
+        #     y[2] = x[2]
+
 # INTERNAL BOUNDARY CONDITION FOR DIELECTRIC
 class Air(dolfin.SubDomain):
     def __init__(self, bounds):

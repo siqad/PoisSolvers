@@ -31,7 +31,7 @@ elec_list = helpers.getElectrodeCollections(sqconn)
 elec_poly_list = helpers.getElectrodePolyCollections(sqconn)
 db_list = helpers.getDBCollections(sqconn)
 sim_params = sqconn.getAllParameters()
-[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list)
+[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list, sim_params["bcs"])
 # res_scale = float(sim_params["sim_resolution"])
 
 vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
@@ -93,7 +93,8 @@ steps = ps.getSteps()
 for step in range(steps):
     print("Defining function, space, basis...")
     # Define function space and basis functions
-    V = dolfin.FunctionSpace(mesh, "CG", 3)
+    V = ps.getFunctionSpace(mesh)
+    # V = dolfin.FunctionSpace(mesh, "CG", 3)
     u = dolfin.TrialFunction(V)
     v = dolfin.TestFunction(V)
 

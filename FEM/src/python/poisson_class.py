@@ -190,7 +190,19 @@ class PoissonSolver():
             component = - g_L*v*ds(1) - g_R*v*ds(3) \
                  - g_T*v*ds(2) - g_Bo*v*ds(4) \
                  - g_F*v*ds(5) - g_Ba*v*ds(6)
+        elif self.sim_params["bcs"] == "periodic":
+            h_F = dolfin.Constant("0.0")
+            h_Ba = dolfin.Constant("0.0")
+            component =  h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
         return component
+
+    def getFunctionSpace(self, mesh):
+        if self.sim_params["bcs"] == "periodic":
+            self.pbc = sd.PeriodicBoundary(self.bounds['xmin'], self.bounds['xmax'], self.bounds['ymin'], self.bounds['ymax'])
+            return dolfin.FunctionSpace(mesh, "CG", 3, constrained_domain=self.pbc)
+        else:
+            return dolfin.FunctionSpace(mesh, "CG", 3)
+
 
     def getSteps(self):
         mode = str(self.sim_params["mode"])
