@@ -94,15 +94,11 @@ for step in range(steps):
     print("Defining function, space, basis...")
     # Define function space and basis functions
     V = ps.getFunctionSpace(mesh)
-    # V = dolfin.FunctionSpace(mesh, "CG", 3)
     u = dolfin.TrialFunction(V)
     v = dolfin.TestFunction(V)
 
     print("Defining Dirichlet boundaries...")
     ps.bcs = []
-    # chi_si = 4.05 #eV
-    # phi_gold = 5.1 #eV
-    # phi_bi = phi_gold - chi_si
     ps.setElectrodePotentials(step, steps, V)
 
     ######################DEFINE MEASURES DX AND DS
@@ -188,6 +184,3 @@ for step in range(steps):
 
 ps.makeGif()
 ps.getCaps()
-#
-# print("Ending...")
-# print("Net list: ", ps.net_list)

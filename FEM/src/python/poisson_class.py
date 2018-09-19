@@ -98,16 +98,15 @@ class PoissonSolver():
         self.mw.setBGField(bg_field_ind)
 
     def writeGeoFile(self):
-        # abs_in_dir = os.path.abspath(os.path.dirname(self.in_path))
         with open(os.path.join(self.abs_in_dir, 'domain.geo'), 'w') as f: f.write(self.mw.file_string)
 
     def setSubdomains(self):
-        self.left = sd.Left(self.bounds['xmin']) #x
-        self.top = sd.Top(self.bounds['ymax']) #y
-        self.right = sd.Right(self.bounds['xmax']) #x
-        self.bottom = sd.Bottom(self.bounds['ymin']) #y
-        self.front = sd.Front(self.bounds['zmax']) #z
-        self.back = sd.Back(self.bounds['zmin']) #z
+        self.left = sd.Left(self.bounds['xmin'])
+        self.top = sd.Top(self.bounds['ymax'])
+        self.right = sd.Right(self.bounds['xmax'])
+        self.bottom = sd.Bottom(self.bounds['ymin'])
+        self.front = sd.Front(self.bounds['zmax'])
+        self.back = sd.Back(self.bounds['zmin'])
         self.air = sd.Air((self.bounds['dielectric'], self.bounds['zmax']))
 
     def setElectrodeSubdomains(self):
@@ -232,11 +231,6 @@ class PoissonSolver():
                 potential_to_set = self.getElecPotential(self.elec_poly_list, step, steps, i)
                 self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))
         elif mode == "cap":
-            # for i in range(len(self.elec_list)+len(self.elec_poly_list)):
-            #     if i == step:
-            #         self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+i))
-            #     else:
-            #         self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+i))
             for i in range(len(self.elec_list)):
                 if self.net_list[step] == self.elec_list[i].net:
                     self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+i))
