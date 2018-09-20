@@ -16,6 +16,12 @@
           <periodic>Periodic</periodic>
         </value_selection>
       </bcs>
+      <padding>
+        <T>float</T>
+        <val>0.0</val>
+        <label>Padding (nm)</label>
+        <tip>Simulation padding size. The default 0.0 will use an automatic padding size scaled to the design.</tip>
+      </padding>
       <sim_resolution>
         <T>float</T>
         <val>1.0</val>

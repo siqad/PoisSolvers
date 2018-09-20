@@ -31,7 +31,7 @@ elec_list = helpers.getElectrodeCollections(sqconn)
 elec_poly_list = helpers.getElectrodePolyCollections(sqconn)
 db_list = helpers.getDBCollections(sqconn)
 sim_params = sqconn.getAllParameters()
-[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list, sim_params["bcs"])
+[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list, sim_params["bcs"], float(sim_params["padding"]))
 # res_scale = float(sim_params["sim_resolution"])
 
 vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\

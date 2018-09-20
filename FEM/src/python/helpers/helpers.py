@@ -8,7 +8,7 @@
 import numpy as np
 
 #elec_list and elec_poly_list are a list of electrodes and list of polygonal electrodes
-def getBB(elec_list, elec_poly_list, bcs):
+def getBB(elec_list, elec_poly_list, bcs, padding):
     x_list = []
     y_list = []
     if elec_list:
@@ -18,18 +18,22 @@ def getBB(elec_list, elec_poly_list, bcs):
         for elec_poly in elec_poly_list:
             x_list += [c[0] for c in elec_poly.vertex_list]
             y_list += [c[1] for c in elec_poly.vertex_list]
-
     min_x = min(x_list)
     max_x = max(x_list)
     min_y = min(y_list)
     max_y = max(y_list)
-    if bcs == "periodic":
-        scale = 1.0
+    if padding == 0.0:
+        if bcs == "periodic":
+            scale = 0.2
+        else:
+            scale = 4.0
+        xs = [min_x-scale*(max_x-min_x), max_x+scale*(max_x-min_x)]
+        ys = [min_y-scale*(max_y-min_y), max_y+scale*(max_y-min_y)]
+        return xs, ys
     else:
-        scale = 4.0
-    xs = [min_x-scale*(max_x-min_x), max_x+scale*(max_x-min_x)]
-    ys = [min_y-scale*(max_y-min_y), max_y+scale*(max_y-min_y)]
-    return xs, ys
+        xs = [min_x-abs(1e-9*padding), max_x+abs(1e-9*padding)]
+        ys = [min_y-abs(1e-9*padding), max_y+abs(1e-9*padding)]
+        return xs, ys
 
 def getMetalParams(sqconn):
     for layer in sqconn.getLayers():
