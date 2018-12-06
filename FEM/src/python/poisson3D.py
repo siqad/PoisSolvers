@@ -58,6 +58,7 @@ ps.elec_poly_list = elec_poly_list
 ps.setElectrodeSubdomains()
 ps.setElectrodePolySubdomains()
 ps.setBGField(delta=1E-9)
+ps.finalize()
 
 print("Initializing mesh with GMSH...")
 ps.writeGeoFile()

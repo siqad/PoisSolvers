@@ -363,3 +363,6 @@ class PoissonSolver():
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
                 print(cap_list)
             self.cap_matrix.append(cap_list)
+
+    def finalize(self):
+        self.mw.finalize();

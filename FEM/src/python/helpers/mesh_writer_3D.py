@@ -152,6 +152,7 @@ class MeshWriter():
         #y=max
         self.addLineLoop(l1,-l10,-l2,l6,option,True)
         self.ind_boundaries.append([])
+
         if option == "bound":
             #Create the surface loop from the surfaces made, and define the volume
             self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
@@ -248,3 +249,6 @@ class MeshWriter():
         self.file_string += "Field[%d].ZMax = %.15f;\n"%(self.ind_field, zs[1])
         self.ind_field += 1
         return self.ind_field-1
+
+    def finalize(self):
+        self.file_string += 'Coherence;'
