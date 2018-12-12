@@ -42,8 +42,8 @@ def getMetalParams(sqconn):
         if layer.name == "Metal":
             # Save layer ID and offsets
             metal_params[layer_id] = (float(layer.zoffset), float(layer.zheight))
-            metal_offset = float(layer.zoffset)
-            metal_thickness = float(layer.zheight)
+            # metal_offset = float(layer.zoffset)
+            # metal_thickness = float(layer.zheight)
         layer_id += 1
     # print(metal_params)
     return metal_params
