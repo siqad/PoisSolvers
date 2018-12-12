@@ -36,12 +36,18 @@ def getBB(elec_list, elec_poly_list, bcs, padding):
         return xs, ys
 
 def getMetalParams(sqconn):
+    metal_params = {}
+    layer_id = 0
     for layer in sqconn.getLayers():
         if layer.name == "Metal":
+            # Save layer ID and offsets
+            metal_params[layer_id] = (float(layer.zoffset), float(layer.zheight))
             metal_offset = float(layer.zoffset)
             metal_thickness = float(layer.zheight)
-            break
-    return metal_offset, metal_thickness
+        layer_id += 1
+    # print(metal_params)
+    return metal_params
+    # return metal_offset, metal_thickness
 
 def getElectrodeCollections(sqconn):
     m_per_A = 1.0E-10 #metres per angstrom

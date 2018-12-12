@@ -27,10 +27,14 @@ class PoissonSolver():
         self.out_path_path = None
         self.elec_list = None
         self.elec_poly_list = None
+        self.metal_params = None
         self.metal_offset = None
         self.metal_thickness = None
         self.cap_matrix = []
         self.net_list = []
+
+    def setMetalParams(self, m_params):
+        self.metal_params = m_params
 
     def setMetals(self, m_off, m_thick):
         self.metal_offset = m_off
@@ -111,8 +115,9 @@ class PoissonSolver():
 
     def setElectrodeSubdomains(self):
         self.electrode = []
-        zs = [self.metal_offset, self.metal_offset+self.metal_thickness]
         for i in range(len(self.elec_list)):
+            layer_id = self.elec_list[i].layer_id
+            zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
             self.electrode.append(sd.Electrode([self.elec_list[i].x1, self.elec_list[i].x2], \
                                           [self.elec_list[i].y1, self.elec_list[i].y2], \
                                           zs ) )
@@ -122,8 +127,10 @@ class PoissonSolver():
 
     def setElectrodePolySubdomains(self):
         self.electrode_poly = []
-        zs = [self.metal_offset, self.metal_offset+self.metal_thickness]
+        # zs = [self.metal_offset, self.metal_offset+self.metal_thickness]
         for elec_poly in self.elec_poly_list:
+            layer_id = self.elec_poly_list[i].layer_id
+            zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
             self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
                 zs))
             self.addElectrodePoly(elec_poly.vertex_list, zs, resolution=0.1)
