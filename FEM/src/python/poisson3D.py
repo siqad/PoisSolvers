@@ -28,7 +28,7 @@ sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
 #metal_params contains the metal offset, thickness pair in a dictionary keyed by layer id.
 metal_params = helpers.getMetalParams(sqconn)
 # metal_offset, metal_thickness = helpers.getMetalParams(sqconn)
-metal_offset, metal_thickness = metal_params[2]
+# metal_offset, metal_thickness = metal_params[2]
 
 elec_list = helpers.getElectrodeCollections(sqconn)
 elec_poly_list = helpers.getElectrodePolyCollections(sqconn)
@@ -37,9 +37,12 @@ sim_params = sqconn.getAllParameters()
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list, sim_params["bcs"], float(sim_params["padding"]))
 # res_scale = float(sim_params["sim_resolution"])
 
+# vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
+#                                 boundary_y_min,boundary_y_max,\
+#                                 metal_offset, metal_thickness)
 vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
                                 boundary_y_min,boundary_y_max,\
-                                metal_offset, metal_thickness)
+                                metal_params)
 boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
 
 print("Create mesh boundaries...")
@@ -47,7 +50,7 @@ bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z
 ps = ps_class.PoissonSolver(bounds)
 ps.setSimParams(sim_params)
 ps.setMetalParams(metal_params)
-ps.setMetals(metal_offset, metal_thickness)
+# ps.setMetals(metal_offset, metal_thickness)
 ps.setPaths(in_path=in_path, out_path=out_path)
 ps.setResolution()
 ps.createOuterBounds(resolution=1.0)

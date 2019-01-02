@@ -129,7 +129,7 @@ class PoissonSolver():
         self.electrode_poly = []
         # zs = [self.metal_offset, self.metal_offset+self.metal_thickness]
         for elec_poly in self.elec_poly_list:
-            layer_id = self.elec_poly_list[i].layer_id
+            layer_id = elec_poly.layer_id
             zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
             self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
                 zs))
@@ -167,7 +167,8 @@ class PoissonSolver():
         else:
             elec_str += "fixed, "
             potential_to_set = elec_list[i].potential
-        if self.metal_offset > self.bounds['dielectric']:
+        # if self.metal_offset > self.bounds['dielectric']:
+        if self.metal_params[elec_list[i].layer_id][0] > self.bounds['dielectric']:
             elec_str += "and above the dielectric interface."
         else:
             potential_to_set += phi_bi

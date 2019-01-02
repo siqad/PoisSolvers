@@ -39,7 +39,7 @@ def getMetalParams(sqconn):
     metal_params = {}
     layer_id = 0
     for layer in sqconn.getLayers():
-        if layer.name == "Metal":
+        if "Metal" in layer.name:
             # Save layer ID and offsets
             metal_params[layer_id] = (float(layer.zoffset), float(layer.zheight))
             # metal_offset = float(layer.zoffset)
@@ -83,12 +83,26 @@ def getDBCollections(sqconn):
         db_list.append(db)
     return db_list
 
-def adjustBoundaries(xmin, xmax, ymin, ymax, moff, mthick):
-    if xmin == 0:
-        xmin -= 0.01*xmax
-    if ymin == 0:
-        ymin -= 0.01*ymax
-    zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*20.0
+def adjustBoundaries(xmin, xmax, ymin, ymax, m_p):
+    candidates = np.array([])
+    for key in m_p:
+        if m_p[key]:
+            # print(m_p[key])
+            candidates = np.append(candidates, m_p[key][0])
+            candidates = np.append(candidates, sum(m_p[key]))
+    # for pair in m_p:
+    #     print(pair)
+    #     np.append(candidates, pair[0])
+    #     np.append(candidates, pair[1])
+    # print(candidates)
+    zmin = -np.max(np.abs(candidates))*5
+    # zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*20.0
     zmax = -zmin
     b_di = 0.0 #at the surface.
     return xmin, xmax, ymin, ymax, zmin, zmax, b_di
+
+# def adjustBoundaries(xmin, xmax, ymin, ymax, moff, mthick):
+#     zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*20.0
+#     zmax = -zmin
+#     b_di = 0.0 #at the surface.
+#     return xmin, xmax, ymin, ymax, zmin, zmax, b_di
