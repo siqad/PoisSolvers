@@ -301,7 +301,7 @@ class PoissonSolver():
         plt.close(fig)
 
     def create2DSlice(self, u):
-        depth = float(self.sim_params['slice_depth'])*1e-9
+        depth = float(self.sim_params['slice_depth']) #in angstroms
         nx = int(self.sim_params['image_resolution'])
         ny = nx
         x = np.linspace(self.bounds['xmin'], self.bounds['xmax'], nx)

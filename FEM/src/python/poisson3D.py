@@ -35,7 +35,7 @@ elec_poly_list = helpers.getElectrodePolyCollections(sqconn)
 db_list = helpers.getDBCollections(sqconn)
 sim_params = sqconn.getAllParameters()
 [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list, sim_params["bcs"], float(sim_params["padding"]))
-# res_scale = float(sim_params["sim_resolution"])
+res_scale = float(sim_params["sim_resolution"])
 
 # vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
 #                                 boundary_y_min,boundary_y_max,\
@@ -88,7 +88,8 @@ ps.markBoundaries(mesh)
 ######################SETTING BOUNDARY VALUES
 print("Creating boundary values...")
 # Define input data
-EPS_0 = 8.854E-12
+# EPS_0 = 8.854E-12
+EPS_0 = 8.854E-22 #in angstroms
 Q_E = 1.6E-19
 EPS_SI = dolfin.Constant(11.6*EPS_0)
 EPS_AIR = dolfin.Constant(1.0*EPS_0)

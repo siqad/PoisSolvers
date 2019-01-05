@@ -31,8 +31,8 @@ def getBB(elec_list, elec_poly_list, bcs, padding):
         ys = [min_y-scale*(max_y-min_y), max_y+scale*(max_y-min_y)]
         return xs, ys
     else:
-        xs = [min_x-abs(1e-9*padding), max_x+abs(1e-9*padding)]
-        ys = [min_y-abs(1e-9*padding), max_y+abs(1e-9*padding)]
+        xs = [min_x-abs(padding), max_x+abs(padding)]
+        ys = [min_y-abs(padding), max_y+abs(padding)]
         return xs, ys
 
 def getMetalParams(sqconn):
@@ -50,15 +50,15 @@ def getMetalParams(sqconn):
     # return metal_offset, metal_thickness
 
 def getElectrodeCollections(sqconn):
-    m_per_A = 1.0E-10 #metres per angstrom
+    # m_per_A = 1.0E-10 #metres per angstrom
     elec_list = []
     for elec in sqconn.electrodeCollection():
         elec_curr = elec
         #units given are in angstroms, convert to metres
-        elec_curr.x1 *= m_per_A
-        elec_curr.x2 *= m_per_A
-        elec_curr.y1 *= m_per_A
-        elec_curr.y2 *= m_per_A
+        # elec_curr.x1 *= m_per_A
+        # elec_curr.x2 *= m_per_A
+        # elec_curr.y1 *= m_per_A
+        # elec_curr.y2 *= m_per_A
         elec_list.append(elec_curr)
     return elec_list
 
