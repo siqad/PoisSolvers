@@ -11,12 +11,12 @@ import subprocess
 class MeshWriter():
     def __init__(self, resolution=0.1):
         self.resolution = resolution
-        self.file_string = ""
-        self.ind_point = 0
-        self.ind_2d = 0
-        self.ind_bounding_vol = 0
-        self.ind_vol = 0
-        self.ind_phys_vol = 0
+        self.file_string = "SetFactory(\"OpenCASCADE\");\n"
+        self.ind_point = 1
+        self.ind_2d = 1
+        self.ind_bounding_vol = 1
+        self.ind_vol = 1
+        self.ind_phys_vol = 1
         self.ind_phys = 1
         self.ind_field = 1
         self.ind_poly = 0
@@ -114,57 +114,76 @@ class MeshWriter():
         y_max = max(p1[1],p2[1])
         z_max = max(p1[2],p2[2])
 
-        self.addPoint([x_min,y_min,z_min], scale)
-        self.addPoint([x_max,y_min,z_min], scale)
-        self.addPoint([x_max,y_max,z_min], scale)
-        self.addPoint([x_min,y_max,z_min], scale)
-
-        self.addPoint([x_min,y_min,z_max], scale)
-        self.addPoint([x_max,y_min,z_max], scale)
-        self.addPoint([x_max,y_max,z_max], scale)
-        self.addPoint([x_min,y_max,z_max], scale)
-
-        l12 = self.addLineByIndex(self.ind_point-8, self.ind_point-7, scale)
-        l11 = self.addLineByIndex(self.ind_point-7, self.ind_point-6, scale)
-        l10 = self.addLineByIndex(self.ind_point-6, self.ind_point-5, scale)
-        l9 = self.addLineByIndex(self.ind_point-5, self.ind_point-8, scale)
-
-        l8 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
-        l7 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)
-        l6 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
-        l5 = self.addLineByIndex(self.ind_point-1, self.ind_point-4, scale)
-
-        l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-8, scale)
-        l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-7, scale)
-        l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-6, scale)
-        l1 = self.addLineByIndex(self.ind_point-1, self.ind_point-5, scale)
-
-        #z=min
-        self.addLineLoop(l12,l11,l10,l9,option,True)
-        #z=max
-        self.addLineLoop(l8,l7,l6,l5,option,True)
-        #x=min
-        self.addLineLoop(l4,-l9,-l1,l5,option,True)
-        #x=max
-        self.addLineLoop(l3,l11,-l2,-l7,option,True)
-        #y=min
-        self.addLineLoop(l4,l12,-l3,-l8,option,True)
-        #y=max
-        self.addLineLoop(l1,-l10,-l2,l6,option,True)
-        self.ind_boundaries.append([])
-
+        self.file_string += "Box(%d) = {%.15f,%.15f,%.15f,%.15f,%.15f,%.15f};\n"\
+            %(self.ind_vol, x_min, y_min, z_min, x_max-x_min, y_max-y_min, z_max-z_min)
+        self.ind_2d += 6
+        self.ind_2d += 12
+        self.ind_point += 8
         if option == "bound":
             #Create the surface loop from the surfaces made, and define the volume
-            self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
-                %(self.ind_2d,self.ind_2d-1,self.ind_2d-3,self.ind_2d-5,self.ind_2d-7,self.ind_2d-9,self.ind_2d-11)
-            self.ind_2d += 1
-            self.file_string += "Volume(%d) = {%d};\n"\
-                %(self.ind_2d,self.ind_2d-1)
-            self.ind_bounding_vol = self.ind_2d
-            self.ind_2d += 1
+            # self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
+                # %(self.ind_2d,self.ind_2d-1,self.ind_2d-3,self.ind_2d-5,self.ind_2d-7,self.ind_2d-9,self.ind_2d-11)
+            # self.ind_2d += 1
+            # self.file_string += "Volume(%d) = {%d};\n"\
+                # %(self.ind_2d,self.ind_2d-1)
+            self.ind_bounding_vol = self.ind_vol
+            # self.ind_2d += 1
             self.file_string += "Physical Volume(%d) = {%d};\n"\
-                %(self.ind_phys_vol, self.ind_2d-1)
+                %(self.ind_phys_vol, self.ind_vol)
+        self.ind_vol += 1
         return
+
+        # self.addPoint([x_min,y_min,z_min], scale)
+        # self.addPoint([x_max,y_min,z_min], scale)
+        # self.addPoint([x_max,y_max,z_min], scale)
+        # self.addPoint([x_min,y_max,z_min], scale)
+        #
+        # self.addPoint([x_min,y_min,z_max], scale)
+        # self.addPoint([x_max,y_min,z_max], scale)
+        # self.addPoint([x_max,y_max,z_max], scale)
+        # self.addPoint([x_min,y_max,z_max], scale)
+        #
+        # l12 = self.addLineByIndex(self.ind_point-8, self.ind_point-7, scale)
+        # l11 = self.addLineByIndex(self.ind_point-7, self.ind_point-6, scale)
+        # l10 = self.addLineByIndex(self.ind_point-6, self.ind_point-5, scale)
+        # l9 = self.addLineByIndex(self.ind_point-5, self.ind_point-8, scale)
+        #
+        # l8 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
+        # l7 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)
+        # l6 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
+        # l5 = self.addLineByIndex(self.ind_point-1, self.ind_point-4, scale)
+        #
+        # l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-8, scale)
+        # l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-7, scale)
+        # l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-6, scale)
+        # l1 = self.addLineByIndex(self.ind_point-1, self.ind_point-5, scale)
+        #
+        # #z=min
+        # self.addLineLoop(l12,l11,l10,l9,option,True)
+        # #z=max
+        # self.addLineLoop(l8,l7,l6,l5,option,True)
+        # #x=min
+        # self.addLineLoop(l4,-l9,-l1,l5,option,True)
+        # #x=max
+        # self.addLineLoop(l3,l11,-l2,-l7,option,True)
+        # #y=min
+        # self.addLineLoop(l4,l12,-l3,-l8,option,True)
+        # #y=max
+        # self.addLineLoop(l1,-l10,-l2,l6,option,True)
+        # self.ind_boundaries.append([])
+        #
+        # if option == "bound":
+        #     #Create the surface loop from the surfaces made, and define the volume
+        #     self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
+        #         %(self.ind_2d,self.ind_2d-1,self.ind_2d-3,self.ind_2d-5,self.ind_2d-7,self.ind_2d-9,self.ind_2d-11)
+        #     self.ind_2d += 1
+        #     self.file_string += "Volume(%d) = {%d};\n"\
+        #         %(self.ind_2d,self.ind_2d-1)
+        #     self.ind_bounding_vol = self.ind_2d
+        #     self.ind_2d += 1
+        #     self.file_string += "Physical Volume(%d) = {%d};\n"\
+        #         %(self.ind_phys_vol, self.ind_2d-1)
+        # return
 
     def addPhysicalVolume(self):
         self.file_string += "Physical Volume(%d) = {%d};\n"\

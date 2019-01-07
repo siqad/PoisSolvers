@@ -95,7 +95,7 @@ def adjustBoundaries(xmin, xmax, ymin, ymax, m_p):
     #     np.append(candidates, pair[0])
     #     np.append(candidates, pair[1])
     # print(candidates)
-    zmin = -np.max(np.abs(candidates))*5
+    zmin = -np.max(np.abs(candidates))*1.5
     # zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*20.0
     zmax = -zmin
     b_di = 0.0 #at the surface.

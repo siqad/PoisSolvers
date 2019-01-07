@@ -54,9 +54,12 @@ class PoissonSolver():
 
     def setResolution(self):
         res_scale = float(self.sim_params["sim_resolution"])
-        self.mw.resolution = min((self.bounds['xmax']-self.bounds['xmin']), \
-                                 (self.bounds['ymax']-self.bounds['ymin']), \
-                                 (self.bounds['zmax']-self.bounds['zmin'])) / res_scale
+        # self.mw.resolution = min((self.bounds['xmax']-self.bounds['xmin']), \
+        #                          (self.bounds['ymax']-self.bounds['ymin']), \
+        #                          (self.bounds['zmax']-self.bounds['zmin'])) / res_scale
+        self.mw.resolution = ((self.bounds['xmax']-self.bounds['xmin']) + \
+                             (self.bounds['ymax']-self.bounds['ymin']) + \
+                             (self.bounds['zmax']-self.bounds['zmin'])) / 3.0 / res_scale
 
     def createOuterBounds(self, resolution):
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
@@ -83,15 +86,26 @@ class PoissonSolver():
     def addElectrode(self, xs, ys, zs, resolution):
         self.mw.addBox([xs[0],ys[0],zs[0]], \
                   [xs[1],ys[1],zs[1]], resolution, "seam")
-
         #make resolution inside electrodes coarse
         self.fields += [self.mw.addBoxField(1.0, 0.0, \
                   [xs[0], xs[1]], [ys[0], ys[1]], [zs[0], zs[1]])]
         self.fields = [self.mw.addMaxField(self.fields)]
+        dist_x = xs[1] - xs[0]
+        dist_y = ys[1] - ys[0]
+        dist_z = zs[1] - zs[0]
+
+        dist_x*=0.25
+        dist_y*=0.25
+        dist_z*=0.25
+
         self.fields += [self.mw.addBoxField(0.1, 1.0, \
-                  [2.0*xs[0], 2.0*xs[1]], \
-                  [2.0*ys[0], 2.0*ys[1]], \
-                  [2.0*zs[0], 2.0*(zs[1])])]
+                  [xs[0]-dist_x, xs[1]+dist_x], \
+                  [ys[0]-dist_y, ys[1]+dist_y], \
+                  [zs[0]-dist_z, zs[1]+dist_z])]
+                  # [2.0*xs[0], 2.0*xs[1]], \
+                  # [2.0*ys[0], 2.0*ys[1]], \
+                  # [2.0*zs[0], 2.0*(zs[1])])]
+        # self.fields = [self.mw.addMaxField(self.fields)]
         self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrodePoly(self, vertices, zs, resolution):
@@ -133,7 +147,7 @@ class PoissonSolver():
             zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
             self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
                 zs))
-            self.addElectrodePoly(elec_poly.vertex_list, zs, resolution=0.1)
+            self.addElectrodePoly(elec_poly.vertex_list, zs, resolution=1.0)
 
     def markDomains(self, mesh):
         # Initialize mesh function for interior domains
@@ -307,7 +321,7 @@ class PoissonSolver():
         x = np.linspace(self.bounds['xmin'], self.bounds['xmax'], nx)
         y = np.linspace(self.bounds['ymin'], self.bounds['ymax'], ny)
         X, Y = np.meshgrid(x, y)
-        z = np.array([u(i, j, self.bounds['dielectric']-depth) for j in y for i in x])
+        z = np.array([u(i, j, self.bounds['dielectric']+depth) for j in y for i in x])
         Z = z.reshape(nx, ny)
         return X, Y, Z, nx, ny
 
