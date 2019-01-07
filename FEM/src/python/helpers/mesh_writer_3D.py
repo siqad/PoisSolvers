@@ -45,7 +45,7 @@ class MeshWriter():
         self.file_string += "Plane Surface(%d) = {%d};\n"\
             %(self.ind_2d, self.ind_2d-1)
         self.ind_2d += 1
-        self.file_string += "poly%d[] = Extrude {0,0,%.15f} { Surface{%d};};\n"\
+        self.file_string += "poly%d[] = Extrude {0,0,%.6f} { Surface{%d};};\n"\
             %(self.ind_poly, zs[1], self.ind_2d-1)
         self.file_string += "Surface{%d} In Volume{%d};\n"\
             %(self.ind_2d-1, self.ind_bounding_vol)
@@ -64,7 +64,7 @@ class MeshWriter():
 
     #add a point at p, p in form [x, y]
     def addPoint(self, p, scale):
-        self.file_string += "Point(%d) = {%.15f, %.15f, %.15f, %.15f};\n"\
+        self.file_string += "Point(%d) = {%.6f, %.6f, %.6f, %.6f};\n"\
             %(self.ind_point, p[0], p[1], p[2], self.resolution*scale)
         self.ind_point += 1
         return self.ind_point -1
@@ -114,76 +114,17 @@ class MeshWriter():
         y_max = max(p1[1],p2[1])
         z_max = max(p1[2],p2[2])
 
-        self.file_string += "Box(%d) = {%.15f,%.15f,%.15f,%.15f,%.15f,%.15f};\n"\
+        self.file_string += "Box(%d) = {%.6f,%.6f,%.6f,%.6f,%.6f,%.6f};\n"\
             %(self.ind_vol, x_min, y_min, z_min, x_max-x_min, y_max-y_min, z_max-z_min)
         self.ind_2d += 6
         self.ind_2d += 12
         self.ind_point += 8
         if option == "bound":
-            #Create the surface loop from the surfaces made, and define the volume
-            # self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
-                # %(self.ind_2d,self.ind_2d-1,self.ind_2d-3,self.ind_2d-5,self.ind_2d-7,self.ind_2d-9,self.ind_2d-11)
-            # self.ind_2d += 1
-            # self.file_string += "Volume(%d) = {%d};\n"\
-                # %(self.ind_2d,self.ind_2d-1)
             self.ind_bounding_vol = self.ind_vol
-            # self.ind_2d += 1
             self.file_string += "Physical Volume(%d) = {%d};\n"\
                 %(self.ind_phys_vol, self.ind_vol)
         self.ind_vol += 1
         return
-
-        # self.addPoint([x_min,y_min,z_min], scale)
-        # self.addPoint([x_max,y_min,z_min], scale)
-        # self.addPoint([x_max,y_max,z_min], scale)
-        # self.addPoint([x_min,y_max,z_min], scale)
-        #
-        # self.addPoint([x_min,y_min,z_max], scale)
-        # self.addPoint([x_max,y_min,z_max], scale)
-        # self.addPoint([x_max,y_max,z_max], scale)
-        # self.addPoint([x_min,y_max,z_max], scale)
-        #
-        # l12 = self.addLineByIndex(self.ind_point-8, self.ind_point-7, scale)
-        # l11 = self.addLineByIndex(self.ind_point-7, self.ind_point-6, scale)
-        # l10 = self.addLineByIndex(self.ind_point-6, self.ind_point-5, scale)
-        # l9 = self.addLineByIndex(self.ind_point-5, self.ind_point-8, scale)
-        #
-        # l8 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
-        # l7 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)
-        # l6 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
-        # l5 = self.addLineByIndex(self.ind_point-1, self.ind_point-4, scale)
-        #
-        # l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-8, scale)
-        # l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-7, scale)
-        # l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-6, scale)
-        # l1 = self.addLineByIndex(self.ind_point-1, self.ind_point-5, scale)
-        #
-        # #z=min
-        # self.addLineLoop(l12,l11,l10,l9,option,True)
-        # #z=max
-        # self.addLineLoop(l8,l7,l6,l5,option,True)
-        # #x=min
-        # self.addLineLoop(l4,-l9,-l1,l5,option,True)
-        # #x=max
-        # self.addLineLoop(l3,l11,-l2,-l7,option,True)
-        # #y=min
-        # self.addLineLoop(l4,l12,-l3,-l8,option,True)
-        # #y=max
-        # self.addLineLoop(l1,-l10,-l2,l6,option,True)
-        # self.ind_boundaries.append([])
-        #
-        # if option == "bound":
-        #     #Create the surface loop from the surfaces made, and define the volume
-        #     self.file_string += "Surface Loop(%d) = {%d,%d,%d,%d,%d,%d};\n"\
-        #         %(self.ind_2d,self.ind_2d-1,self.ind_2d-3,self.ind_2d-5,self.ind_2d-7,self.ind_2d-9,self.ind_2d-11)
-        #     self.ind_2d += 1
-        #     self.file_string += "Volume(%d) = {%d};\n"\
-        #         %(self.ind_2d,self.ind_2d-1)
-        #     self.ind_bounding_vol = self.ind_2d
-        #     self.ind_2d += 1
-        #     self.file_string += "Physical Volume(%d) = {%d};\n"\
-        #         %(self.ind_phys_vol, self.ind_2d-1)
-        # return
 
     def addPhysicalVolume(self):
         self.file_string += "Physical Volume(%d) = {%d};\n"\
@@ -220,8 +161,8 @@ class MeshWriter():
         self.file_string += "Field[%d].IField = %d;\n"%(self.ind_field, self.ind_field-1)
         self.file_string += 'Field[%d].LcMin = '%(self.ind_field)+str(self.resolution*res_min_scale)+';\n'
         self.file_string += 'Field[%d].LcMax = '%(self.ind_field)+str(self.resolution*res_max_scale)+';\n'
-        self.file_string += 'Field[%d].DistMin = %.15f;\n'%(self.ind_field, dist_min)
-        self.file_string += 'Field[%d].DistMax = %.15f;\n'%(self.ind_field, dist_max)
+        self.file_string += 'Field[%d].DistMin = %.6f;\n'%(self.ind_field, dist_min)
+        self.file_string += 'Field[%d].DistMax = %.6f;\n'%(self.ind_field, dist_max)
         self.ind_field +=1
         return self.ind_field-1
 
@@ -249,7 +190,7 @@ class MeshWriter():
         fields_string = ",".join(map(str, field_list))
         self.file_string += 'Field[%d] = Mean;\n'%(self.ind_field)
         self.file_string += 'Field[%d].IField = %s;\n'%(self.ind_field, fields_string)
-        self.file_string += 'Field[%d].Delta = %.15f;\n'%(self.ind_field, delta)
+        self.file_string += 'Field[%d].Delta = %.6f;\n'%(self.ind_field, delta)
         self.ind_field += 1
         return self.ind_field-1
 
@@ -258,14 +199,14 @@ class MeshWriter():
 
     def addBoxField(self, res_in_scale, res_out_scale, xs, ys, zs):
         self.file_string += "Field[%d] = Box;\n"%(self.ind_field)
-        self.file_string += "Field[%d].VIn = %.15f;\n"%(self.ind_field, self.resolution*res_in_scale)
-        self.file_string += "Field[%d].VOut = %.15f;\n"%(self.ind_field, self.resolution*res_out_scale)
-        self.file_string += "Field[%d].XMin = %.15f;\n"%(self.ind_field, xs[0])
-        self.file_string += "Field[%d].XMax = %.15f;\n"%(self.ind_field, xs[1])
-        self.file_string += "Field[%d].YMin = %.15f;\n"%(self.ind_field, ys[0])
-        self.file_string += "Field[%d].YMax = %.15f;\n"%(self.ind_field, ys[1])
-        self.file_string += "Field[%d].ZMin = %.15f;\n"%(self.ind_field, zs[0])
-        self.file_string += "Field[%d].ZMax = %.15f;\n"%(self.ind_field, zs[1])
+        self.file_string += "Field[%d].VIn = %.6f;\n"%(self.ind_field, self.resolution*res_in_scale)
+        self.file_string += "Field[%d].VOut = %.6f;\n"%(self.ind_field, self.resolution*res_out_scale)
+        self.file_string += "Field[%d].XMin = %.6f;\n"%(self.ind_field, xs[0])
+        self.file_string += "Field[%d].XMax = %.6f;\n"%(self.ind_field, xs[1])
+        self.file_string += "Field[%d].YMin = %.6f;\n"%(self.ind_field, ys[0])
+        self.file_string += "Field[%d].YMax = %.6f;\n"%(self.ind_field, ys[1])
+        self.file_string += "Field[%d].ZMin = %.6f;\n"%(self.ind_field, zs[0])
+        self.file_string += "Field[%d].ZMax = %.6f;\n"%(self.ind_field, zs[1])
         self.ind_field += 1
         return self.ind_field-1
 

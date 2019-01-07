@@ -50,15 +50,9 @@ def getMetalParams(sqconn):
     # return metal_offset, metal_thickness
 
 def getElectrodeCollections(sqconn):
-    # m_per_A = 1.0E-10 #metres per angstrom
     elec_list = []
     for elec in sqconn.electrodeCollection():
         elec_curr = elec
-        #units given are in angstroms, convert to metres
-        # elec_curr.x1 *= m_per_A
-        # elec_curr.x2 *= m_per_A
-        # elec_curr.y1 *= m_per_A
-        # elec_curr.y2 *= m_per_A
         elec_list.append(elec_curr)
     return elec_list
 
