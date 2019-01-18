@@ -539,13 +539,17 @@ class Electrode(_object):
     __swig_getmethods__["net"] = _siqadconn.Electrode_net_get
     if _newclass:
         net = _swig_property(_siqadconn.Electrode_net_get, _siqadconn.Electrode_net_set)
+    __swig_setmethods__["angle"] = _siqadconn.Electrode_angle_set
+    __swig_getmethods__["angle"] = _siqadconn.Electrode_angle_get
+    if _newclass:
+        angle = _swig_property(_siqadconn.Electrode_angle_get, _siqadconn.Electrode_angle_set)
     __swig_setmethods__["pixel_per_angstrom"] = _siqadconn.Electrode_pixel_per_angstrom_set
     __swig_getmethods__["pixel_per_angstrom"] = _siqadconn.Electrode_pixel_per_angstrom_get
     if _newclass:
         pixel_per_angstrom = _swig_property(_siqadconn.Electrode_pixel_per_angstrom_get, _siqadconn.Electrode_pixel_per_angstrom_set)
 
-    def __init__(self, in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net):
-        this = _siqadconn.new_Electrode(in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net)
+    def __init__(self, in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net, in_angle):
+        this = _siqadconn.new_Electrode(in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net, in_angle)
         try:
             self.this.append(this)
         except __builtin__.Exception:

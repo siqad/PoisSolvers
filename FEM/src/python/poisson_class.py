@@ -131,16 +131,19 @@ class PoissonSolver():
         self.electrode = []
         for i in range(len(self.elec_list)):
             layer_id = self.elec_list[i].layer_id
-
+            # print(self.elec_list[i].angle)
             zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
             zs = [min(zs),max(zs)]
             # z_min = min(zs)
             # z_max = max(zs)
 
             # zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
-            self.electrode.append(sd.Electrode([self.elec_list[i].x1, self.elec_list[i].x2], \
-                                          [self.elec_list[i].y1, self.elec_list[i].y2], \
-                                          zs ) )
+            self.elec_list[i].z1 = zs[0]
+            self.elec_list[i].z2 = zs[1]
+            # self.electrode.append(sd.Electrode([self.elec_list[i].x1, self.elec_list[i].x2], \
+            #                               [self.elec_list[i].y1, self.elec_list[i].y2], \
+            #                               zs ) )
+            self.electrode.append(sd.Electrode(self.elec_list[i]))
             self.addElectrode([self.elec_list[i].x1, self.elec_list[i].x2], \
                             [self.elec_list[i].y1, self.elec_list[i].y2], \
                             zs, resolution=1.0)
