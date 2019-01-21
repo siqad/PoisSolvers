@@ -7,6 +7,7 @@
 
 import matplotlib.pyplot as plt
 import subprocess
+import numpy as np
 
 class MeshWriter():
     def __init__(self, resolution=0.1):
@@ -106,7 +107,7 @@ class MeshWriter():
     #p in form [x,y]
     #start from bottom left, go counterclockwise
     #not enough that lines defined by points at same location, need to have SAME shared point index.
-    def addBox(self, p1, p2, scale, option="bound"):
+    def addBox(self, p1, p2, scale, angle=0, option="bound"):
         x_min = min(p1[0],p2[0])
         y_min = min(p1[1],p2[1])
         z_min = min(p1[2],p2[2])
@@ -119,6 +120,12 @@ class MeshWriter():
         self.ind_2d += 6
         self.ind_2d += 12
         self.ind_point += 8
+        if angle != 0:
+            #need to rotate the boxes
+            self.file_string += "Rotate { {0,0,1}, {%.6f,%.6f,%.6f}, %.6f } { Volume{%d};}\n"\
+                %((x_min+x_max)/2, (y_min+y_max)/2, (z_min+z_max)/2, np.deg2rad(angle), self.ind_vol)
+            # Rotate {{0,0,1},{0.5,0.5,0.5},Pi/4} {Volume{2};}
+            # pass
         if option == "bound":
             self.ind_bounding_vol = self.ind_vol
             self.file_string += "Physical Volume(%d) = {%d};\n"\
@@ -144,7 +151,7 @@ class MeshWriter():
 
     #creates the outer boundary, and sets it as a volume.
     def addOuterBound(self, p1, p2, scale, option):
-        self.addBox(p1, p2, scale, option)
+        self.addBox(p1, p2, scale, option=option)
         return
 
     #returns index of threshold field

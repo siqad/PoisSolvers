@@ -63,7 +63,7 @@ class PoissonSolver():
 
     def createOuterBounds(self, resolution):
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
-                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], resolution, "bound")
+                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], resolution, option="bound")
 
     def addDielectricSurface(self, resolution):
         self.mw.addSurface([self.bounds['xmin']+0.01*np.abs(self.bounds['xmin']),self.bounds['ymin']+0.01*np.abs(self.bounds['ymin']),self.bounds['dielectric']],\
@@ -83,9 +83,12 @@ class PoissonSolver():
                    self.bounds['dielectric']+0.05*np.abs(self.bounds['zmax'])])]
         self.fields = [self.mw.addMinField(self.fields)]
 
-    def addElectrode(self, xs, ys, zs, resolution):
+    def addElectrode(self, electrode, resolution):
+        xs = [electrode.x1,electrode.x2]
+        ys = [electrode.y1,electrode.y2]
+        zs = [electrode.z1,electrode.z2]
         self.mw.addBox([xs[0],ys[0],zs[0]], \
-                  [xs[1],ys[1],zs[1]], resolution, "seam")
+                  [xs[1],ys[1],zs[1]], resolution,angle=electrode.angle,option="seam")
         #make resolution inside electrodes coarse
         self.fields += [self.mw.addBoxField(1.0, 0.0, \
                   [xs[0], xs[1]], [ys[0], ys[1]], [zs[0], zs[1]])]
@@ -144,9 +147,10 @@ class PoissonSolver():
             #                               [self.elec_list[i].y1, self.elec_list[i].y2], \
             #                               zs ) )
             self.electrode.append(sd.Electrode(self.elec_list[i]))
-            self.addElectrode([self.elec_list[i].x1, self.elec_list[i].x2], \
-                            [self.elec_list[i].y1, self.elec_list[i].y2], \
-                            zs, resolution=1.0)
+            # self.addElectrode([self.elec_list[i].x1, self.elec_list[i].x2], \
+            #                 [self.elec_list[i].y1, self.elec_list[i].y2], \
+            #                 zs, resolution=1.0)
+            self.addElectrode(self.elec_list[i], resolution=1.0)
 
     def setElectrodePolySubdomains(self):
         self.electrode_poly = []

@@ -105,7 +105,7 @@ class Electrode(dolfin.SubDomain):
         dolfin.SubDomain.__init__(self) # Call base class constructor!
     def getVertices(self):
         #translate the verticecs to the origin
-        theta = np.deg2rad(self.electrode.angle)
+        theta = np.deg2rad(-self.electrode.angle)
         origin = np.array([sum(self.xs)/2, sum(self.ys)/2])
         centered_x = [x - origin[0] for x in self.xs]
         centered_y = [y - origin[1] for y in self.ys]
