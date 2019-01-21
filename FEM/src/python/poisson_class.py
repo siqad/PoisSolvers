@@ -94,13 +94,10 @@ class PoissonSolver():
         self.fields += [self.mw.addBoxField(1.0, 0.0, \
                   [xs[0], xs[1]], [ys[0], ys[1]], [zs[0], zs[1]])]
         self.fields = [self.mw.addMaxField(self.fields)]
-        dist_x = xs[1] - xs[0]
-        dist_y = ys[1] - ys[0]
-        dist_z = zs[1] - zs[0]
-
-        dist_x*=0.25
-        dist_y*=0.25
-        dist_z*=0.25
+        #The physical extent of the field
+        dist_x = 0.25*(xs[1] - xs[0])
+        dist_y = 0.25*(ys[1] - ys[0])
+        dist_z = 0.25*(zs[1] - zs[0])
 
         self.fields += [self.mw.addBoxField(0.1, 1.0, \
                   [xs[0]-dist_x, xs[1]+dist_x], \

@@ -42,12 +42,8 @@ def getMetalParams(sqconn):
         if "Metal" in layer.name:
             # Save layer ID and offsets
             metal_params[layer_id] = (float(layer.zoffset), float(layer.zheight))
-            # metal_offset = float(layer.zoffset)
-            # metal_thickness = float(layer.zheight)
         layer_id += 1
-    # print(metal_params)
     return metal_params
-    # return metal_offset, metal_thickness
 
 def getElectrodeCollections(sqconn):
     elec_list = []
@@ -60,7 +56,6 @@ def getElectrodePolyCollections(sqconn):
     m_per_A = 1.0E-10 #metres per angstrom
     elec_poly_list = []
     for elec_poly in sqconn.electrodePolyCollection():
-        # pass
         elec_poly_curr = elec_poly
         #convert units to metres
         vertex_list = [list(n) for n in elec_poly_curr.vertices]
@@ -81,22 +76,9 @@ def adjustBoundaries(xmin, xmax, ymin, ymax, m_p):
     candidates = np.array([])
     for key in m_p:
         if m_p[key]:
-            # print(m_p[key])
             candidates = np.append(candidates, m_p[key][0])
             candidates = np.append(candidates, sum(m_p[key]))
-    # for pair in m_p:
-    #     print(pair)
-    #     np.append(candidates, pair[0])
-    #     np.append(candidates, pair[1])
-    # print(candidates)
     zmin = -np.max(np.abs(candidates))*1.5
-    # zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*20.0
     zmax = -zmin
     b_di = 0.0 #at the surface.
     return xmin, xmax, ymin, ymax, zmin, zmax, b_di
-
-# def adjustBoundaries(xmin, xmax, ymin, ymax, moff, mthick):
-#     zmin = -np.max(np.array([np.abs(moff), np.abs(mthick)]))*20.0
-#     zmax = -zmin
-#     b_di = 0.0 #at the surface.
-#     return xmin, xmax, ymin, ymax, zmin, zmax, b_di
