@@ -19,7 +19,6 @@ class PoissonSolver():
     def __init__(self, bounds):
         keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
         self.bounds = dict(zip(keys, bounds))
-        # self.bounds = bounds
         self.mw = mw.MeshWriter()
         self.fields = []
         self.sim_params = None
@@ -54,9 +53,6 @@ class PoissonSolver():
 
     def setResolution(self):
         res_scale = float(self.sim_params["sim_resolution"])
-        # self.mw.resolution = min((self.bounds['xmax']-self.bounds['xmin']), \
-        #                          (self.bounds['ymax']-self.bounds['ymin']), \
-        #                          (self.bounds['zmax']-self.bounds['zmin'])) / res_scale
         self.mw.resolution = ((self.bounds['xmax']-self.bounds['xmin']) + \
                              (self.bounds['ymax']-self.bounds['ymin']) + \
                              (self.bounds['zmax']-self.bounds['zmin'])) / 3.0 / res_scale
@@ -66,21 +62,26 @@ class PoissonSolver():
                        [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], resolution, option="bound")
 
     def addDielectricSurface(self, resolution):
-        self.mw.addSurface([self.bounds['xmin']+0.01*np.abs(self.bounds['xmin']),self.bounds['ymin']+0.01*np.abs(self.bounds['ymin']),self.bounds['dielectric']],\
-                      [self.bounds['xmax']-0.01*np.abs(self.bounds['xmax']),self.bounds['ymin']+0.01*np.abs(self.bounds['ymin']),self.bounds['dielectric']],\
-                      [self.bounds['xmax']-0.01*np.abs(self.bounds['xmax']),self.bounds['ymax']-0.01*np.abs(self.bounds['ymax']),self.bounds['dielectric']],\
-                      [self.bounds['xmin']+0.01*np.abs(self.bounds['xmin']),self.bounds['ymax']-0.01*np.abs(self.bounds['ymax']),self.bounds['dielectric']],\
-                      resolution, "seam")
+        x_min = self.bounds['xmin']
+        y_min = self.bounds['ymin']
+        x_max = self.bounds['xmax']
+        y_max = self.bounds['ymax']
+        z = self.bounds['dielectric']
+        # add the surface using 4 points of a rectangle
+        self.mw.addSurface([x_min,y_min,z], [x_max,y_min,z], [x_max,y_max,z], [x_min,y_max,z], resolution, option="seam")
 
     def addDielectricField(self, res_in, res_out):
+        x_min = self.bounds['xmin']
+        y_min = self.bounds['ymin']
+        x_max = self.bounds['xmax']
+        y_max = self.bounds['ymax']
+        dielec = self.bounds['dielectric']
+        z_min = self.bounds['zmin']
+        z_max = self.bounds['zmax']
         self.fields = []
-        self.fields += [self.mw.addBoxField(res_in, res_out, \
-                  [self.bounds['xmin']-0.001*np.abs(self.bounds['xmin']), \
-                   self.bounds['xmax']+0.001*np.abs(self.bounds['xmax'])], \
-                  [self.bounds['ymin']-0.001*np.abs(self.bounds['ymin']), \
-                   self.bounds['ymax']+0.001*np.abs(self.bounds['ymax'])], \
-                  [self.bounds['dielectric']-0.05*np.abs(self.bounds['zmax']), \
-                   self.bounds['dielectric']+0.05*np.abs(self.bounds['zmax'])])]
+        #construct a field using the given resolutions and the dimensions of the box.
+        self.fields += [self.mw.addBoxField(res_in, res_out, [x_min, x_max], [y_min, y_max], \
+                  [dielec-0.05*np.abs(z_min), dielec+0.05*np.abs(z_max)])]
         self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrode(self, electrode, resolution):
@@ -105,10 +106,6 @@ class PoissonSolver():
                   [xs[0]-dist_x, xs[1]+dist_x], \
                   [ys[0]-dist_y, ys[1]+dist_y], \
                   [zs[0]-dist_z, zs[1]+dist_z])]
-                  # [2.0*xs[0], 2.0*xs[1]], \
-                  # [2.0*ys[0], 2.0*ys[1]], \
-                  # [2.0*zs[0], 2.0*(zs[1])])]
-        # self.fields = [self.mw.addMaxField(self.fields)]
         self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrodePoly(self, vertices, zs, resolution):
@@ -132,25 +129,14 @@ class PoissonSolver():
 
     def setElectrodeSubdomains(self):
         self.electrode = []
-        for i in range(len(self.elec_list)):
-            layer_id = self.elec_list[i].layer_id
-            # print(self.elec_list[i].angle)
+        for elec in self.elec_list:
+            layer_id = elec.layer_id # extract the layer id
             zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
             zs = [min(zs),max(zs)]
-            # z_min = min(zs)
-            # z_max = max(zs)
-
-            # zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
-            self.elec_list[i].z1 = zs[0]
-            self.elec_list[i].z2 = zs[1]
-            # self.electrode.append(sd.Electrode([self.elec_list[i].x1, self.elec_list[i].x2], \
-            #                               [self.elec_list[i].y1, self.elec_list[i].y2], \
-            #                               zs ) )
-            self.electrode.append(sd.Electrode(self.elec_list[i]))
-            # self.addElectrode([self.elec_list[i].x1, self.elec_list[i].x2], \
-            #                 [self.elec_list[i].y1, self.elec_list[i].y2], \
-            #                 zs, resolution=1.0)
-            self.addElectrode(self.elec_list[i], resolution=1.0)
+            elec.z1 = zs[0]
+            elec.z2 = zs[1] #fill in the z dimension
+            self.electrode.append(sd.Electrode(elec)) #add to the list of electrodes
+            self.addElectrode(elec, resolution=1.0) #add the electrode into the mesh
 
     def setElectrodePolySubdomains(self):
         self.electrode_poly = []
@@ -382,10 +368,10 @@ class PoissonSolver():
                 m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+i)
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
-                print("\int grad(u) * n ds({}) = ".format(7+i), v)
-                print(self.net_list.index(curr_net))
+                # print("\int grad(u) * n ds({}) = ".format(7+i), v)
+                # print(self.net_list.index(curr_net))
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
-                print(cap_list)
+                # print(cap_list)
             for i in range(len(self.elec_poly_list)):
                 curr_net = self.elec_poly_list[i].net
                 dS = dolfin.Measure("dS")[self.boundaries]
@@ -393,10 +379,10 @@ class PoissonSolver():
                 m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+len(self.elec_list)+i)
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
-                print("\int grad(u) * n ds({}) = ".format(7+len(self.elec_list)+i), v)
-                print(self.net_list.index(curr_net))
+                # print("\int grad(u) * n ds({}) = ".format(7+len(self.elec_list)+i), v)
+                # print(self.net_list.index(curr_net))
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
-                print(cap_list)
+                # print(cap_list)
             self.cap_matrix.append(cap_list)
 
     def finalize(self):

@@ -117,15 +117,14 @@ class MeshWriter():
 
         self.file_string += "Box(%d) = {%.6f,%.6f,%.6f,%.6f,%.6f,%.6f};\n"\
             %(self.ind_vol, x_min, y_min, z_min, x_max-x_min, y_max-y_min, z_max-z_min)
-        self.ind_2d += 6
-        self.ind_2d += 12
-        self.ind_point += 8
+        #increase the indices to account for elements created by using Box()
+        self.ind_2d += 6 #surfaces
+        self.ind_2d += 12 #lines
+        self.ind_point += 8 #points
         if angle != 0:
             #need to rotate the boxes
             self.file_string += "Rotate { {0,0,1}, {%.6f,%.6f,%.6f}, %.6f } { Volume{%d};}\n"\
                 %((x_min+x_max)/2, (y_min+y_max)/2, (z_min+z_max)/2, np.deg2rad(angle), self.ind_vol)
-            # Rotate {{0,0,1},{0.5,0.5,0.5},Pi/4} {Volume{2};}
-            # pass
         if option == "bound":
             self.ind_bounding_vol = self.ind_vol
             self.file_string += "Physical Volume(%d) = {%d};\n"\
