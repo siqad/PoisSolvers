@@ -12,8 +12,8 @@ def getBB(elec_list, elec_poly_list, bcs, padding):
     x_list = []
     y_list = []
     if elec_list:
-        x_list += [a.x1 for a in elec_list] + [b.x2 for b in elec_list]
-        y_list += [a.y1 for a in elec_list] + [b.y2 for b in elec_list]
+        x_list += [elec.x1 for elec in elec_list] + [elec.x2 for elec in elec_list]
+        y_list += [elec.y1 for elec in elec_list] + [elec.y2 for elec in elec_list]
     if elec_poly_list:
         for elec_poly in elec_poly_list:
             x_list += [c[0] for c in elec_poly.vertex_list]
@@ -39,7 +39,7 @@ def getMetalParams(sqconn):
     metal_params = {}
     layer_id = 0
     for layer in sqconn.getLayers():
-        if "Metal" in layer.name:
+        if layer.type == "Electrode":
             # Save layer ID and offsets
             metal_params[layer_id] = (float(layer.zoffset), float(layer.zheight))
         layer_id += 1
@@ -48,8 +48,7 @@ def getMetalParams(sqconn):
 def getElectrodeCollections(sqconn):
     elec_list = []
     for elec in sqconn.electrodeCollection():
-        elec_curr = elec
-        elec_list.append(elec_curr)
+        elec_list.append(elec)
     return elec_list
 
 def getElectrodePolyCollections(sqconn):

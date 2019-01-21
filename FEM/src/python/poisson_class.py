@@ -52,10 +52,15 @@ class PoissonSolver():
             self.sim_params = sim_params
 
     def setResolution(self):
+        x_min = self.bounds['xmin']
+        y_min = self.bounds['ymin']
+        z_min = self.bounds['zmin']
+        x_max = self.bounds['xmax']
+        y_max = self.bounds['ymax']
+        z_max = self.bounds['zmax']
         res_scale = float(self.sim_params["sim_resolution"])
-        self.mw.resolution = ((self.bounds['xmax']-self.bounds['xmin']) + \
-                             (self.bounds['ymax']-self.bounds['ymin']) + \
-                             (self.bounds['zmax']-self.bounds['zmin'])) / 3.0 / res_scale
+        # base the resolution on the average of the three dimensions
+        self.mw.resolution = ((x_max-x_min) + (y_max-y_min) + (z_max-z_min))/ 3.0 / res_scale
 
     def createOuterBounds(self, resolution):
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
@@ -232,12 +237,12 @@ class PoissonSolver():
         return steps
 
     def createNetlist(self):
-        for i in range(len(self.elec_list)):
-            if self.elec_list[i].net not in self.net_list:
-                self.net_list.append(self.elec_list[i].net)
-        for i in range(len(self.elec_poly_list)):
-            if self.elec_poly_list[i].net not in self.net_list:
-                self.net_list.append(self.elec_poly_list[i].net)
+        for elec in self.elec_list:
+            if elec.net not in self.net_list:
+                self.net_list.append(elec.net)
+        # for i in range(len(self.elec_poly_list)):
+        #     if self.elec_poly_list[i].net not in self.net_list:
+        #         self.net_list.append(self.elec_poly_list[i].net)
 
     def setElectrodePotentials(self, step, steps, V):
         mode = str(self.sim_params["mode"])
@@ -365,10 +370,7 @@ class PoissonSolver():
                 m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+i)
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
-                # print("\int grad(u) * n ds({}) = ".format(7+i), v)
-                # print(self.net_list.index(curr_net))
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
-                # print(cap_list)
             for i in range(len(self.elec_poly_list)):
                 curr_net = self.elec_poly_list[i].net
                 dS = dolfin.Measure("dS")[self.boundaries]
@@ -376,10 +378,7 @@ class PoissonSolver():
                 m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+len(self.elec_list)+i)
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
-                # print("\int grad(u) * n ds({}) = ".format(7+len(self.elec_list)+i), v)
-                # print(self.net_list.index(curr_net))
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
-                # print(cap_list)
             self.cap_matrix.append(cap_list)
 
     def finalize(self):
