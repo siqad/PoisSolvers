@@ -12,50 +12,100 @@ import subdomains as sd
 import dolfin
 import sys
 import helpers
+import subprocess
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 from PIL import Image
+from dolfin_utils.meshconvert import meshconvert
 
 class PoissonSolver():
     def __init__(self):
+        #mesh generation
         self.mw = mw.MeshWriter() #class for creating the mesh geometry
         self.fields = [] #resolution fields for the mesh.
-        self.sim_params = None
+        self.bounds = None
+        self.mesh = None
+
+        #I/O
+        self.sqconn = None
         self.in_path = None
         self.out_path_path = None
+
+        #parameters gotten from sqconn
+        self.sim_params = None
         self.elec_list = None
         self.elec_poly_list = None
         self.metal_params = None
-        self.cap_matrix = []
-        self.net_list = []
-        self.bounds = None
-        self.sqconn = None
         self.db_list = None
+        self.net_list = []
+
+        #calculated values
+        self.cap_matrix = []
 
     def initialize(self):
+        print("Initialising PoissonSolver...")
         self.metal_params = helpers.getMetalParams(self.sqconn)
         self.elec_list = helpers.getElectrodeCollections(self.sqconn)
         self.elec_poly_list = helpers.getElectrodePolyCollections(self.sqconn)
         self.db_list = helpers.getDBCollections(self.sqconn)
         self.sim_params = self.sqconn.getAllParameters()
         self.createBoundaries()
-    # def setDBList(self, db_list):
-    #     self.db_list = db_list
-    #
-    # def setElecList(self, elec_list):
-    #     self.elec_list = elec_list
-    #
-    # def setElecPolyList(self, elec_poly_list):
-    #     self.elec_poly_list = elec_poly_list
+        self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath())
+        print("Finished initialisation.")
 
-    # def setBounds(self):
+    def createMesh(self):
+        print("Defining mesh geometry...")
+        self.setResolution()
+        self.createOuterBounds()
+        self.addDielectricSurface() #dielectric seam
+        #over-extend a little, to ensure that the higher resolution appears.
+        self.addDielectricField()
+        self.setSubdomains()
+        self.setElectrodeSubdomains()
+        self.setElectrodePolySubdomains()
+        self.setBGField()
+        self.finalize()
+        print("Finished mesh definition.")
+        self.writeGeoFile()
+        self.runGMSH()
+        self.setMesh()
+
+    def setupSim(self):
+        print("Marking boundaries...")
+        self.markDomains(self.mesh)
+        # Initialize mesh function for boundary domains
+        self.markBoundaries(self.mesh)
+        print("Finished marking boundaries.")
+        self.setConstants()
+
+    def setConstants(self):
+        print("Setting constants...")
+        # Define input data
+        self.EPS_0 = 8.854E-22 #in angstroms
+        self.Q_E = 1.6E-19
+        self.EPS_SI = dolfin.Constant(11.6*self.EPS_0)
+        self.EPS_AIR = dolfin.Constant(1.0*self.EPS_0)
+        print("Finished setting constants.")
+        print("Setting charge density...")
+        self.f = dolfin.Constant("0.0")
+        print("Finished setting charge density.")
+
+
+    def setMesh(self):
+        print("Converting mesh from .msh to .xml...")
+        meshconvert.convert2xml(os.path.join(self.abs_in_dir,"domain.msh"), os.path.join(self.abs_in_dir,"domain.xml"))
+        print("Finished conversion.")
+        print("Importing mesh from .xml...")
+        self.mesh = dolfin.Mesh(os.path.join(self.abs_in_dir,'domain.xml'))
+        print("Finished importing mesh.")
+
+    def runGMSH(self, file_name="domain.geo"):
+        subprocess.call(["gmsh", "-3", os.path.join(self.abs_in_dir,file_name)])
+
+
     def createBoundaries(self):
         xs, ys = helpers.getBB(self.sqconn)
         vals = helpers.adjustBoundaries(xs, ys, self.metal_params)
-        # boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
-        # bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
-        # print(vals)
-        # print(bounds)
         self.setBounds(list(vals))
 
     def setConnector(self,connector):
@@ -64,9 +114,6 @@ class PoissonSolver():
     def setBounds(self, bounds):
         keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
         self.bounds = dict(zip(keys, bounds))
-
-    # def setMetalParams(self, m_params):
-    #     self.metal_params = m_params
 
     def setPaths(self, in_path="", out_path=""):
         if in_path != "":
@@ -91,11 +138,13 @@ class PoissonSolver():
         # base the resolution on the average of the three dimensions
         self.mw.resolution = ((x_max-x_min) + (y_max-y_min) + (z_max-z_min))/ 3.0 / res_scale
 
-    def createOuterBounds(self, resolution):
+    def createOuterBounds(self, resolution=1.0):
+        print("Creating outer boundaries...")
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
                        [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], resolution, option="bound")
 
-    def addDielectricSurface(self, resolution):
+    def addDielectricSurface(self, resolution=1.0):
+        print("Inserting dielectric surface...")
         x_min = self.bounds['xmin']
         y_min = self.bounds['ymin']
         x_max = self.bounds['xmax']
@@ -104,7 +153,7 @@ class PoissonSolver():
         # add the surface using 4 points of a rectangle
         self.mw.addSurface([x_min,y_min,z], [x_max,y_min,z], [x_max,y_max,z], [x_min,y_max,z], resolution, option="seam")
 
-    def addDielectricField(self, res_in, res_out):
+    def addDielectricField(self, res_in=0.25, res_out=1.0):
         x_min = self.bounds['xmin']
         y_min = self.bounds['ymin']
         x_max = self.bounds['xmax']
@@ -142,14 +191,16 @@ class PoissonSolver():
     def addElectrodePoly(self, vertices, zs, resolution):
         self.mw.addPolygonVolume(vertices, zs, resolution)
 
-    def setBGField(self, delta):
+    def setBGField(self, delta=10):
         bg_field_ind = self.mw.addMeanField(self.fields, delta)
         self.mw.setBGField(bg_field_ind)
 
     def writeGeoFile(self):
+        print("Writing mesh definition to file...")
         with open(os.path.join(self.abs_in_dir, 'domain.geo'), 'w') as f: f.write(self.mw.file_string)
 
     def setSubdomains(self):
+        print("Create subdomains and fields...")
         self.left = sd.Left(self.bounds['xmin'])
         self.top = sd.Top(self.bounds['ymax'])
         self.right = sd.Right(self.bounds['xmax'])

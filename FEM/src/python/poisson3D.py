@@ -30,81 +30,38 @@ ps = ps_class.PoissonSolver()
 
 #Create a SiQADConnector object for I/O between the tool and the simulation engine
 sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
+
 #...and give it to PoissonSolver
 ps.setConnector(sqconn)
+
 #Initialize a bunch of stuff in PS now that we have the connector,
 #including simulation parameters, defining mesh geometry, and I/O paths.
+#Users should modify existing sim_params after initialize(), but before createMesh()
+#to ensure their modications are reflected.
 ps.initialize()
 
-# print(sqconn.outputPath(), out_path)
-# db_list = helpers.getDBCollections(sqconn)
-# sim_params = sqconn.getAllParameters()
-# [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(ps.elec_list, ps.elec_poly_list, ps.sim_params["bcs"], float(ps.sim_params["padding"]))
-# # res_scale = float(ps.sim_params["sim_resolution"])
-#
-# vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
-#                                 boundary_y_min,boundary_y_max,\
-#                                 ps.metal_params)
-# boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
-#
-# print("Create mesh boundaries...")
-# bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
-# ps = ps_class.PoissonSolver(bounds)
-# ps.setBounds(bounds)
-# ps.setSimParams(ps.sim_params)
-# ps.setMetalParams(metal_params)
-ps.setPaths(in_path=in_path, out_path=out_path)
-ps.setResolution()
-ps.createOuterBounds(resolution=1.0)
-ps.addDielectricSurface(resolution=1.0) #dielectric seam
-#over-extend a little, to ensure that the higher resolution appears.
-ps.addDielectricField(res_in=0.25, res_out=1.0)
+#Kick-start the mesh definition process. Defines the boundaries, and inserts
+#electrodes surfaces into the mesh, adding coarseness guides as well.
+#Finishes by writing the mesh definition to a .geo file, and converting it to
+#a dolfin compatible .xml format.
+ps.createMesh()
 
-print("Create subdomains and fields...")
-ps.setSubdomains()
-# ps.elec_list = elec_list
-# ps.elec_poly_list = elec_poly_list
-ps.setElectrodeSubdomains()
-ps.setElectrodePolySubdomains()
-ps.setBGField(delta=10)
-ps.finalize()
+#Marks the subdomains and boundaries as top, left, bottom, right, dielectric, silicon, metal, etc.
+#Also sets constants (elementary charge, permittivity, etc.)
+ps.setupSim()
 
-print("Initializing mesh with GMSH...")
-ps.writeGeoFile()
-#Expert mode to suppress warnings about fine mesh
-subprocess.call(["gmsh", "-3",
-                os.path.join(ps.abs_in_dir,"domain.geo"),
-                '-string', '"General.ExpertMode=1;"',
-                '-string', '"Mesh.CharacteristicLengthFromPoints=0;"',
-                '-string', '"Mesh.CharacteristicLengthExtendFromBoundary=0;"',
-                '-string', '"Geometry.AutoCoherence=1;"'])
-meshconvert.convert2xml(os.path.join(ps.abs_in_dir,"domain.msh"), os.path.join(ps.abs_in_dir,"domain.xml"))
-mesh = dolfin.Mesh(os.path.join(ps.abs_in_dir,'domain.xml'))
+#At this point, users can override the spatial charge density (defaults to 0 everywhere).
+#Using a dolfin expression could work, for symbolic definition of the charge density.
+# ps.f = dolfin.Constant("0.0")
 
-######################MARKING BOUNDARIES
-print("Marking boundaries...")
-ps.markDomains(mesh)
-# Initialize mesh function for boundary domains
-ps.markBoundaries(mesh)
 
-######################SETTING BOUNDARY VALUES
-print("Creating boundary values...")
-# Define input data
-# EPS_0 = 8.854E-12
-EPS_0 = 8.854E-22 #in angstroms
-Q_E = 1.6E-19
-EPS_SI = dolfin.Constant(11.6*EPS_0)
-EPS_AIR = dolfin.Constant(1.0*EPS_0)
-f = dolfin.Constant("0.0")
-# cap_matrix = []
-
-mode = str(ps.sim_params["mode"])
+# mode = str(ps.sim_params["mode"])
 ps.createNetlist()
 steps = ps.getSteps()
 for step in range(steps):
     print("Defining function, space, basis...")
     # Define function space and basis functions
-    V = ps.getFunctionSpace(mesh)
+    V = ps.getFunctionSpace(ps.mesh)
     u = dolfin.TrialFunction(V)
     v = dolfin.TestFunction(V)
 
@@ -120,9 +77,9 @@ for step in range(steps):
     ds = dolfin.ds(subdomain_data=ps.boundaries)
 
     print("Defining variational form...")
-    F = ( dolfin.inner(EPS_SI*dolfin.grad(u), dolfin.grad(v))*dx(0) \
-        + dolfin.inner(EPS_AIR*dolfin.grad(u), dolfin.grad(v))*dx(1) \
-        - f*v*dx(0) - f*v*dx(1) )
+    F = ( dolfin.inner(ps.EPS_SI*dolfin.grad(u), dolfin.grad(v))*dx(0) \
+        + dolfin.inner(ps.EPS_AIR*dolfin.grad(u), dolfin.grad(v))*dx(1) \
+        - ps.f*v*dx(0) - ps.f*v*dx(1) )
 
     boundary_component = ps.getBoundaryComponent(u, v, ds)
     F += boundary_component
@@ -175,7 +132,7 @@ for step in range(steps):
             # db_pots.append([db.x, db.y, u(db.x, db.y, boundary_dielectric)])
         sqconn.export(db_pot=db_pots)
 
-    ps.calcCaps(u, mesh, EPS_SI, EPS_AIR)
+    ps.calcCaps(u, ps.mesh, ps.EPS_SI, ps.EPS_AIR)
 
     # PRINT TO FILE
     print("Creating 2D data slice")
