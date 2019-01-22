@@ -21,30 +21,38 @@ import subdomains as sd
 from dolfin_utils.meshconvert import meshconvert
 
 ######################PREAMBLE
+#Get the I/O locations
 in_path = sys.argv[1]
 out_path = sys.argv[2]
-m_per_A = 1.0E-10 #metres per angstrom
+
+#Instatiate an empty PoissonSolver object
+ps = ps_class.PoissonSolver()
+
+#Create a SiQADConnector object for I/O between the tool and the simulation engine
 sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
-#metal_params contains the metal offset, thickness pair in a dictionary keyed by layer id.
-metal_params = helpers.getMetalParams(sqconn)
+#...and give it to PoissonSolver
+ps.setConnector(sqconn)
+#Initialize a bunch of stuff in PS now that we have the connector,
+#including simulation parameters, defining mesh geometry, and I/O paths.
+ps.initialize()
 
-elec_list = helpers.getElectrodeCollections(sqconn)
-elec_poly_list = helpers.getElectrodePolyCollections(sqconn)
-db_list = helpers.getDBCollections(sqconn)
-sim_params = sqconn.getAllParameters()
-[boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(elec_list, elec_poly_list, sim_params["bcs"], float(sim_params["padding"]))
-res_scale = float(sim_params["sim_resolution"])
-
-vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
-                                boundary_y_min,boundary_y_max,\
-                                metal_params)
-boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
-
-print("Create mesh boundaries...")
-bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
-ps = ps_class.PoissonSolver(bounds)
-ps.setSimParams(sim_params)
-ps.setMetalParams(metal_params)
+# print(sqconn.outputPath(), out_path)
+# db_list = helpers.getDBCollections(sqconn)
+# sim_params = sqconn.getAllParameters()
+# [boundary_x_min, boundary_x_max], [boundary_y_min, boundary_y_max] = helpers.getBB(ps.elec_list, ps.elec_poly_list, ps.sim_params["bcs"], float(ps.sim_params["padding"]))
+# # res_scale = float(ps.sim_params["sim_resolution"])
+#
+# vals = helpers.adjustBoundaries(boundary_x_min,boundary_x_max,\
+#                                 boundary_y_min,boundary_y_max,\
+#                                 ps.metal_params)
+# boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
+#
+# print("Create mesh boundaries...")
+# bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
+# ps = ps_class.PoissonSolver(bounds)
+# ps.setBounds(bounds)
+# ps.setSimParams(ps.sim_params)
+# ps.setMetalParams(metal_params)
 ps.setPaths(in_path=in_path, out_path=out_path)
 ps.setResolution()
 ps.createOuterBounds(resolution=1.0)
@@ -54,8 +62,8 @@ ps.addDielectricField(res_in=0.25, res_out=1.0)
 
 print("Create subdomains and fields...")
 ps.setSubdomains()
-ps.elec_list = elec_list
-ps.elec_poly_list = elec_poly_list
+# ps.elec_list = elec_list
+# ps.elec_poly_list = elec_poly_list
 ps.setElectrodeSubdomains()
 ps.setElectrodePolySubdomains()
 ps.setBGField(delta=10)
@@ -126,7 +134,7 @@ for step in range(steps):
     # Solve problem
     print("Initializing solver parameters...")
 
-    init_guess = str(sim_params["init_guess"])
+    init_guess = str(ps.sim_params["init_guess"])
     if init_guess == "prev":
         if step == 0:
             u = dolfin.Function(V)
@@ -149,9 +157,9 @@ for step in range(steps):
     elif init_guess == "zero":
         spec_param['nonzero_initial_guess'] = False
 
-    spec_param['absolute_tolerance'] = float(sim_params["max_abs_error"])
-    spec_param['relative_tolerance'] = float(sim_params["max_rel_error"])
-    spec_param['maximum_iterations'] = int(sim_params["max_linear_iters"])
+    spec_param['absolute_tolerance'] = float(ps.sim_params["max_abs_error"])
+    spec_param['relative_tolerance'] = float(ps.sim_params["max_rel_error"])
+    spec_param['maximum_iterations'] = int(ps.sim_params["max_linear_iters"])
     # spec_param['monitor_convergence'] = True
     print("Solving problem...")
     start = time.time()
@@ -160,10 +168,11 @@ for step in range(steps):
     print(("Solve finished in " + str(end-start) + " seconds."))
 
     u.set_allow_extrapolation(True)
-    if db_list:
+    if ps.db_list:
         db_pots = []
-        for db in db_list:
-            db_pots.append([db.x, db.y, u(db.x*m_per_A,db.y*m_per_A, boundary_dielectric)])
+        for db in ps.db_list:
+            db_pots.append([db.x, db.y, u(db.x, db.y, ps.bounds['dielectric'])])
+            # db_pots.append([db.x, db.y, u(db.x, db.y, boundary_dielectric)])
         sqconn.export(db_pot=db_pots)
 
     ps.calcCaps(u, mesh, EPS_SI, EPS_AIR)

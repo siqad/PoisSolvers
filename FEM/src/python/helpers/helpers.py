@@ -8,7 +8,12 @@
 import numpy as np
 
 #elec_list and elec_poly_list are a list of electrodes and list of polygonal electrodes
-def getBB(elec_list, elec_poly_list, bcs, padding):
+def getBB(sqconn):
+    elec_list = getElectrodeCollections(sqconn)
+    elec_poly_list = getElectrodePolyCollections(sqconn)
+    sim_params = sqconn.getAllParameters()
+    bcs = sim_params["bcs"]
+    padding = float(sim_params["padding"])
     x_list = []
     y_list = []
     if elec_list:
@@ -71,7 +76,8 @@ def getDBCollections(sqconn):
         db_list.append(db)
     return db_list
 
-def adjustBoundaries(xmin, xmax, ymin, ymax, m_p):
+# def adjustBoundaries(xmin, xmax, ymin, ymax, m_p):
+def adjustBoundaries(xs, ys, m_p):
     candidates = np.array([])
     for key in m_p:
         if m_p[key]:
@@ -80,4 +86,4 @@ def adjustBoundaries(xmin, xmax, ymin, ymax, m_p):
     zmin = -np.max(np.abs(candidates))*1.5
     zmax = -zmin
     b_di = 0.0 #at the surface.
-    return xmin, xmax, ymin, ymax, zmin, zmax, b_di
+    return xs[0], xs[1], ys[0], ys[1], zmin, zmax, b_di

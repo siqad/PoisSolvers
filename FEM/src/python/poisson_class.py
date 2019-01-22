@@ -11,33 +11,62 @@ import os
 import subdomains as sd
 import dolfin
 import sys
+import helpers
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 from PIL import Image
 
 class PoissonSolver():
-    def __init__(self, bounds):
-        keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
-        self.bounds = dict(zip(keys, bounds))
-        self.mw = mw.MeshWriter()
-        self.fields = []
+    def __init__(self):
+        self.mw = mw.MeshWriter() #class for creating the mesh geometry
+        self.fields = [] #resolution fields for the mesh.
         self.sim_params = None
         self.in_path = None
         self.out_path_path = None
         self.elec_list = None
         self.elec_poly_list = None
         self.metal_params = None
-        self.metal_offset = None
-        self.metal_thickness = None
         self.cap_matrix = []
         self.net_list = []
+        self.bounds = None
+        self.sqconn = None
+        self.db_list = None
 
-    def setMetalParams(self, m_params):
-        self.metal_params = m_params
+    def initialize(self):
+        self.metal_params = helpers.getMetalParams(self.sqconn)
+        self.elec_list = helpers.getElectrodeCollections(self.sqconn)
+        self.elec_poly_list = helpers.getElectrodePolyCollections(self.sqconn)
+        self.db_list = helpers.getDBCollections(self.sqconn)
+        self.sim_params = self.sqconn.getAllParameters()
+        self.createBoundaries()
+    # def setDBList(self, db_list):
+    #     self.db_list = db_list
+    #
+    # def setElecList(self, elec_list):
+    #     self.elec_list = elec_list
+    #
+    # def setElecPolyList(self, elec_poly_list):
+    #     self.elec_poly_list = elec_poly_list
 
-    def setMetals(self, m_off, m_thick):
-        self.metal_offset = m_off
-        self.metal_thickness = m_thick
+    # def setBounds(self):
+    def createBoundaries(self):
+        xs, ys = helpers.getBB(self.sqconn)
+        vals = helpers.adjustBoundaries(xs, ys, self.metal_params)
+        # boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric = vals
+        # bounds = [boundary_x_min,boundary_x_max,boundary_y_min,boundary_y_max,boundary_z_min,boundary_z_max,boundary_dielectric]
+        # print(vals)
+        # print(bounds)
+        self.setBounds(list(vals))
+
+    def setConnector(self,connector):
+        self.sqconn = connector
+
+    def setBounds(self, bounds):
+        keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
+        self.bounds = dict(zip(keys, bounds))
+
+    # def setMetalParams(self, m_params):
+    #     self.metal_params = m_params
 
     def setPaths(self, in_path="", out_path=""):
         if in_path != "":
