@@ -13,12 +13,14 @@ import dolfin
 import sys
 import helpers
 import subprocess
+import time
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 from PIL import Image
 from dolfin_utils.meshconvert import meshconvert
 
 class PoissonSolver():
+    #Constructor
     def __init__(self):
         #mesh generation
         self.mw = mw.MeshWriter() #class for creating the mesh geometry
@@ -39,9 +41,21 @@ class PoissonSolver():
         self.db_list = None
         self.net_list = []
 
-        #calculated values
+        #calculated values and ones used during simulation
         self.cap_matrix = []
+        self.steps = None
+        self.bcs = []
+        self.dx = None
+        self.ds = None
+        self.F = None
+        self.a = None
+        self.L = None
+        self.u = None
+        self.u_old = None
+        self.v = None
+        self.V = None
 
+#Functions that users are expected to use.
     def initialize(self):
         print("Initialising PoissonSolver...")
         self.metal_params = helpers.getMetalParams(self.sqconn)
@@ -51,7 +65,6 @@ class PoissonSolver():
         self.sim_params = self.sqconn.getAllParameters()
         self.createBoundaries()
         self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath())
-        print("Finished initialisation.")
 
     def createMesh(self):
         print("Defining mesh geometry...")
@@ -65,18 +78,121 @@ class PoissonSolver():
         self.setElectrodePolySubdomains()
         self.setBGField()
         self.finalize()
-        print("Finished mesh definition.")
         self.writeGeoFile()
         self.runGMSH()
         self.setMesh()
 
     def setupSim(self):
-        print("Marking boundaries...")
+        print("Setting up simulation...")
         self.markDomains(self.mesh)
         # Initialize mesh function for boundary domains
         self.markBoundaries(self.mesh)
-        print("Finished marking boundaries.")
         self.setConstants()
+        self.createNetlist()
+        self.steps = self.getSteps()
+
+    def setupDolfinSolver(self, step = None):
+        print("Setting up Dolfin solver...")
+        self.setFunctionSpaces()
+        self.setElectrodePotentials(step)
+        self.setMeasures()
+        self.defineVariationalForm()
+        self.setInitGuess(step)
+        self.setSolverParams()
+
+    def solve(self):
+        print("Solving problem...")
+        start = time.time()
+        self.solver.solve()
+        end = time.time()
+        print(("Solve finished in " + str(end-start) + " seconds."))
+
+    def export(self, step = None):
+        print("Exporting...")
+        self.u.set_allow_extrapolation(True)
+        self.exportDBs()
+        self.calcCaps()
+        self.exportPotential(step)
+
+#Functions that the user shouldn't have to call.
+    def exportPotential(self, step = None):
+        print("Creating 2D data slice...")
+        X, Y, Z, nx, ny = self.create2DSlice(self.u)
+        self.u_old = self.u #Set the potential to use as initial guess
+
+        print("Saving 2D potential data to XML...")
+        XYZ = []
+        for i in range(nx):
+            for j in range(ny):
+                XYZ.append([X[i,j],Y[i,j],Z[i,j]])
+        self.sqconn.export(potential=XYZ)
+        if step == 0:
+            self.saveAxesPotential(X, Y, Z, "SiAirPlot.png")
+            self.saveGrad(X,Y,Z,0)
+            self.saveGrad(X,Y,Z,1)
+        self.savePotential(X,Y,Z,step)
+
+
+    def exportDBs(self):
+        if self.db_list:
+            db_pots = []
+            for db in self.db_list:
+                db_pots.append([db.x, db.y, u(db.x, db.y, self.bounds['dielectric'])])
+            self.sqconn.export(db_pot=db_pots)
+
+    def setSolverParams(self, step = None):
+        self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u, self.bcs)
+        self.solver = dolfin.LinearVariationalSolver(self.problem)
+        self.solver.parameters['linear_solver'] = 'gmres'
+        self.solver.parameters['preconditioner'] = 'sor'
+        spec_param = self.solver.parameters['krylov_solver']
+        init_guess = str(self.sim_params["init_guess"])
+        if init_guess == "prev":
+            if step == 0:
+                spec_param['nonzero_initial_guess'] = False
+            else:
+                spec_param['nonzero_initial_guess'] = True
+        elif init_guess == "zero":
+            spec_param['nonzero_initial_guess'] = False
+        spec_param['absolute_tolerance'] = float(self.sim_params["max_abs_error"])
+        spec_param['relative_tolerance'] = float(self.sim_params["max_rel_error"])
+        spec_param['maximum_iterations'] = int(self.sim_params["max_linear_iters"])
+
+
+    def setInitGuess(self, step):
+        print("Setting initial guess...")
+        init_guess = str(self.sim_params["init_guess"])
+        if init_guess == "prev":
+            if step == 0:
+                self.u = dolfin.Function(self.V)
+            else:
+                self.u = dolfin.interpolate(self.u_old,self.V)
+        elif init_guess == "zero":
+            self.u = dolfin.Function(self.V)
+
+    def defineVariationalForm(self):
+        print("Defining variational form...")
+        self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
+            + dolfin.inner(self.EPS_AIR*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
+            - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
+        self.F += self.getBoundaryComponent(self.u, self.v, self.ds)
+        # ps.F += boundary_component
+        print("Separating LHS and RHS...")
+        # Separate left and right hand sides of equation
+        self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
+
+
+    def setFunctionSpaces(self):
+        print("Defining function, space, basis...")
+        self.V = self.getFunctionSpace(self.mesh)
+        self.u = dolfin.TrialFunction(self.V)
+        self.v = dolfin.TestFunction(self.V)
+
+
+    def setMeasures(self):
+        print("Defining measures...")
+        self.dx = dolfin.dx(subdomain_data=self.domains)
+        self.ds = dolfin.ds(subdomain_data=self.boundaries)
 
     def setConstants(self):
         print("Setting constants...")
@@ -85,19 +201,14 @@ class PoissonSolver():
         self.Q_E = 1.6E-19
         self.EPS_SI = dolfin.Constant(11.6*self.EPS_0)
         self.EPS_AIR = dolfin.Constant(1.0*self.EPS_0)
-        print("Finished setting constants.")
         print("Setting charge density...")
         self.f = dolfin.Constant("0.0")
-        print("Finished setting charge density.")
-
 
     def setMesh(self):
         print("Converting mesh from .msh to .xml...")
         meshconvert.convert2xml(os.path.join(self.abs_in_dir,"domain.msh"), os.path.join(self.abs_in_dir,"domain.xml"))
-        print("Finished conversion.")
         print("Importing mesh from .xml...")
         self.mesh = dolfin.Mesh(os.path.join(self.abs_in_dir,'domain.xml'))
-        print("Finished importing mesh.")
 
     def runGMSH(self, file_name="domain.geo"):
         subprocess.call(["gmsh", "-3", os.path.join(self.abs_in_dir,file_name)])
@@ -232,6 +343,7 @@ class PoissonSolver():
 
     def markDomains(self, mesh):
         # Initialize mesh function for interior domains
+        print("Marking boundaries...")
         self.domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
         self.domains.set_all(0)
         self.air.mark(self.domains, 1)
@@ -324,26 +436,29 @@ class PoissonSolver():
         #     if self.elec_poly_list[i].net not in self.net_list:
         #         self.net_list.append(self.elec_poly_list[i].net)
 
-    def setElectrodePotentials(self, step, steps, V):
+    # def setElectrodePotentials(self, step, steps, V):
+    def setElectrodePotentials(self, step):
+        print("Defining Dirichlet boundaries on electrodes...")
+        self.bcs = []
         mode = str(self.sim_params["mode"])
         if mode == "standard" or mode == "clock":
             for i in range(len(self.elec_list)):
-                potential_to_set = self.getElecPotential(self.elec_list, step, steps, i)
-                self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+i))
+                potential_to_set = self.getElecPotential(self.elec_list, step, self.steps, i)
+                self.bcs.append(dolfin.DirichletBC(self.V, float(potential_to_set), self.boundaries, 7+i))
             for i in range(len(self.elec_poly_list)):
-                potential_to_set = self.getElecPotential(self.elec_poly_list, step, steps, i)
-                self.bcs.append(dolfin.DirichletBC(V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))
+                potential_to_set = self.getElecPotential(self.elec_poly_list, step, self.steps, i)
+                self.bcs.append(dolfin.DirichletBC(self.V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))
         elif mode == "cap":
             for i in range(len(self.elec_list)):
                 if self.net_list[step] == self.elec_list[i].net:
-                    self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+i))
+                    self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+i))
                 else:
-                    self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+i))
+                    self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+i))
             for i in range(len(self.elec_poly_list)):
                 if self.net_list[step] == self.elec_poly_list[i].net:
-                    self.bcs.append(dolfin.DirichletBC(V, float(1.0), self.boundaries, 7+len(self.elec_list)+i))
+                    self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+len(self.elec_list)+i))
                 else:
-                    self.bcs.append(dolfin.DirichletBC(V, float(0.0), self.boundaries, 7+len(self.elec_list)+i))
+                    self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+len(self.elec_list)+i))
 
     def saveAxesPotential(self,X,Y,Z,filename):
         fig = plt.figure()
@@ -437,25 +552,25 @@ class PoissonSolver():
                 matrix_string = matrix_string + "\n"
             print(matrix_string)
 
-    def calcCaps(self, u, mesh, EPS_SI, EPS_AIR):
+    def calcCaps(self):
         mode = str(self.sim_params["mode"])
         if mode == "cap":
-            x0, x1, x2 = dolfin.MeshCoordinates(mesh)
-            eps = dolfin.conditional(x2 <= 0.0, EPS_SI, EPS_AIR)
+            x0, x1, x2 = dolfin.MeshCoordinates(self.mesh)
+            eps = dolfin.conditional(x2 <= 0.0, self.EPS_SI, self.EPS_AIR)
             cap_list = [0.0]*len(self.net_list)
             for i in range(len(self.elec_list)):
                 curr_net = self.elec_list[i].net
                 dS = dolfin.Measure("dS")[self.boundaries]
-                n = dolfin.FacetNormal(mesh)
-                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+i)
+                n = dolfin.FacetNormal(self.mesh)
+                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+i)
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
             for i in range(len(self.elec_poly_list)):
                 curr_net = self.elec_poly_list[i].net
                 dS = dolfin.Measure("dS")[self.boundaries]
-                n = dolfin.FacetNormal(mesh)
-                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+len(self.elec_list)+i)
+                n = dolfin.FacetNormal(self.mesh)
+                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+len(self.elec_list)+i)
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v

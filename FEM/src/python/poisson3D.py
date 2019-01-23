@@ -10,7 +10,7 @@ import dolfin
 import subprocess
 import numpy as np
 import mesh_writer_3D as mw
-import poisson_class as ps_class
+import poisson_class
 import helpers
 import time
 import os
@@ -26,7 +26,7 @@ in_path = sys.argv[1]
 out_path = sys.argv[2]
 
 #Instatiate an empty PoissonSolver object
-ps = ps_class.PoissonSolver()
+ps = poisson_class.PoissonSolver()
 
 #Create a SiQADConnector object for I/O between the tool and the simulation engine
 sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
@@ -54,102 +54,17 @@ ps.setupSim()
 #Using a dolfin expression could work, for symbolic definition of the charge density.
 # ps.f = dolfin.Constant("0.0")
 
+for step in range(ps.steps):
+    #Setup the FEM solver by declaring the function spaces, asserting the potential at electrode
+    #surfaces, defining the variational form, and setting the initial guess and other parameters.
+    #Also sets up solver method, preconditioner, and other hyper parameters.
+    ps.setupDolfinSolver(step)
 
-# mode = str(ps.sim_params["mode"])
-ps.createNetlist()
-steps = ps.getSteps()
-for step in range(steps):
-    print("Defining function, space, basis...")
-    # Define function space and basis functions
-    V = ps.getFunctionSpace(ps.mesh)
-    u = dolfin.TrialFunction(V)
-    v = dolfin.TestFunction(V)
+    #Solve the linear variational problem.
+    ps.solve()
 
-    print("Defining Dirichlet boundaries...")
-    ps.bcs = []
-    ps.setElectrodePotentials(step, steps, V)
-
-    ######################DEFINE MEASURES DX AND DS
-    # Define new measures associated with the interior domains and
-    # exterior boundaries
-    print("Defining measures...")
-    dx = dolfin.dx(subdomain_data=ps.domains)
-    ds = dolfin.ds(subdomain_data=ps.boundaries)
-
-    print("Defining variational form...")
-    F = ( dolfin.inner(ps.EPS_SI*dolfin.grad(u), dolfin.grad(v))*dx(0) \
-        + dolfin.inner(ps.EPS_AIR*dolfin.grad(u), dolfin.grad(v))*dx(1) \
-        - ps.f*v*dx(0) - ps.f*v*dx(1) )
-
-    boundary_component = ps.getBoundaryComponent(u, v, ds)
-    F += boundary_component
-
-    print("Separating LHS and RHS...")
-    # Separate left and right hand sides of equation
-    a, L = dolfin.lhs(F), dolfin.rhs(F)
-
-    # Solve problem
-    print("Initializing solver parameters...")
-
-    init_guess = str(ps.sim_params["init_guess"])
-    if init_guess == "prev":
-        if step == 0:
-            u = dolfin.Function(V)
-        else:
-            u = dolfin.interpolate(u_old,V)
-    elif init_guess == "zero":
-        u = dolfin.Function(V)
-
-    problem = dolfin.LinearVariationalProblem(a, L, u, ps.bcs)
-    solver = dolfin.LinearVariationalSolver(problem)
-    solver.parameters['linear_solver'] = 'gmres'
-    solver.parameters['preconditioner'] = 'sor'
-
-    spec_param = solver.parameters['krylov_solver']
-    if init_guess == "prev":
-        if step == 0:
-            spec_param['nonzero_initial_guess'] = False
-        else:
-            spec_param['nonzero_initial_guess'] = True
-    elif init_guess == "zero":
-        spec_param['nonzero_initial_guess'] = False
-
-    spec_param['absolute_tolerance'] = float(ps.sim_params["max_abs_error"])
-    spec_param['relative_tolerance'] = float(ps.sim_params["max_rel_error"])
-    spec_param['maximum_iterations'] = int(ps.sim_params["max_linear_iters"])
-    # spec_param['monitor_convergence'] = True
-    print("Solving problem...")
-    start = time.time()
-    solver.solve()
-    end = time.time()
-    print(("Solve finished in " + str(end-start) + " seconds."))
-
-    u.set_allow_extrapolation(True)
-    if ps.db_list:
-        db_pots = []
-        for db in ps.db_list:
-            db_pots.append([db.x, db.y, u(db.x, db.y, ps.bounds['dielectric'])])
-            # db_pots.append([db.x, db.y, u(db.x, db.y, boundary_dielectric)])
-        sqconn.export(db_pot=db_pots)
-
-    ps.calcCaps(u, ps.mesh, ps.EPS_SI, ps.EPS_AIR)
-
-    # PRINT TO FILE
-    print("Creating 2D data slice")
-    X, Y, Z, nx, ny = ps.create2DSlice(u)
-    u_old = u #Set the potential to use as initial guess
-
-    print("Saving 2D potential data to XML")
-    XYZ = []
-    for i in range(nx):
-        for j in range(ny):
-            XYZ.append([X[i,j],Y[i,j],Z[i,j]])
-    sqconn.export(potential=XYZ)
-    if step == 0:
-        ps.saveAxesPotential(X, Y, Z, "SiAirPlot.png")
-        ps.saveGrad(X,Y,Z,0)
-        ps.saveGrad(X,Y,Z,1)
-    ps.savePotential(X,Y,Z,step)
+    #Export the data (potentials at DB locations, capacitances, 2D slices, etc.).
+    ps.export(step)
 
 ps.makeGif()
 ps.getCaps()
