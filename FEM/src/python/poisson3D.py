@@ -54,17 +54,18 @@ ps.setupSim()
 #Using a dolfin expression could work, for symbolic definition of the charge density.
 # ps.f = dolfin.Constant("0.0")
 
-for step in range(ps.steps):
-    #Setup the FEM solver by declaring the function spaces, asserting the potential at electrode
-    #surfaces, defining the variational form, and setting the initial guess and other parameters.
-    #Also sets up solver method, preconditioner, and other hyper parameters.
-    ps.setupDolfinSolver(step)
+# #perform the loop as many times as needed to achieve a full cycle in electrode phase shift.
+# for step in range(ps.steps):
+#     #Setup the FEM solver by declaring the function spaces, asserting the potential at electrode
+#     #surfaces, defining the variational form, and setting the initial guess and other parameters.
+#     #Also sets up solver method, preconditioner, and other hyper parameters.
+#     ps.setupDolfinSolver(step)
+#
+#     #Solve the linear variational problem.
+#     ps.solve()
+#
+#     #Export the data (potentials at DB locations, capacitances, 2D slices, etc.).
+#     ps.export(step)
 
-    #Solve the linear variational problem.
-    ps.solve()
-
-    #Export the data (potentials at DB locations, capacitances, 2D slices, etc.).
-    ps.export(step)
-
-ps.makeGif()
-ps.getCaps()
+#Alternatively, do as below if the user doesn't want to make any modifications.
+ps.loopSolve()

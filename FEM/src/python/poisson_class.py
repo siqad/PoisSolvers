@@ -113,6 +113,17 @@ class PoissonSolver():
         self.exportDBs()
         self.calcCaps()
         self.exportPotential(step)
+        #last step, finish off by creating gif and getting capacitancecs
+        if step == self.steps-1:
+            self.makeGif()
+            self.getCaps()
+
+    def loopSolve(self):
+        for step in range(self.steps):
+            self.setupDolfinSolver(step)
+            self.solve()
+            self.export(step)
+
 
 #Functions that the user shouldn't have to call.
     def exportPotential(self, step = None):
@@ -176,7 +187,6 @@ class PoissonSolver():
             + dolfin.inner(self.EPS_AIR*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
             - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
         self.F += self.getBoundaryComponent(self.u, self.v, self.ds)
-        # ps.F += boundary_component
         print("Separating LHS and RHS...")
         # Separate left and right hand sides of equation
         self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
