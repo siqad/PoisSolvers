@@ -104,9 +104,8 @@ class Electrode(dolfin.SubDomain):
         self.vertices = []
         self.getVertices()
         dolfin.SubDomain.__init__(self) # Call base class constructor!
-        # print(self.inside([5,5,1050],False))
     def getVertices(self):
-        #translate the verticecs to the origin
+        #translate the vertices to the origin
         theta = np.deg2rad(self.electrode.angle)
         origin = np.array([sum(self.xs)/2, sum(self.ys)/2])
         centered_x = [x - origin[0] for x in self.xs]
@@ -121,7 +120,7 @@ class Electrode(dolfin.SubDomain):
     def inside(self, x, on_boundary):
         if np.abs(self.electrode.angle) > 1e-16:
             if self.point_inside_polygon(x[0],x[1]):
-                print(x, "True without modification.")
+                # print(x, "True without modification.")
                 return True
             elif self.point_inside_polygon(x[0]+self.tol,x[1]) or \
                  self.point_inside_polygon(x[0]+self.tol,x[1]+self.tol) or \
@@ -131,10 +130,10 @@ class Electrode(dolfin.SubDomain):
                  self.point_inside_polygon(x[0]-self.tol,x[1]-self.tol) or \
                  self.point_inside_polygon(x[0],x[1]+self.tol) or \
                  self.point_inside_polygon(x[0],x[1]-self.tol):
-                print(x, "True after modification.")
+                # print(x, "True after modification.")
                 return True
             else:
-                print(x, "Outside")
+                # print(x, "Outside")
                 return False
         else:
             return ( self.point_inside_polygon(x[0], x[1]) \
