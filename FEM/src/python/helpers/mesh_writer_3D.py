@@ -46,7 +46,7 @@ class MeshWriter():
         self.file_string += "Plane Surface(%d) = {%d};\n"\
             %(self.ind_2d, self.ind_2d-1)
         self.ind_2d += 1
-        self.file_string += "poly%d[] = Extrude {0,0,%.6f} { Surface{%d};};\n"\
+        self.file_string += "poly%d[] = Extrude {0,0,%.3f} { Surface{%d};};\n"\
             %(self.ind_poly, zs[1], self.ind_2d-1)
         self.file_string += "Surface{%d} In Volume{%d};\n"\
             %(self.ind_2d-1, self.ind_bounding_vol)
@@ -65,7 +65,7 @@ class MeshWriter():
 
     #add a point at p, p in form [x, y]
     def addPoint(self, p, scale):
-        self.file_string += "Point(%d) = {%.6f, %.6f, %.6f, %.6f};\n"\
+        self.file_string += "Point(%d) = {%.3f, %.3f, %.3f, %.3f};\n"\
             %(self.ind_point, p[0], p[1], p[2], self.resolution*scale)
         self.ind_point += 1
         return self.ind_point -1
@@ -107,7 +107,7 @@ class MeshWriter():
     #p in form [x,y]
     #start from bottom left, go counterclockwise
     #not enough that lines defined by points at same location, need to have SAME shared point index.
-    def addBox(self, p1, p2, scale, angle=0, option="bound"):
+    def addBox(self, p1, p2, scale, angle=None, option="bound"):
         x_min = min(p1[0],p2[0])
         y_min = min(p1[1],p2[1])
         z_min = min(p1[2],p2[2])
@@ -115,15 +115,20 @@ class MeshWriter():
         y_max = max(p1[1],p2[1])
         z_max = max(p1[2],p2[2])
 
-        self.file_string += "Box(%d) = {%.6f,%.6f,%.6f,%.6f,%.6f,%.6f};\n"\
+        self.file_string += "Box(%d) = {%.3f,%.3f,%.3f,%.3f,%.3f,%.3f};\n"\
             %(self.ind_vol, x_min, y_min, z_min, x_max-x_min, y_max-y_min, z_max-z_min)
+        #need to rotate the boxes
+        if angle != None:
+            self.file_string += "Rotate { {0,0,1}, {%.3f,%.3f,%.3f}, %.3f } { Volume{%d};}\n"\
+                %((x_min+x_max)/2, (y_min+y_max)/2, (z_min+z_max)/2, np.deg2rad(angle), self.ind_vol)
+            # self.addPhysicalVolume()
+            # for i in range(6):
+            #     self.file_string += "Surface{%d} In Volume{%d};\n"\
+            #         %(self.ind_2d+i, self.ind_bounding_vol)
         #increase the indices to account for elements created by using Box()
         self.ind_2d += 6 #surfaces
         self.ind_2d += 12 #lines
         self.ind_point += 8 #points
-        #need to rotate the boxes
-        self.file_string += "Rotate { {0,0,1}, {%.6f,%.6f,%.6f}, %.6f } { Volume{%d};}\n"\
-            %((x_min+x_max)/2, (y_min+y_max)/2, (z_min+z_max)/2, np.deg2rad(angle), self.ind_vol)
         if option == "bound":
             self.ind_bounding_vol = self.ind_vol
             self.file_string += "Physical Volume(%d) = {%d};\n"\
@@ -132,8 +137,9 @@ class MeshWriter():
         return
 
     def addPhysicalVolume(self):
+        self.ind_phys_vol += 1
         self.file_string += "Physical Volume(%d) = {%d};\n"\
-            %(self.ind_phys_vol, self.ind_bounding_vol)
+            %(self.ind_phys_vol, self.ind_vol)
 
     def addSurface(self, p1, p2, p3, p4, scale, option):
         self.addPoint(p1, scale)
@@ -166,8 +172,8 @@ class MeshWriter():
         self.file_string += "Field[%d].IField = %d;\n"%(self.ind_field, self.ind_field-1)
         self.file_string += 'Field[%d].LcMin = '%(self.ind_field)+str(self.resolution*res_min_scale)+';\n'
         self.file_string += 'Field[%d].LcMax = '%(self.ind_field)+str(self.resolution*res_max_scale)+';\n'
-        self.file_string += 'Field[%d].DistMin = %.6f;\n'%(self.ind_field, dist_min)
-        self.file_string += 'Field[%d].DistMax = %.6f;\n'%(self.ind_field, dist_max)
+        self.file_string += 'Field[%d].DistMin = %.3f;\n'%(self.ind_field, dist_min)
+        self.file_string += 'Field[%d].DistMax = %.3f;\n'%(self.ind_field, dist_max)
         self.ind_field +=1
         return self.ind_field-1
 
@@ -195,7 +201,7 @@ class MeshWriter():
         fields_string = ",".join(map(str, field_list))
         self.file_string += 'Field[%d] = Mean;\n'%(self.ind_field)
         self.file_string += 'Field[%d].IField = %s;\n'%(self.ind_field, fields_string)
-        self.file_string += 'Field[%d].Delta = %.6f;\n'%(self.ind_field, delta)
+        self.file_string += 'Field[%d].Delta = %.3f;\n'%(self.ind_field, delta)
         self.ind_field += 1
         return self.ind_field-1
 
@@ -204,16 +210,18 @@ class MeshWriter():
 
     def addBoxField(self, res_in_scale, res_out_scale, xs, ys, zs):
         self.file_string += "Field[%d] = Box;\n"%(self.ind_field)
-        self.file_string += "Field[%d].VIn = %.6f;\n"%(self.ind_field, self.resolution*res_in_scale)
-        self.file_string += "Field[%d].VOut = %.6f;\n"%(self.ind_field, self.resolution*res_out_scale)
-        self.file_string += "Field[%d].XMin = %.6f;\n"%(self.ind_field, xs[0])
-        self.file_string += "Field[%d].XMax = %.6f;\n"%(self.ind_field, xs[1])
-        self.file_string += "Field[%d].YMin = %.6f;\n"%(self.ind_field, ys[0])
-        self.file_string += "Field[%d].YMax = %.6f;\n"%(self.ind_field, ys[1])
-        self.file_string += "Field[%d].ZMin = %.6f;\n"%(self.ind_field, zs[0])
-        self.file_string += "Field[%d].ZMax = %.6f;\n"%(self.ind_field, zs[1])
+        self.file_string += "Field[%d].VIn = %.3f;\n"%(self.ind_field, self.resolution*res_in_scale)
+        self.file_string += "Field[%d].VOut = %.3f;\n"%(self.ind_field, self.resolution*res_out_scale)
+        self.file_string += "Field[%d].XMin = %.3f;\n"%(self.ind_field, xs[0])
+        self.file_string += "Field[%d].XMax = %.3f;\n"%(self.ind_field, xs[1])
+        self.file_string += "Field[%d].YMin = %.3f;\n"%(self.ind_field, ys[0])
+        self.file_string += "Field[%d].YMax = %.3f;\n"%(self.ind_field, ys[1])
+        self.file_string += "Field[%d].ZMin = %.3f;\n"%(self.ind_field, zs[0])
+        self.file_string += "Field[%d].ZMax = %.3f;\n"%(self.ind_field, zs[1])
         self.ind_field += 1
         return self.ind_field-1
 
     def finalize(self):
-        self.file_string += 'Coherence;'
+        # self.file_string += "Physical Volume(1) = {4};\n"
+
+        self.file_string += 'Coherence;\n'

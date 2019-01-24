@@ -6,7 +6,7 @@
  # @desc:     Convenience functions for general data manipulation
 
 import numpy as np
-
+import itertools
 #elec_list and elec_poly_list are a list of electrodes and list of polygonal electrodes
 def getBB(sqconn):
     elec_list = getElectrodeCollections(sqconn)
@@ -16,9 +16,27 @@ def getBB(sqconn):
     padding = float(sim_params["padding"])
     x_list = []
     y_list = []
+
     if elec_list:
-        x_list += [elec.x1 for elec in elec_list] + [elec.x2 for elec in elec_list]
-        y_list += [elec.y1 for elec in elec_list] + [elec.y2 for elec in elec_list]
+        for elec in elec_list:
+            #translate the verticecs to the origin 
+            theta = np.deg2rad(elec.angle)
+            xs = [elec.x1,elec.x2]
+            ys = [elec.y1,elec.y2]
+            vertices = []
+            origin = np.array([sum(xs)/2, sum(ys)/2])
+            centered_x = [x - origin[0] for x in xs]
+            centered_y = [y - origin[1] for y in ys]
+            for vertex in itertools.product(centered_x, centered_y):
+            #     #for each vertex rotate about the origin
+                new_vertex = np.array([vertex[0]*np.cos(theta)-np.sin(theta)*vertex[1], \
+                              vertex[0]*np.sin(theta)+vertex[1]*np.cos(theta)])
+                vertices.append(tuple(new_vertex + origin))
+            x_list += [vertex[0] for vertex in vertices]
+            y_list += [vertex[1] for vertex in vertices]
+
+        # x_list += [elec.x1 for elec in elec_list] + [elec.x2 for elec in elec_list]
+        # y_list += [elec.y1 for elec in elec_list] + [elec.y2 for elec in elec_list]
     if elec_poly_list:
         for elec_poly in elec_poly_list:
             x_list += [c[0] for c in elec_poly.vertex_list]

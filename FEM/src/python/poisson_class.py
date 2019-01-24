@@ -257,7 +257,8 @@ class PoissonSolver():
         z_max = self.bounds['zmax']
         res_scale = float(self.sim_params["sim_resolution"])
         # base the resolution on the average of the three dimensions
-        self.mw.resolution = ((x_max-x_min) + (y_max-y_min) + (z_max-z_min))/ 3.0 / res_scale
+        self.mw.resolution = ((x_max-x_min) + (y_max-y_min) + (z_max-z_min)) / 3.0 / res_scale
+        # self.mw.resolution = min((x_max-x_min), (y_max-y_min), (z_max-z_min)) * 2.0 / res_scale
 
     def createOuterBounds(self, resolution=1.0):
         print("Creating outer boundaries...")
@@ -294,16 +295,16 @@ class PoissonSolver():
         zs = [electrode.z1,electrode.z2]
         self.mw.addBox([xs[0],ys[0],zs[0]], \
                   [xs[1],ys[1],zs[1]], resolution,angle=electrode.angle,option="seam")
-        #make resolution inside electrodes coarse
-        self.fields += [self.mw.addBoxField(1.0, 0.0, \
-                  [xs[0], xs[1]], [ys[0], ys[1]], [zs[0], zs[1]])]
-        self.fields = [self.mw.addMaxField(self.fields)]
+        # #make resolution inside electrodes coarse
+        # self.fields += [self.mw.addBoxField(1.0, 0.0, \
+        #           [xs[0], xs[1]], [ys[0], ys[1]], [zs[0], zs[1]])]
+        # self.fields = [self.mw.addMaxField(self.fields)]
         #The physical extent of the field
-        dist_x = 0.25*(xs[1] - xs[0])
-        dist_y = 0.25*(ys[1] - ys[0])
-        dist_z = 0.25*(zs[1] - zs[0])
+        dist_x = 0.5*(xs[1] - xs[0])
+        dist_y = 0.5*(ys[1] - ys[0])
+        dist_z = 0.5*(zs[1] - zs[0])
 
-        self.fields += [self.mw.addBoxField(0.1, 1.0, \
+        self.fields += [self.mw.addBoxField(0.02, 1.0, \
                   [xs[0]-dist_x, xs[1]+dist_x], \
                   [ys[0]-dist_y, ys[1]+dist_y], \
                   [zs[0]-dist_z, zs[1]+dist_z])]

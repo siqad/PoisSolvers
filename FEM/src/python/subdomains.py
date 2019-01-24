@@ -97,15 +97,17 @@ class Electrode(dolfin.SubDomain):
     def __init__(self, electrode):
         # extract the dimensions from the electrode
         self.electrode = electrode
+        self.tol = 1e-2
         self.xs = [electrode.x1, electrode.x2]
         self.ys = [electrode.y1, electrode.y2]
         self.zs = [electrode.z1, electrode.z2]
         self.vertices = []
         self.getVertices()
         dolfin.SubDomain.__init__(self) # Call base class constructor!
+        # print(self.inside([5,5,1050],False))
     def getVertices(self):
         #translate the verticecs to the origin
-        theta = np.deg2rad(-self.electrode.angle)
+        theta = np.deg2rad(self.electrode.angle)
         origin = np.array([sum(self.xs)/2, sum(self.ys)/2])
         centered_x = [x - origin[0] for x in self.xs]
         centered_y = [y - origin[1] for y in self.ys]
@@ -114,10 +116,30 @@ class Electrode(dolfin.SubDomain):
             new_vertex = np.array([vertex[0]*np.cos(theta)-np.sin(theta)*vertex[1], \
                           vertex[0]*np.sin(theta)+vertex[1]*np.cos(theta)])
             self.vertices.append(tuple(new_vertex + origin))
+        print(self.vertices)
             # print(tuple(new_vertex + origin))
     def inside(self, x, on_boundary):
-        return ( self.point_inside_polygon(x[0], x[1]) \
-            and dolfin.between(x[2], (self.zs[0], self.zs[1])) )
+        if np.abs(self.electrode.angle) > 1e-16:
+            if self.point_inside_polygon(x[0],x[1]):
+                print(x, "True without modification.")
+                return True
+            elif self.point_inside_polygon(x[0]+self.tol,x[1]) or \
+                 self.point_inside_polygon(x[0]+self.tol,x[1]+self.tol) or \
+                 self.point_inside_polygon(x[0]+self.tol,x[1]-self.tol) or \
+                 self.point_inside_polygon(x[0]-self.tol,x[1]) or \
+                 self.point_inside_polygon(x[0]-self.tol,x[1]+self.tol) or \
+                 self.point_inside_polygon(x[0]-self.tol,x[1]-self.tol) or \
+                 self.point_inside_polygon(x[0],x[1]+self.tol) or \
+                 self.point_inside_polygon(x[0],x[1]-self.tol):
+                print(x, "True after modification.")
+                return True
+            else:
+                print(x, "Outside")
+                return False
+        else:
+            return ( self.point_inside_polygon(x[0], x[1]) \
+                and dolfin.between(x[2], (self.zs[0], self.zs[1])))
+
     def point_inside_polygon(self, x, y, include_edges=True):
         '''
         Test if point (x,y) is inside polygon poly.
