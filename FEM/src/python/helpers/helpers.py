@@ -10,7 +10,6 @@ import itertools
 #elec_list and elec_poly_list are a list of electrodes and list of polygonal electrodes
 def getBB(sqconn):
     elec_list = getElectrodeCollections(sqconn)
-    elec_poly_list = getElectrodePolyCollections(sqconn)
     sim_params = sqconn.getAllParameters()
     bcs = sim_params["bcs"]
     padding = float(sim_params["padding"])
@@ -19,7 +18,7 @@ def getBB(sqconn):
 
     if elec_list:
         for elec in elec_list:
-            #translate the verticecs to the origin 
+            #translate the verticecs to the origin
             theta = np.deg2rad(elec.angle)
             xs = [elec.x1,elec.x2]
             ys = [elec.y1,elec.y2]
@@ -35,12 +34,6 @@ def getBB(sqconn):
             x_list += [vertex[0] for vertex in vertices]
             y_list += [vertex[1] for vertex in vertices]
 
-        # x_list += [elec.x1 for elec in elec_list] + [elec.x2 for elec in elec_list]
-        # y_list += [elec.y1 for elec in elec_list] + [elec.y2 for elec in elec_list]
-    if elec_poly_list:
-        for elec_poly in elec_poly_list:
-            x_list += [c[0] for c in elec_poly.vertex_list]
-            y_list += [c[1] for c in elec_poly.vertex_list]
     min_x = min(x_list)
     max_x = max(x_list)
     min_y = min(y_list)
@@ -73,20 +66,6 @@ def getElectrodeCollections(sqconn):
     for elec in sqconn.electrodeCollection():
         elec_list.append(elec)
     return elec_list
-
-def getElectrodePolyCollections(sqconn):
-    m_per_A = 1.0E-10 #metres per angstrom
-    elec_poly_list = []
-    for elec_poly in sqconn.electrodePolyCollection():
-        elec_poly_curr = elec_poly
-        #convert units to metres
-        vertex_list = [list(n) for n in elec_poly_curr.vertices]
-        for i in range(len(vertex_list)):
-            vertex_list[i][0] *= m_per_A
-            vertex_list[i][1] *= m_per_A
-        elec_poly_curr.vertex_list = vertex_list
-        elec_poly_list.append(elec_poly_curr)
-    return elec_poly_list
 
 def getDBCollections(sqconn):
     db_list = []

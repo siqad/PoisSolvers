@@ -20,48 +20,7 @@ class MeshWriter():
         self.ind_phys_vol = 1
         self.ind_phys = 1
         self.ind_field = 1
-        self.ind_poly = 0
         self.ind_boundaries = [[]]
-
-    def addPolygonVolume(self, vertices, zs, scale):
-        num_points = len(vertices)
-        for vertex in vertices:
-            self.addPoint([vertex[0],vertex[1],zs[0]], scale)
-        line_inds = []
-        for i in range(len(vertices)):
-            if i == (len(vertices)-1) :
-                line = self.addLineByIndex(self.ind_point-1-i, self.ind_point-1, scale)
-            else:
-                line = self.addLineByIndex(self.ind_point-1-i, self.ind_point-2-i, scale)
-            line_inds.append(line)
-
-        self.file_string += "Line Loop(%d) = {"%(self.ind_2d)
-        for ind in line_inds:
-            self.file_string += "%d"%(ind)
-            if ind != line_inds[-1]:
-                self.file_string += ","
-        self.file_string += "};\n";
-        self.ind_2d += 1
-
-        self.file_string += "Plane Surface(%d) = {%d};\n"\
-            %(self.ind_2d, self.ind_2d-1)
-        self.ind_2d += 1
-        self.file_string += "poly%d[] = Extrude {0,0,%.3f} { Surface{%d};};\n"\
-            %(self.ind_poly, zs[1], self.ind_2d-1)
-        self.file_string += "Surface{%d} In Volume{%d};\n"\
-            %(self.ind_2d-1, self.ind_bounding_vol)
-        walls = range(len(vertices)+2)
-        #increase for extra surfaces from extrude
-        self.ind_2d += len(vertices) + 1
-        #increase for extra lines from extrude
-        self.ind_2d += 5*len(vertices)
-        self.ind_point += 4*len(vertices)
-        for wall in walls:
-            if wall != 1:
-                self.file_string += "Surface{poly%d[%d]} In Volume{%d};\n"\
-                    %(self.ind_poly, wall, self.ind_bounding_vol)
-        self.file_string += "Delete { Volume{poly%d[1]}; }\n"%(self.ind_poly)
-        self.ind_poly += 1
 
     #add a point at p, p in form [x, y]
     def addPoint(self, p, scale):

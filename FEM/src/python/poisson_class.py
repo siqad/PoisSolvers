@@ -36,7 +36,6 @@ class PoissonSolver():
         #parameters gotten from sqconn
         self.sim_params = None
         self.elec_list = None
-        self.elec_poly_list = None
         self.metal_params = None
         self.db_list = None
         self.net_list = []
@@ -60,7 +59,6 @@ class PoissonSolver():
         print("Initialising PoissonSolver...")
         self.metal_params = helpers.getMetalParams(self.sqconn)
         self.elec_list = helpers.getElectrodeCollections(self.sqconn)
-        self.elec_poly_list = helpers.getElectrodePolyCollections(self.sqconn)
         self.db_list = helpers.getDBCollections(self.sqconn)
         self.sim_params = self.sqconn.getAllParameters()
         self.createBoundaries()
@@ -75,7 +73,6 @@ class PoissonSolver():
         self.addDielectricField()
         self.setSubdomains()
         self.setElectrodeSubdomains()
-        self.setElectrodePolySubdomains()
         self.setBGField()
         self.finalize()
         self.writeGeoFile()
@@ -310,9 +307,6 @@ class PoissonSolver():
                   [zs[0]-dist_z, zs[1]+dist_z])]
         self.fields = [self.mw.addMinField(self.fields)]
 
-    def addElectrodePoly(self, vertices, zs, resolution):
-        self.mw.addPolygonVolume(vertices, zs, resolution)
-
     def setBGField(self, delta=10):
         bg_field_ind = self.mw.addMeanField(self.fields, delta)
         self.mw.setBGField(bg_field_ind)
@@ -342,16 +336,6 @@ class PoissonSolver():
             self.electrode.append(sd.Electrode(elec)) #add to the list of electrodes
             self.addElectrode(elec, resolution=1.0) #add the electrode into the mesh
 
-    def setElectrodePolySubdomains(self):
-        self.electrode_poly = []
-        # zs = [self.metal_offset, self.metal_offset+self.metal_thickness]
-        for elec_poly in self.elec_poly_list:
-            layer_id = elec_poly.layer_id
-            zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
-            self.electrode_poly.append(sd.ElectrodePoly(elec_poly.vertex_list, \
-                zs))
-            self.addElectrodePoly(elec_poly.vertex_list, zs, resolution=1.0)
-
     def markDomains(self, mesh):
         # Initialize mesh function for interior domains
         print("Marking boundaries...")
@@ -370,8 +354,6 @@ class PoissonSolver():
         self.back.mark(self.boundaries, 6)
         for i in range(len(self.elec_list)):
             self.electrode[i].mark(self.boundaries, 7+i)
-        for i in range(len(self.elec_poly_list)):
-            self.electrode_poly[i].mark(self.boundaries, 7+len(self.elec_list)+i)
 
     def getElecPotential(self, elec_list, step, steps, i):
         chi_si = 4.05 #eV
@@ -456,20 +438,12 @@ class PoissonSolver():
             for i in range(len(self.elec_list)):
                 potential_to_set = self.getElecPotential(self.elec_list, step, self.steps, i)
                 self.bcs.append(dolfin.DirichletBC(self.V, float(potential_to_set), self.boundaries, 7+i))
-            for i in range(len(self.elec_poly_list)):
-                potential_to_set = self.getElecPotential(self.elec_poly_list, step, self.steps, i)
-                self.bcs.append(dolfin.DirichletBC(self.V, float(potential_to_set), self.boundaries, 7+len(self.elec_list)+i))
         elif mode == "cap":
             for i in range(len(self.elec_list)):
                 if self.net_list[step] == self.elec_list[i].net:
                     self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+i))
                 else:
                     self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+i))
-            for i in range(len(self.elec_poly_list)):
-                if self.net_list[step] == self.elec_poly_list[i].net:
-                    self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+len(self.elec_list)+i))
-                else:
-                    self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+len(self.elec_list)+i))
 
     def saveAxesPotential(self,X,Y,Z,filename):
         fig = plt.figure()
@@ -574,14 +548,6 @@ class PoissonSolver():
                 dS = dolfin.Measure("dS")[self.boundaries]
                 n = dolfin.FacetNormal(self.mesh)
                 m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+i)
-                # average is used since +/- sides of facet are arbitrary
-                v = dolfin.assemble(m)
-                cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
-            for i in range(len(self.elec_poly_list)):
-                curr_net = self.elec_poly_list[i].net
-                dS = dolfin.Measure("dS")[self.boundaries]
-                n = dolfin.FacetNormal(self.mesh)
-                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+len(self.elec_list)+i)
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
