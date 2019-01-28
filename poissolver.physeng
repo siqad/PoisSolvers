@@ -16,6 +16,12 @@
           <periodic>Periodic</periodic>
         </value_selection>
       </bcs>
+      <temp>
+        <T>float</T>
+        <val>77</val>
+        <label>Temperature (K)</label>
+        <tip>Temperature of the system in Kelvin.</tip>
+      </temp>
       <padding>
         <T>float</T>
         <val>10</val>

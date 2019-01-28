@@ -14,6 +14,7 @@ import sys
 import helpers
 import subprocess
 import time
+import plotter
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 from PIL import Image
@@ -32,6 +33,7 @@ class PoissonSolver():
         self.sqconn = None
         self.in_path = None
         self.out_path_path = None
+        self.plotter = plotter.Plotter()
 
         #parameters gotten from sqconn
         self.sim_params = None
@@ -110,9 +112,9 @@ class PoissonSolver():
         self.exportDBs()
         self.calcCaps()
         self.exportPotential(step)
-        #last step, finish off by creating gif and getting capacitancecs
+        #last step, finish off by creating gif and getting capacitances if applicable
         if step == self.steps-1:
-            self.makeGif()
+            self.createGif()
             self.getCaps()
 
     def loopSolve(self):
@@ -123,9 +125,17 @@ class PoissonSolver():
 
 
 #Functions that the user shouldn't have to call.
+    def createGif(self):
+        mode = str(self.sim_params["mode"])
+        dir = self.abs_in_dir
+        dir_files = os.listdir(os.path.dirname(self.in_path))
+        self.plotter.makeGif(mode, dir, dir_files)
+
     def exportPotential(self, step = None):
         print("Creating 2D data slice...")
-        X, Y, Z, nx, ny = self.create2DSlice(self.u)
+        depth = float(self.sim_params['slice_depth']) #in angstroms
+        res = int(self.sim_params['image_resolution'])
+        X, Y, Z, nx, ny = self.plotter.create2DSlice(self.u, depth, res, self.bounds)
         self.u_old = self.u #Set the potential to use as initial guess
 
         print("Saving 2D potential data to XML...")
@@ -135,10 +145,16 @@ class PoissonSolver():
                 XYZ.append([X[i,j],Y[i,j],Z[i,j]])
         self.sqconn.export(potential=XYZ)
         if step == 0:
-            self.saveAxesPotential(X, Y, Z, "SiAirPlot.png")
-            self.saveGrad(X,Y,Z,0)
-            self.saveGrad(X,Y,Z,1)
-        self.savePotential(X,Y,Z,step)
+            # self.saveAxesPotential(X, Y, Z, os.path.join(self.abs_out_dir,"SiAirPlot.png"))
+            plot_file_name = os.path.join(self.abs_out_dir,"SiAirPlot.png")
+            self.plotter.saveAxesPotential(X, Y, Z, plot_file_name)
+            for i in range(2):
+                grad_file_name = os.path.join(self.abs_out_dir,'grad{}.png'.format(i))
+                self.plotter.saveGrad(X,Y,Z,i,grad_file_name)
+            # self.saveGrad(X,Y,Z,0, )
+            # self.saveGrad(X,Y,Z,1)
+        pot_file_name = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
+        self.plotter.savePotential(X,Y,Z,step,pot_file_name)
 
 
     def exportDBs(self):
@@ -443,84 +459,6 @@ class PoissonSolver():
                     self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+self.elec_list.index(electrode)))
                 else:
                     self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+self.elec_list.index(electrode)))
-
-    def saveAxesPotential(self,X,Y,Z,filename):
-        fig = plt.figure()
-        plt.gca().invert_yaxis()
-        maxval = np.max(np.abs(Z))
-        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
-        plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
-        cbar = plt.colorbar()
-        cbar.set_label("Potential (V)")
-        locs, labels = plt.yticks()
-        labels = []
-        for loc in locs:
-            labels += [str(round(loc*1e9, 2))]
-        plt.yticks(locs, labels)
-        locs, labels = plt.xticks()
-        labels = []
-        for loc in locs:
-            labels += [str(round(loc*1e9, 2))]
-        plt.xticks(locs, labels)
-        plt.xlabel("X (nm)")
-        plt.ylabel("Y (nm)")
-        savestring = os.path.join(self.abs_out_dir,filename)
-        plt.savefig(savestring, bbox_inces="tight", pad_inches=0)
-        plt.close(fig)
-
-    def saveGrad(self, X, Y, Z, index):
-        fig = plt.figure(frameon=False)
-        plt.gca().invert_yaxis()
-        Zgrad = np.gradient(Z)
-        maxval = np.max(np.abs(Zgrad[index]))
-        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
-        plt.pcolormesh(X,Y,Zgrad[index],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
-        cbar = plt.colorbar()
-        cbar.set_label("E field (V/m)")
-        savestring = os.path.join(self.abs_out_dir,'grad{}.png'.format(index))
-        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        plt.savefig(savestring)
-        plt.close(fig)
-
-    def savePotential(self, X, Y, Z, step):
-        fig = plt.figure(frameon=False)
-        plt.gca().invert_yaxis()
-        plt.axis('off')
-        maxval = np.max(np.abs(Z))
-        norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
-        plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
-        savestring = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
-        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        plt.savefig(savestring)
-        plt.close(fig)
-
-    def create2DSlice(self, u):
-        depth = float(self.sim_params['slice_depth']) #in angstroms
-        nx = int(self.sim_params['image_resolution'])
-        ny = nx
-        x = np.linspace(self.bounds['xmin'], self.bounds['xmax'], nx)
-        y = np.linspace(self.bounds['ymin'], self.bounds['ymax'], ny)
-        X, Y = np.meshgrid(x, y)
-        z = np.array([u(i, j, self.bounds['dielectric']+depth) for j in y for i in x])
-        Z = z.reshape(nx, ny)
-        return X, Y, Z, nx, ny
-
-    def makeGif(self):
-        mode = str(self.sim_params["mode"])
-        if mode == "clock":
-            images = []
-            image_files = []
-            for file in os.listdir(os.path.dirname(self.in_path)):
-                if file.startswith("SiAirBoundary"):
-                    image_files.append(os.path.join(self.abs_in_dir, file))
-            image_files.sort()
-            for image_name in image_files:
-                images.append(Image.open(image_name))
-            images[0].save(os.path.join(self.abs_in_dir, "SiAirBoundary.gif"),
-                       save_all=True,
-                       append_images=images[1:],
-                       delay=0.5,
-                       loop=0)
 
     def getCaps(self):
         mode = str(self.sim_params["mode"])
