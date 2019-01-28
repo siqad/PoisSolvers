@@ -301,7 +301,7 @@ class PoissonSolver():
         dist_y = 0.5*(ys[1] - ys[0])
         dist_z = 0.5*(zs[1] - zs[0])
 
-        self.fields += [self.mw.addBoxField(0.02, 1.0, \
+        self.fields += [self.mw.addBoxField(0.1, 1.0, \
                   [xs[0]-dist_x, xs[1]+dist_x], \
                   [ys[0]-dist_y, ys[1]+dist_y], \
                   [zs[0]-dist_z, zs[1]+dist_z])]
@@ -326,14 +326,14 @@ class PoissonSolver():
         self.air = sd.Air((self.bounds['dielectric'], self.bounds['zmax']))
 
     def setElectrodeSubdomains(self):
-        self.electrode = []
+        self.electrodes = []
         for elec in self.elec_list:
             layer_id = elec.layer_id # extract the layer id
             zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
             zs = [min(zs),max(zs)]
             elec.z1 = zs[0]
             elec.z2 = zs[1] #fill in the z dimension
-            self.electrode.append(sd.Electrode(elec)) #add to the list of electrodes
+            self.electrodes.append(sd.Electrode(elec)) #add to the list of electrodes
             self.addElectrode(elec, resolution=1.0) #add the electrode into the mesh
 
     def markDomains(self, mesh):
@@ -352,23 +352,26 @@ class PoissonSolver():
         self.bottom.mark(self.boundaries, 4)
         self.front.mark(self.boundaries, 5)
         self.back.mark(self.boundaries, 6)
-        for i in range(len(self.elec_list)):
-            self.electrode[i].mark(self.boundaries, 7+i)
+        #mark each electrode by its position in the list, plus an offset
+        for electrode in self.electrodes:
+            electrode.mark(self.boundaries, 7 + self.electrodes.index(electrode))
 
-    def getElecPotential(self, elec_list, step, steps, i):
+    def getElecPotential(self, electrode, step, steps, i):
         chi_si = 4.05 #eV
         phi_gold = 5.1 #eV
         phi_bi = phi_gold - chi_si
         elec_str = "Electrode "+str(i)+" is "
-        if elec_list[i].electrode_type == 1:
+        mode = str(self.sim_params["mode"])
+
+        if (electrode.electrode_type == 1 and mode == "clock"):
             elec_str += "clocked, "
-            tot_phase = elec_list[i].phase + step*360/steps
-            potential_to_set = elec_list[i].potential*np.sin( np.deg2rad(tot_phase) )
+            tot_phase = electrode.phase + step*360/steps
+            potential_to_set = electrode.potential*np.sin( np.deg2rad(tot_phase) )
         else:
             elec_str += "fixed, "
-            potential_to_set = elec_list[i].potential
-        # if self.metal_offset > self.bounds['dielectric']:
-        if self.metal_params[elec_list[i].layer_id][0] > self.bounds['dielectric']:
+            potential_to_set = electrode.potential
+
+        if self.metal_params[electrode.layer_id][0] > self.bounds['dielectric']:
             elec_str += "and above the dielectric interface."
         else:
             potential_to_set += phi_bi
@@ -425,25 +428,21 @@ class PoissonSolver():
         for elec in self.elec_list:
             if elec.net not in self.net_list:
                 self.net_list.append(elec.net)
-        # for i in range(len(self.elec_poly_list)):
-        #     if self.elec_poly_list[i].net not in self.net_list:
-        #         self.net_list.append(self.elec_poly_list[i].net)
 
-    # def setElectrodePotentials(self, step, steps, V):
     def setElectrodePotentials(self, step):
         print("Defining Dirichlet boundaries on electrodes...")
         self.bcs = []
         mode = str(self.sim_params["mode"])
         if mode == "standard" or mode == "clock":
-            for i in range(len(self.elec_list)):
-                potential_to_set = self.getElecPotential(self.elec_list, step, self.steps, i)
-                self.bcs.append(dolfin.DirichletBC(self.V, float(potential_to_set), self.boundaries, 7+i))
+            for electrode in self.elec_list:
+                potential_to_set = self.getElecPotential(electrode, step, self.steps, self.elec_list.index(electrode))
+                self.bcs.append(dolfin.DirichletBC(self.V, float(potential_to_set), self.boundaries, 7+self.elec_list.index(electrode)))
         elif mode == "cap":
-            for i in range(len(self.elec_list)):
-                if self.net_list[step] == self.elec_list[i].net:
-                    self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+i))
+            for electrode in self.elec_list:
+                if self.net_list[step] == electrode.net:
+                    self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+self.elec_list.index(electrode)))
                 else:
-                    self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+i))
+                    self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+self.elec_list.index(electrode)))
 
     def saveAxesPotential(self,X,Y,Z,filename):
         fig = plt.figure()
@@ -543,11 +542,11 @@ class PoissonSolver():
             x0, x1, x2 = dolfin.MeshCoordinates(self.mesh)
             eps = dolfin.conditional(x2 <= 0.0, self.EPS_SI, self.EPS_AIR)
             cap_list = [0.0]*len(self.net_list)
-            for i in range(len(self.elec_list)):
-                curr_net = self.elec_list[i].net
+            for electrode in self.elec_list:
+                curr_net = electrode.net
                 dS = dolfin.Measure("dS")[self.boundaries]
                 n = dolfin.FacetNormal(self.mesh)
-                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+i)
+                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+self.elec_list.index(electrode))
                 # average is used since +/- sides of facet are arbitrary
                 v = dolfin.assemble(m)
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
