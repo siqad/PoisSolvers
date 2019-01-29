@@ -5,14 +5,11 @@
  #
  # @desc:     Class definition for physics engine
 
-import mesh_writer_3D as mw
 import numpy as np
 import os
 import subdomains as sd
 import dolfin
-import sys
 import helpers
-import subprocess
 import time
 import mesher
 import plotter
@@ -62,24 +59,6 @@ class PoissonSolver():
         self.createBoundaries()
         self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath())
 
-    def createMesh(self):
-        print("Defining mesh geometry...")
-        self.initMesher()
-        self.mesher.setResolution()
-        self.mesher.createOuterBounds()
-        self.mesher.addDielectricSurface() #dielectric seam
-        #over-extend a little, to ensure that the higher resolution appears.
-        self.mesher.addDielectricField()
-        #Create a dictionary for the subdomains
-        surfaces = ['left', 'top', 'right', 'bottom', 'front', 'back', 'air']
-        sd_list = list(self.mesher.setSubdomains())
-        self.subdomains = dict(zip(surfaces, sd_list))
-        self.electrodes = self.mesher.setElectrodeSubdomains()
-        self.mesher.setBGField()
-        self.mesher.finalize()
-        self.mesher.writeGeoFile()
-        self.runGMSH()
-        self.setMesh()
 
     def setupSim(self):
         print("Setting up simulation...")
@@ -123,43 +102,7 @@ class PoissonSolver():
             self.solve()
             self.export(step)
 
-
 #Functions that the user shouldn't have to call.
-    def initMesher(self):
-        self.mesher.resolution = float(self.sim_params["sim_resolution"])
-        self.mesher.dir = self.abs_in_dir
-        self.mesher.bounds = self.bounds
-        self.mesher.elec_list = self.elec_list
-        self.mesher.metal_params = self.metal_params
-
-    def createGif(self):
-        mode = str(self.sim_params["mode"])
-        dir = self.abs_in_dir
-        dir_files = os.listdir(os.path.dirname(self.in_path))
-        self.plotter.makeGif(mode, dir, dir_files)
-
-    def exportPotential(self, step = None):
-        print("Creating 2D data slice...")
-        depth = float(self.sim_params['slice_depth']) #in angstroms
-        res = int(self.sim_params['image_resolution'])
-        X, Y, Z, nx, ny = self.plotter.create2DSlice(self.u, depth, res, self.bounds)
-        self.u_old = self.u #Set the potential to use as initial guess
-
-        print("Saving 2D potential data to XML...")
-        XYZ = []
-        for i in range(nx):
-            for j in range(ny):
-                XYZ.append([X[i,j],Y[i,j],Z[i,j]])
-        self.sqconn.export(potential=XYZ)
-        if step == 0:
-            plot_file_name = os.path.join(self.abs_out_dir,"SiAirPlot.png")
-            self.plotter.saveAxesPotential(X, Y, Z, plot_file_name)
-            for i in range(2):
-                grad_file_name = os.path.join(self.abs_out_dir,'grad{}.png'.format(i))
-                self.plotter.saveGrad(X,Y,Z,i,grad_file_name)
-        pot_file_name = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
-        self.plotter.savePotential(X,Y,Z,step,pot_file_name)
-
 
     def exportDBs(self):
         if self.db_list:
@@ -185,7 +128,6 @@ class PoissonSolver():
         spec_param['absolute_tolerance'] = float(self.sim_params["max_abs_error"])
         spec_param['relative_tolerance'] = float(self.sim_params["max_rel_error"])
         spec_param['maximum_iterations'] = int(self.sim_params["max_linear_iters"])
-
 
     def setInitGuess(self, step):
         print("Setting initial guess...")
@@ -230,15 +172,6 @@ class PoissonSolver():
         self.EPS_AIR = dolfin.Constant(1.0*self.EPS_0)
         print("Setting charge density...")
         self.f = dolfin.Constant("0.0")
-
-    def setMesh(self):
-        print("Converting mesh from .msh to .xml...")
-        meshconvert.convert2xml(os.path.join(self.abs_in_dir,"domain.msh"), os.path.join(self.abs_in_dir,"domain.xml"))
-        print("Importing mesh from .xml...")
-        self.mesh = dolfin.Mesh(os.path.join(self.abs_in_dir,'domain.xml'))
-
-    def runGMSH(self, file_name="domain.geo"):
-        subprocess.call(["gmsh", "-3", os.path.join(self.abs_in_dir,file_name)])
 
 
     def createBoundaries(self):
@@ -403,3 +336,57 @@ class PoissonSolver():
                 v = dolfin.assemble(m)
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
             self.cap_matrix.append(cap_list)
+
+# MESHING
+
+    def createMesh(self):
+        print("Defining mesh geometry...")
+        self.initMesher()
+        #subdomains is a dictionary keyed by 'left', 'top', etc. with the
+        #face subdomains as values.
+        #electrodes is a list of the electrode subdomains.
+        self.subdomains, self.electrodes = self.mesher.createGeometry()
+        self.setMesh()
+
+    def initMesher(self):
+        self.mesher.resolution = float(self.sim_params["sim_resolution"])
+        self.mesher.dir = self.abs_in_dir
+        self.mesher.bounds = self.bounds
+        self.mesher.elec_list = self.elec_list
+        self.mesher.metal_params = self.metal_params
+
+    def setMesh(self):
+        print("Converting mesh from .msh to .xml...")
+        meshconvert.convert2xml(os.path.join(self.abs_in_dir,"domain.msh"), os.path.join(self.abs_in_dir,"domain.xml"))
+        print("Importing mesh from .xml...")
+        self.mesh = dolfin.Mesh(os.path.join(self.abs_in_dir,'domain.xml'))
+
+# PLOTTING
+
+    def createGif(self):
+        mode = str(self.sim_params["mode"])
+        dir = self.abs_in_dir
+        dir_files = os.listdir(os.path.dirname(self.in_path))
+        self.plotter.makeGif(mode, dir, dir_files)
+
+    def exportPotential(self, step = None):
+        print("Creating 2D data slice...")
+        depth = float(self.sim_params['slice_depth']) #in angstroms
+        res = int(self.sim_params['image_resolution'])
+        X, Y, Z, nx, ny = self.plotter.create2DSlice(self.u, depth, res, self.bounds)
+        self.u_old = self.u #Set the potential to use as initial guess
+
+        print("Saving 2D potential data to XML...")
+        XYZ = []
+        for i in range(nx):
+            for j in range(ny):
+                XYZ.append([X[i,j],Y[i,j],Z[i,j]])
+        self.sqconn.export(potential=XYZ)
+        if step == 0:
+            plot_file_name = os.path.join(self.abs_out_dir,"SiAirPlot.png")
+            self.plotter.saveAxesPotential(X, Y, Z, plot_file_name)
+            for i in range(2):
+                grad_file_name = os.path.join(self.abs_out_dir,'grad{}.png'.format(i))
+                self.plotter.saveGrad(X,Y,Z,i,grad_file_name)
+        pot_file_name = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
+        self.plotter.savePotential(X,Y,Z,step,pot_file_name)

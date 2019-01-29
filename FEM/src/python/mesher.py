@@ -9,6 +9,7 @@ import mesh_writer_3D as mw
 import numpy as np
 import os
 import subdomains as sd
+import subprocess
 
 class Mesher():
     #Constructor
@@ -21,6 +22,25 @@ class Mesher():
         self.dir = None
         self.elec_list = []
         self.metal_params = []
+
+    def createGeometry(self):
+        self.setResolution()
+        self.createOuterBounds()
+        self.addDielectricSurface()
+        self.addDielectricField()
+        surfaces = ['left', 'top', 'right', 'bottom', 'front', 'back', 'air']
+        sd_list = list(self.setSubdomains())
+        subdomains = dict(zip(surfaces, sd_list))
+        electrodes = self.setElectrodeSubdomains()
+        self.setBGField()
+        self.finalize()
+        self.writeGeoFile()
+        self.runGMSH()
+        return subdomains, electrodes
+
+
+    def runGMSH(self, file_name="domain.geo"):
+        subprocess.call(["gmsh", "-3", os.path.join(self.dir,file_name)])
 
     def setResolution(self):
         x_min = self.bounds['xmin']

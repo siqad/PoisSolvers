@@ -30,7 +30,7 @@
       </padding>
       <sim_resolution>
         <T>float</T>
-        <val>3.0</val>
+        <val>1.0</val>
         <label>Resolution</label>
         <tip>Resolution scaling factor. Warning: higher resolution calculations will take longer to complete.</tip>
       </sim_resolution>
