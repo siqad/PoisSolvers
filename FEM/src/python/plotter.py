@@ -1,18 +1,12 @@
  # @author:   Nathan
- # @created:  2018.08.23
- # @editted:  2017.08.23 - Nathan
+ # @created:  2019.01.28
+ # @editted:  2019.01.29 - Nathan
  # @license:  GNU LGPL v3
  #
- # @desc:     Class definition for physics engine
+ # @desc:     Plotting mechanisms for PoissonSolver
 
-import mesh_writer_3D as mw
 import numpy as np
 import os
-import subdomains as sd
-import dolfin
-import sys
-import helpers
-import subprocess
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 from PIL import Image
@@ -22,6 +16,7 @@ class Plotter():
     def __init__(self):
         pass
 
+    #Produces a static potential figure with axes
     def saveAxesPotential(self,X,Y,Z,file_name):
         fig = plt.figure() #create a new figure
         plt.gca().invert_yaxis() # siqad has +x going right, +y going down
@@ -50,6 +45,7 @@ class Plotter():
         plt.savefig(file_name, bbox_inces="tight", pad_inches=0)
         plt.close(fig)
 
+    #Produces figures with the potential gradient, with axes
     def saveGrad(self,X,Y,Z,index,file_name):
         fig = plt.figure(frameon=False) #create a new figure
         plt.gca().invert_yaxis() # siqad has +x going right, +y going down
@@ -60,10 +56,12 @@ class Plotter():
         plt.pcolormesh(X,Y,Zgrad[index],norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         cbar = plt.colorbar()
         cbar.set_label("E field (V/m)")
+        #change the margins slightly so the colour bar doesn't sit on top of figure
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plt.savefig(file_name)
         plt.close(fig)
 
+    #Produces a 2D slice of the potential at the given timestep without axes.
     def savePotential(self, X, Y, Z, step, file_name):
         fig = plt.figure(frameon=False)
         plt.gca().invert_yaxis()
@@ -75,6 +73,7 @@ class Plotter():
         plt.savefig(file_name)
         plt.close(fig)
 
+    #Produces a 2D data slice, used for getting data in correct format for plotting
     def create2DSlice(self, u, depth, resolution, bounds):
         x = np.linspace(bounds['xmin'], bounds['xmax'], resolution)
         y = np.linspace(bounds['ymin'], bounds['ymax'], resolution)
@@ -83,6 +82,7 @@ class Plotter():
         Z = z.reshape(resolution, resolution)
         return X, Y, Z, resolution, resolution
 
+    #Creates a gif from all "SiAirBoundary{}" files in the given directory.
     def makeGif(self, mode, dir, dir_files):
         if mode == "clock":
             images = []

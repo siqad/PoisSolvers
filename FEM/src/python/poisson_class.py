@@ -15,9 +15,6 @@ import helpers
 import subprocess
 import time
 import plotter
-import matplotlib.pyplot as plt
-import matplotlib.colors as clrs
-from PIL import Image
 from dolfin_utils.meshconvert import meshconvert
 
 class PoissonSolver():
