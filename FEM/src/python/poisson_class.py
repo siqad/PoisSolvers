@@ -14,6 +14,7 @@ import sys
 import helpers
 import subprocess
 import time
+import mesher
 import plotter
 from dolfin_utils.meshconvert import meshconvert
 
@@ -21,10 +22,8 @@ class PoissonSolver():
     #Constructor
     def __init__(self):
         #mesh generation
-        self.mw = mw.MeshWriter() #class for creating the mesh geometry
-        self.fields = [] #resolution fields for the mesh.
-        self.bounds = None
         self.mesh = None
+        self.mesher = mesher.Mesher()
 
         #I/O
         self.sqconn = None
@@ -65,16 +64,20 @@ class PoissonSolver():
 
     def createMesh(self):
         print("Defining mesh geometry...")
-        self.setResolution()
-        self.createOuterBounds()
-        self.addDielectricSurface() #dielectric seam
+        self.initMesher()
+        self.mesher.setResolution()
+        self.mesher.createOuterBounds()
+        self.mesher.addDielectricSurface() #dielectric seam
         #over-extend a little, to ensure that the higher resolution appears.
-        self.addDielectricField()
-        self.setSubdomains()
-        self.setElectrodeSubdomains()
-        self.setBGField()
-        self.finalize()
-        self.writeGeoFile()
+        self.mesher.addDielectricField()
+        #Create a dictionary for the subdomains
+        surfaces = ['left', 'top', 'right', 'bottom', 'front', 'back', 'air']
+        sd_list = list(self.mesher.setSubdomains())
+        self.subdomains = dict(zip(surfaces, sd_list))
+        self.electrodes = self.mesher.setElectrodeSubdomains()
+        self.mesher.setBGField()
+        self.mesher.finalize()
+        self.mesher.writeGeoFile()
         self.runGMSH()
         self.setMesh()
 
@@ -122,6 +125,13 @@ class PoissonSolver():
 
 
 #Functions that the user shouldn't have to call.
+    def initMesher(self):
+        self.mesher.resolution = float(self.sim_params["sim_resolution"])
+        self.mesher.dir = self.abs_in_dir
+        self.mesher.bounds = self.bounds
+        self.mesher.elec_list = self.elec_list
+        self.mesher.metal_params = self.metal_params
+
     def createGif(self):
         mode = str(self.sim_params["mode"])
         dir = self.abs_in_dir
@@ -142,14 +152,11 @@ class PoissonSolver():
                 XYZ.append([X[i,j],Y[i,j],Z[i,j]])
         self.sqconn.export(potential=XYZ)
         if step == 0:
-            # self.saveAxesPotential(X, Y, Z, os.path.join(self.abs_out_dir,"SiAirPlot.png"))
             plot_file_name = os.path.join(self.abs_out_dir,"SiAirPlot.png")
             self.plotter.saveAxesPotential(X, Y, Z, plot_file_name)
             for i in range(2):
                 grad_file_name = os.path.join(self.abs_out_dir,'grad{}.png'.format(i))
                 self.plotter.saveGrad(X,Y,Z,i,grad_file_name)
-            # self.saveGrad(X,Y,Z,0, )
-            # self.saveGrad(X,Y,Z,1)
         pot_file_name = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
         self.plotter.savePotential(X,Y,Z,step,pot_file_name)
 
@@ -258,113 +265,23 @@ class PoissonSolver():
         if sim_params:
             self.sim_params = sim_params
 
-    def setResolution(self):
-        x_min = self.bounds['xmin']
-        y_min = self.bounds['ymin']
-        z_min = self.bounds['zmin']
-        x_max = self.bounds['xmax']
-        y_max = self.bounds['ymax']
-        z_max = self.bounds['zmax']
-        res_scale = float(self.sim_params["sim_resolution"])
-        # base the resolution on the average of the three dimensions
-        self.mw.resolution = ((x_max-x_min) + (y_max-y_min) + (z_max-z_min)) / 3.0 / res_scale
-        # self.mw.resolution = min((x_max-x_min), (y_max-y_min), (z_max-z_min)) * 2.0 / res_scale
-
-    def createOuterBounds(self, resolution=1.0):
-        print("Creating outer boundaries...")
-        self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
-                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], resolution, option="bound")
-
-    def addDielectricSurface(self, resolution=1.0):
-        print("Inserting dielectric surface...")
-        x_min = self.bounds['xmin']
-        y_min = self.bounds['ymin']
-        x_max = self.bounds['xmax']
-        y_max = self.bounds['ymax']
-        z = self.bounds['dielectric']
-        # add the surface using 4 points of a rectangle
-        self.mw.addSurface([x_min,y_min,z], [x_max,y_min,z], [x_max,y_max,z], [x_min,y_max,z], resolution, option="seam")
-
-    def addDielectricField(self, res_in=0.25, res_out=1.0):
-        x_min = self.bounds['xmin']
-        y_min = self.bounds['ymin']
-        x_max = self.bounds['xmax']
-        y_max = self.bounds['ymax']
-        dielec = self.bounds['dielectric']
-        z_min = self.bounds['zmin']
-        z_max = self.bounds['zmax']
-        self.fields = []
-        #construct a field using the given resolutions and the dimensions of the box.
-        self.fields += [self.mw.addBoxField(res_in, res_out, [x_min, x_max], [y_min, y_max], \
-                  [dielec-0.05*np.abs(z_min), dielec+0.05*np.abs(z_max)])]
-        self.fields = [self.mw.addMinField(self.fields)]
-
-    def addElectrode(self, electrode, resolution):
-        xs = [electrode.x1,electrode.x2]
-        ys = [electrode.y1,electrode.y2]
-        zs = [electrode.z1,electrode.z2]
-        self.mw.addBox([xs[0],ys[0],zs[0]], \
-                  [xs[1],ys[1],zs[1]], resolution,angle=electrode.angle,option="seam")
-        # #make resolution inside electrodes coarse
-        # self.fields += [self.mw.addBoxField(1.0, 0.0, \
-        #           [xs[0], xs[1]], [ys[0], ys[1]], [zs[0], zs[1]])]
-        # self.fields = [self.mw.addMaxField(self.fields)]
-        #The physical extent of the field
-        dist_x = 0.5*(xs[1] - xs[0])
-        dist_y = 0.5*(ys[1] - ys[0])
-        dist_z = 0.5*(zs[1] - zs[0])
-
-        self.fields += [self.mw.addBoxField(0.1, 1.0, \
-                  [xs[0]-dist_x, xs[1]+dist_x], \
-                  [ys[0]-dist_y, ys[1]+dist_y], \
-                  [zs[0]-dist_z, zs[1]+dist_z])]
-        self.fields = [self.mw.addMinField(self.fields)]
-
-    def setBGField(self, delta=10):
-        bg_field_ind = self.mw.addMeanField(self.fields, delta)
-        self.mw.setBGField(bg_field_ind)
-
-    def writeGeoFile(self):
-        print("Writing mesh definition to file...")
-        with open(os.path.join(self.abs_in_dir, 'domain.geo'), 'w') as f: f.write(self.mw.file_string)
-
-    def setSubdomains(self):
-        print("Create subdomains and fields...")
-        self.left = sd.Left(self.bounds['xmin'])
-        self.top = sd.Top(self.bounds['ymax'])
-        self.right = sd.Right(self.bounds['xmax'])
-        self.bottom = sd.Bottom(self.bounds['ymin'])
-        self.front = sd.Front(self.bounds['zmax'])
-        self.back = sd.Back(self.bounds['zmin'])
-        self.air = sd.Air((self.bounds['dielectric'], self.bounds['zmax']))
-
-    def setElectrodeSubdomains(self):
-        self.electrodes = []
-        for elec in self.elec_list:
-            layer_id = elec.layer_id # extract the layer id
-            zs = [self.metal_params[layer_id][0], sum(self.metal_params[layer_id])]
-            zs = [min(zs),max(zs)]
-            elec.z1 = zs[0]
-            elec.z2 = zs[1] #fill in the z dimension
-            self.electrodes.append(sd.Electrode(elec)) #add to the list of electrodes
-            self.addElectrode(elec, resolution=1.0) #add the electrode into the mesh
-
     def markDomains(self, mesh):
         # Initialize mesh function for interior domains
         print("Marking boundaries...")
         self.domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
         self.domains.set_all(0)
-        self.air.mark(self.domains, 1)
+        self.subdomains['air'].mark(self.domains, 1)
 
     def markBoundaries(self, mesh):
         self.boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
         self.boundaries.set_all(0)
-        self.left.mark(self.boundaries, 1)
-        self.top.mark(self.boundaries, 2)
-        self.right.mark(self.boundaries, 3)
-        self.bottom.mark(self.boundaries, 4)
-        self.front.mark(self.boundaries, 5)
-        self.back.mark(self.boundaries, 6)
+        self.subdomains['left'].mark(self.boundaries, 1)
+        self.subdomains['top'].mark(self.boundaries, 2)
+        self.subdomains['right'].mark(self.boundaries, 3)
+        self.subdomains['bottom'].mark(self.boundaries, 4)
+        self.subdomains['front'].mark(self.boundaries, 5)
+        self.subdomains['back'].mark(self.boundaries, 6)
+
         #mark each electrode by its position in the list, plus an offset
         for electrode in self.electrodes:
             electrode.mark(self.boundaries, 7 + self.electrodes.index(electrode))
@@ -486,6 +403,3 @@ class PoissonSolver():
                 v = dolfin.assemble(m)
                 cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
             self.cap_matrix.append(cap_list)
-
-    def finalize(self):
-        self.mw.finalize();
