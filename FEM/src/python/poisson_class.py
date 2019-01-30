@@ -13,6 +13,7 @@ import helpers
 import time
 import mesher
 import plotter
+import res_cap
 from dolfin_utils.meshconvert import meshconvert
 
 class PoissonSolver():
@@ -34,6 +35,9 @@ class PoissonSolver():
         self.metal_params = None
         self.db_list = None
         self.net_list = []
+
+        #Resistance and capacitance tools
+        self.rc = res_cap.ResCap()
 
         #calculated values and ones used during simulation
         self.cap_matrix = []
@@ -77,6 +81,7 @@ class PoissonSolver():
         self.defineVariationalForm()
         self.setInitGuess(step)
         self.setSolverParams()
+        self.initRC()
 
     def solve(self):
         print("Solving problem...")
@@ -89,12 +94,11 @@ class PoissonSolver():
         print("Exporting...")
         self.u.set_allow_extrapolation(True)
         self.exportDBs()
-        self.calcCaps()
         self.exportPotential(step)
         #last step, finish off by creating gif and getting capacitances if applicable
+        self.getCaps(step)
         if step == self.steps-1:
             self.createGif()
-            self.getCaps()
 
     def loopSolve(self):
         for step in range(self.steps):
@@ -103,6 +107,22 @@ class PoissonSolver():
             self.export(step)
 
 #Functions that the user shouldn't have to call.
+    def getCaps(self, step):
+        mode = str(self.sim_params["mode"])
+        if mode == "cap":
+            self.rc.calcCaps()
+            if step == self.steps-1:
+                self.rc.formCapMatrix()
+
+    def initRC(self):
+        print("Setting RC params..")
+        self.rc.mesh = self.mesh
+        self.rc.EPS_SI = self.EPS_SI
+        self.rc.EPS_AIR = self.EPS_AIR
+        self.rc.net_list = self.net_list
+        self.rc.elec_list = self.elec_list
+        self.rc.boundaries = self.boundaries
+        self.rc.u = self.u
 
     def exportDBs(self):
         if self.db_list:
@@ -306,36 +326,6 @@ class PoissonSolver():
                     self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+self.elec_list.index(electrode)))
                 else:
                     self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+self.elec_list.index(electrode)))
-
-    def getCaps(self):
-        mode = str(self.sim_params["mode"])
-        if mode == "cap":
-            matrix_string = ""
-            cap_matrix = np.array(self.cap_matrix)
-            for i in range(len(cap_matrix)):
-                tot_cap = 0
-                for cap in cap_matrix[i]:
-                    tot_cap = tot_cap+cap
-                    matrix_string = matrix_string + "{} ".format(cap)
-                print("C_net{} = {}F".format(self.net_list[i],tot_cap))
-                matrix_string = matrix_string + "\n"
-            print(matrix_string)
-
-    def calcCaps(self):
-        mode = str(self.sim_params["mode"])
-        if mode == "cap":
-            x0, x1, x2 = dolfin.MeshCoordinates(self.mesh)
-            eps = dolfin.conditional(x2 <= 0.0, self.EPS_SI, self.EPS_AIR)
-            cap_list = [0.0]*len(self.net_list)
-            for electrode in self.elec_list:
-                curr_net = electrode.net
-                dS = dolfin.Measure("dS")[self.boundaries]
-                n = dolfin.FacetNormal(self.mesh)
-                m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+self.elec_list.index(electrode))
-                # average is used since +/- sides of facet are arbitrary
-                v = dolfin.assemble(m)
-                cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
-            self.cap_matrix.append(cap_list)
 
 # MESHING
 
