@@ -385,8 +385,7 @@ class PoissonSolver():
         if step == 0:
             plot_file_name = os.path.join(self.abs_out_dir,"SiAirPlot.png")
             self.plotter.saveAxesPotential(X, Y, Z, plot_file_name)
-            for i in range(2):
-                grad_file_name = os.path.join(self.abs_out_dir,'grad{}.png'.format(i))
-                self.plotter.saveGrad(X,Y,Z,i,grad_file_name)
+            grad_file_name = os.path.join(self.abs_out_dir,'grad.pdf')
+            self.plotter.saveGrad(X,Y,Z,grad_file_name)
         pot_file_name = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
         self.plotter.savePotential(X,Y,Z,step,pot_file_name)
