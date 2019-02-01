@@ -77,7 +77,6 @@ class PoissonSolver():
         print("Setting up Dolfin solver...")
         self.setFunctionSpaces()
         self.setElectrodePotentials(step)
-        self.setMeasures()
         self.defineVariationalForm()
         self.setInitGuess(step)
         self.setSolverParams()
@@ -113,6 +112,7 @@ class PoissonSolver():
             self.rc.calcCaps()
             if step == self.steps-1:
                 self.rc.formCapMatrix()
+                self.rc.getDelays(self.bounds, float(self.sim_params["temp"]))
 
     def initRC(self):
         print("Setting RC params..")
@@ -160,7 +160,12 @@ class PoissonSolver():
         elif init_guess == "zero":
             self.u = dolfin.Function(self.V)
 
+    def setGroundPlane(self):
+        self.bcs.append(dolfin.DirichletBC(self.V, float(0), self.boundaries, 6))
+
     def defineVariationalForm(self):
+        self.setGroundPlane()
+        self.setMeasures()
         print("Defining variational form...")
         self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
             + dolfin.inner(self.EPS_AIR*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
@@ -170,13 +175,11 @@ class PoissonSolver():
         # Separate left and right hand sides of equation
         self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
 
-
     def setFunctionSpaces(self):
         print("Defining function, space, basis...")
         self.V = self.getFunctionSpace(self.mesh)
         self.u = dolfin.TrialFunction(self.V)
         self.v = dolfin.TestFunction(self.V)
-
 
     def setMeasures(self):
         print("Defining measures...")
@@ -205,6 +208,7 @@ class PoissonSolver():
     def setBounds(self, bounds):
         keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
         self.bounds = dict(zip(keys, bounds))
+        print(self.bounds)
 
     def setPaths(self, in_path="", out_path=""):
         if in_path != "":
@@ -272,7 +276,8 @@ class PoissonSolver():
             h_Ba = dolfin.Constant("0.0")
             component =  h_L*u*v*ds(1) + h_R*u*v*ds(3) \
                 + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
-                + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
+                + h_F*u*v*ds(5)
+                # + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
         elif self.sim_params["bcs"] == "neumann":
             g_L = dolfin.Constant("0.0")
             g_R = dolfin.Constant("0.0")
@@ -282,11 +287,13 @@ class PoissonSolver():
             g_Ba = dolfin.Constant("0.0")
             component = - g_L*v*ds(1) - g_R*v*ds(3) \
                  - g_T*v*ds(2) - g_Bo*v*ds(4) \
-                 - g_F*v*ds(5) - g_Ba*v*ds(6)
+                 - g_F*v*ds(5)
+                 # - g_F*v*ds(5) - g_Ba*v*ds(6)
         elif self.sim_params["bcs"] == "periodic":
             h_F = dolfin.Constant("0.0")
             h_Ba = dolfin.Constant("0.0")
-            component =  h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
+            component =  h_F*u*v*ds(5)
+            # component =  h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
         return component
 
     def getFunctionSpace(self, mesh):

@@ -59,7 +59,7 @@ class PeriodicBoundary(dolfin.SubDomain):
         self.x_max = x_max
         self.y_min = y_min
         self.y_max = y_max
-        print(x_min, x_max, y_min, y_max)
+        # print(x_min, x_max, y_min, y_max)
         dolfin.SubDomain.__init__(self)
     def inside(self, x, on_boundary):
         return bool((dolfin.near(x[0], self.x_min) or dolfin.near(x[1], self.y_min)) and
@@ -115,7 +115,7 @@ class Electrode(dolfin.SubDomain):
             new_vertex = np.array([vertex[0]*np.cos(theta)-np.sin(theta)*vertex[1], \
                           vertex[0]*np.sin(theta)+vertex[1]*np.cos(theta)])
             self.vertices.append(tuple(new_vertex + origin))
-        print(self.vertices)
+        # print(self.vertices)
             # print(tuple(new_vertex + origin))
     def inside(self, x, on_boundary):
         if np.abs(self.electrode.angle) > 1e-16:
