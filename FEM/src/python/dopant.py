@@ -21,15 +21,16 @@ def plot(x, y, title, x_label, y_label, file_name):
 q = 1.60E-19 # Elementary charge - Coulomb
 eps_0 = 8.85E-12 # Absolute permittivity - Farad / metre
 k = 1.380E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
-T = 293 # Temperature - Kelvin
 
 # Simulation parameters
+T = 293 # Temperature - Kelvin
 resolution = 200
 eps_r = 11.9
 eps = eps_r*eps_0
 
 ni_si = 1E10 # in cm^-3
 ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
+
 # Spatial extent
 x_min = -1E-6
 x_max = 1E-6
