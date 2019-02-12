@@ -199,7 +199,8 @@ class PoissonSolver():
 
     def createBoundaries(self):
         xs, ys = helpers.getBB(self.sqconn)
-        vals = helpers.adjustBoundaries(xs, ys, self.metal_params)
+        ground_plane = float(self.sim_params["ground_depth"])
+        vals = helpers.adjustBoundaries(xs, ys, self.metal_params, ground_plane)
         self.setBounds(list(vals))
 
     def setConnector(self,connector):

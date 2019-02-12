@@ -74,13 +74,16 @@ def getDBCollections(sqconn):
     return db_list
 
 # def adjustBoundaries(xmin, xmax, ymin, ymax, m_p):
-def adjustBoundaries(xs, ys, m_p):
+def adjustBoundaries(xs, ys, m_p, gp_depth):
     candidates = np.array([])
     for key in m_p:
         if m_p[key]:
             candidates = np.append(candidates, m_p[key][0])
             candidates = np.append(candidates, sum(m_p[key]))
-    zmin = -np.max(np.abs(candidates))*1.5
-    zmax = -zmin
+    zmax = np.max(np.abs(candidates))*1.5
+    zmin = -gp_depth
+    print("@@@@  Z  @@@@", zmin, zmax)
+    # zmin = -np.max(np.abs(candidates))*1.5
+    # zmax = -zmin
     b_di = 0.0 #at the surface.
     return xs[0], xs[1], ys[0], ys[1], zmin, zmax, b_di
