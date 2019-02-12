@@ -34,6 +34,12 @@
         <label>Ground plane depth (ang)</label>
         <tip>The depth of the ground plane underneath the semiconductor.</tip>
       </ground_depth>
+      <eps_r_dielectric>
+        <T>float</T>
+        <val>1.0</val>
+        <label>Relative permittivity</label>
+        <tip>Relative permittivity (or dielectric constant) of material above semiconductor.</tip>
+      </eps_r_dielectric>
       <sim_resolution>
         <T>float</T>
         <val>1.0</val>

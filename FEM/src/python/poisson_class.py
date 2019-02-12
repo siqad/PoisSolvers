@@ -118,7 +118,7 @@ class PoissonSolver():
         print("Setting RC params..")
         self.rc.mesh = self.mesh
         self.rc.EPS_SI = self.EPS_SI
-        self.rc.EPS_AIR = self.EPS_AIR
+        self.rc.EPS_DIELECTRIC = self.EPS_DIELECTRIC
         self.rc.net_list = self.net_list
         self.rc.elec_list = self.elec_list
         self.rc.boundaries = self.boundaries
@@ -168,7 +168,7 @@ class PoissonSolver():
         self.setMeasures()
         print("Defining variational form...")
         self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
-            + dolfin.inner(self.EPS_AIR*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
+            + dolfin.inner(self.EPS_DIELECTRIC*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
             - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
         self.F += self.getBoundaryComponent(self.u, self.v, self.ds)
         print("Separating LHS and RHS...")
@@ -192,7 +192,9 @@ class PoissonSolver():
         self.EPS_0 = 8.854E-22 #in angstroms
         self.Q_E = 1.6E-19
         self.EPS_SI = dolfin.Constant(11.6*self.EPS_0)
-        self.EPS_AIR = dolfin.Constant(1.0*self.EPS_0)
+        EPS_R = float(self.sim_params["eps_r_dielectric"])
+        # mode = str(self.sim_params["mode"]))
+        self.EPS_DIELECTRIC = dolfin.Constant(EPS_R*self.EPS_0)
         print("Setting charge density...")
         self.f = dolfin.Constant("0.0")
 
@@ -201,6 +203,7 @@ class PoissonSolver():
         xs, ys = helpers.getBB(self.sqconn)
         ground_plane = float(self.sim_params["ground_depth"])
         vals = helpers.adjustBoundaries(xs, ys, self.metal_params, ground_plane)
+        # vals = helpers.adjustBoundaries(xs, ys, self.metal_params)
         self.setBounds(list(vals))
 
     def setConnector(self,connector):
