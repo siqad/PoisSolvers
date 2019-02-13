@@ -4,13 +4,22 @@ from matplotlib.ticker import FormatStrFormatter
 import dolfin as df
 from charge_density import ChargeDensity
 
-def plot(x, y, title, x_label, y_label, file_name):
-    plt.clf()
-    plt.plot(x,y)
-    plt.xlabel(x_label) #set label text
-    plt.ylabel(y_label)
-    plt.title(title)
-    plt.savefig("{}{}".format(file_name, ".pdf"))
+class Dopant:
+
+    def __init__(self):
+        pass
+
+    def plot(x, y, title, x_label, y_label, file_name):
+        plt.clf()
+        plt.plot(x,y)
+        plt.xlabel(x_label) #set label text
+        plt.ylabel(y_label)
+        plt.title(title)
+        plt.savefig("{}{}".format(file_name, ".pdf"))
+
+    # def setPhysConstants(self):
+
+
 
 # Physical constants
 q = 1.60E-19 # Elementary charge - Coulomb
