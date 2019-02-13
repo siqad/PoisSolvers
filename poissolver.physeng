@@ -22,12 +22,18 @@
         <label>Temperature (K)</label>
         <tip>Temperature of the system in Kelvin.</tip>
       </temp>
-      <padding>
+      <padding_x>
         <T>float</T>
         <val>10</val>
-        <label>Padding (ang)</label>
-        <tip>Simulation padding size. The default 0.0 will use an automatic padding size scaled to the design.</tip>
-      </padding>
+        <label>x-Padding (ang)</label>
+        <tip>Simulation padding size in the horizontal direction.</tip>
+      </padding_x>
+      <padding_y>
+        <T>float</T>
+        <val>10</val>
+        <label>y-Padding (ang)</label>
+        <tip>Simulation padding size in the vertical direction.</tip>
+      </padding_y>
       <ground_depth>
         <T>float</T>
         <val>600</val>
