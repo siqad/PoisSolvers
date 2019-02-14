@@ -25,80 +25,105 @@ class Dopant:
         plt.savefig("{}{}".format(file_name, ".pdf"))
 
     # Simulation parameters
-    def setParameters(self):
-        self.T = 293 # Temperature - Kelvin
-        self.resolution = 20
-        self.eps_r = 11.9
-        self.eps = self.eps_r*dp.eps_0
-        self.ni_si = 1E10 # in cm^-3
-        self.ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
+    def setParameters(self, T=293, resolution=20, eps_r=11.9):
+        self.T = T # Temperature - Kelvin
+        self.resolution = resolution
+        self.eps_r = eps_r
+        self.eps = self.eps_r*self.eps_0
+
+    # Assume only in one dimension
+    def setBoundaries(self, min, max):
+        self.min = min
+        self.max = max
+
+    def setIntrinsicDensity(self, intrinsic):
+        self.ni_si = intrinsic
+
+    def setDopantDensity(self, dopant):
+        self.dopant = dopant
+
+    def setDopantProfile(self, n_ext):
+        self.n_ext = n_ext
+
+    def getXSpace(self):
+        return np.linspace(self.min, self.max, self.resolution)
+
+    def calculateRho(self):
+        x = self.getXSpace()
+
+        # Intrinsic electron density
+        n = np.ones(self.resolution)
+        n_int = n*self.ni_si
+
+        # Total electron density (as a fuction of x)
+        # Assume full ionization
+        self.n = self.n_ext + n_int
+
+        # Obtain derivative of electron density
+        self.dndx = np.gradient(self.n,x)
+
+        # Find the electric field that results in a drift current
+        # which exactly balances diffusion current
+        self.E = -self.k*self.T/self.q/self.n*self.dndx
+        print(np.trapz(self.E, x=x))
+
+        # Resulting spatial charge density
+        # Can be obtained by taking another derivative of E, and scaling by eps.
+        self.rho = np.gradient(self.E, x)*self.eps
+
+    def getRhoAsExpression(self, mesh):
+        x = self.getXSpace()
+        # Possible functions that can live on this mesh
+        V = df.FunctionSpace(mesh, 'CG', 1)
+        #Get the parameter
+        F = df.Expression('x[0]',  degree=1)
+        return ChargeDensity(F, data=self.rho,x=x, degree=1)
+
+    def getRhoAsFunction(self, mesh):
+        V = df.FunctionSpace(mesh, 'CG', 1)
+        rho_exp = self.getRhoAsExpression(mesh)
+        return df.interpolate(rho_exp, V)
+
+    def plot(self):
+        # Plot what we have so far
+        fig, ax = plt.subplots()
+        x = self.getXSpace()
+        plot(x, n, "Electron Density", "X (m)", "Electron density (m^-3)", "n")
+        plot(x, E, "Electric Field", "X (m)", "Electric field (Vm^-1)", "E")
+        plot(x, rho, "Charge Density", "X (m)", "Charge density (m^-3)", "rho")
 
 
+if __name__ == "__main__":
 
-dp = Dopant()
-dp.setParameters()
-# Simulation parameters
-# T = 293 # Temperature - Kelvin
-# resolution = 20
-# eps_r = 11.9
-# eps = eps_r*dp.eps_0
+    dp = Dopant()
+    dp.setParameters(resolution=1000)
 
-# ni_si = 1E10 # in cm^-3
-# ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
+    # Spatial extent
+    x_min = -1E-8
+    x_max = 1E-8
+    dp.setBoundaries(x_min, x_max)
 
-# Spatial extent
-x_min = -1E-7
-x_max = 1E-7
-x = np.linspace(x_min, x_max, dp.resolution)
+    ni_si = 1E10 # in cm^-3
+    ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
+    dp.setIntrinsicDensity(ni_si)
 
-# Intrinsic electron density
-n = np.ones(dp.resolution)
-n_int = n*ni_si
+    # Dopant desity and profile
+    dopant = 1E19 # in cm^-3
+    dopant = dopant*1E2*1E2*1E2
 
-# Dopant desity and profile
-dopant = 1E19 # in cm^-3
-dopant = dopant*1E2*1E2*1E2
+    # Scaling and offset for sigmoid
+    # x_offset = -50E-9
+    x_offset = -2.5E-9
+    x_scaling = 100
+    x_arg = x_scaling*(dp.getXSpace()-x_offset)/x_max
 
-# Scaling and offset for sigmoid
-x_offset = -50E-9
-x_scaling = 100
-x_arg = x_scaling*(x-x_offset)/x_max
-
-#Creating the doping profile
-profile = 1 - 1/(1+np.exp(-x_arg))
-# profile_pw = np.piecewise(x, [x < 5E-7, x>=5E-7], [lambda x: 1/(1+np.exp(-x_scaling*(x-x_offset)/x_max)), 0])
-# profile_pw = np.piecewise(x, [x < 5E-7, x>=5E-7], [lambda x: 1/(1+np.exp(-x_scaling*(x-x_offset)/x_max)), 0])
-n_ext = profile*dopant
-
-# Total electron density (as a fuction of x)
-# Assume full ionization
-n = n_ext + n_int
-
-# Obtain derivative of electron density
-dndx = np.gradient(n,x)
-
-# Find the electric field that results in a drift current
-# which exactly balances diffusion current
-E = -dp.k*dp.T/dp.q/n*dndx
-
-# print(n)
-# Resulting spatial charge density
-# Can be obtained by taking another derivative of E, and scaling by eps.
-rho = np.gradient(E, x)*dp.eps
-
-# Plot what we have so far
-# fig, ax = plt.subplots()
-# plot(x, n, "Electron Density", "X (m)", "Electron density (m^-3)", "n")
-# plot(x, E, "Electric Field", "X (m)", "Electric field (Vm^-1)", "E")
-# plot(x, rho, "Charge Density", "X (m)", "Charge density (m^-3)", "rho")
-
-# Create a general mesh
-mesh = df.RectangleMesh(df.Point(min(x), min(x)), df.Point(max(x), max(x)), 64, 64)
-# Possible functions that can live on this mesh
-V = df.FunctionSpace(mesh, 'CG', 1)
-#Get the parameter
-F = df.interpolate(df.Expression('x[0]',  degree=1), V)
-rho_exp = df.interpolate(ChargeDensity(F, data=rho,x=x, degree=1), V)
-
-df.plot(rho_exp)
-plt.show()
+    #Creating the doping profile
+    profile = 1 - 1/(1+np.exp(-x_arg))
+    n_ext = profile*dopant
+    dp.setDopantProfile(n_ext)
+    dp.calculateRho()
+    mesh = df.RectangleMesh(df.Point(x_min, x_min), df.Point(x_max, x_max), 64, 64)
+    rho_exp = dp.getRhoAsExpression(mesh)
+    rho_func = dp.getRhoAsFunction(mesh)
+    df.plot(rho_func)
+    plt.show()
