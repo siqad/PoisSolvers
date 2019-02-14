@@ -83,7 +83,7 @@ class Dopant:
         # Possible functions that can live on this mesh
         V = df.FunctionSpace(mesh, 'CG', 1)
         #Get the parameter
-        F = df.Expression('x[0]',  degree=1)
+        F = df.Expression('x[3]',  degree=1)
         return ChargeDensity(F, data=self.rho,x=x, degree=1)
 
     def getRhoAsFunction(self, mesh):

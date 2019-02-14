@@ -8,11 +8,11 @@ class ChargeDensity(df.Expression):
     self.x = kwargs["x"]
     self.F = func_in
 
-
   def eval(self, val, x):
     f_val = self.F(x) # This should be the that goes into the charge density
                       # function. E.g. x[0], or x[1], etc.
-    # interpolate the data at the point of evaluation, since the
+
+    # interpolate the data at the point of evaluatio
     val[0] = np.interp(f_val, self.x, self.data)
 
   # If the expression is vector valued, overload this.
