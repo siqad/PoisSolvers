@@ -10,11 +10,19 @@ class Dopant:
         # pass
         self.setPhysConstants()
 
+    def setUnits(self, units="mks"):
+        self.units = units
+        self.setPhysConstants(units)
+
     # Physical constants
-    def setPhysConstants(self):
+    def setPhysConstants(self, units="mks"):
         self.q = 1.60E-19 # Elementary charge - Coulomb
-        self.eps_0 = 8.85E-12 # Absolute permittivity - Farad / metre
+        #For Boltzmann constant, use metre version so that k*T/q is always ~25mV
         self.k = 1.380E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
+        if units == "mks":
+            self.eps_0 = 8.85E-12 # Absolute permittivity - Farad / metre
+        elif units == "atomic":
+            self.eps_0 = 8.85E-22 # Absolute permittivity - Farad / angstrom
 
     def plot(x, y, title, x_label, y_label, file_name):
         plt.clf()
@@ -61,7 +69,6 @@ class Dopant:
 
         # Obtain derivative of electron density
         self.dndx = np.gradient(self.n,x)
-
         # Find the electric field that results in a drift current
         # which exactly balances diffusion current
         self.E = -self.k*self.T/self.q/self.n*self.dndx
@@ -88,33 +95,42 @@ class Dopant:
         # Plot what we have so far
         fig, ax = plt.subplots()
         x = self.getXSpace()
-        plot(x, n, "Electron Density", "X (m)", "Electron density (m^-3)", "n")
-        plot(x, E, "Electric Field", "X (m)", "Electric field (Vm^-1)", "E")
-        plot(x, rho, "Charge Density", "X (m)", "Charge density (m^-3)", "rho")
-
+        if self.units == "mks":
+            plot(x, n, "Electron Density", "X (m)", "Electron density (m^-3)", "n")
+            plot(x, E, "Electric Field", "X (m)", "Electric field (V m^-1)", "E")
+            plot(x, rho, "Charge Density", "X (m)", "Charge density (m^-3)", "rho")
+        elif self.units == "atomic":
+            plot(x, n, "Electron Density", "X (angstrom)", "Electron density (angstrom^-3)", "n")
+            plot(x, E, "Electric Field", "X (angstrom)", "Electric field (V angstrom^-1)", "E")
+            plot(x, rho, "Charge Density", "X (angstrom)", "Charge density (angstrom^-3)", "rho")
 
 if __name__ == "__main__":
 
     dp = Dopant()
-    dp.setParameters(resolution=1000)
-
+    dp.setUnits("atomic")
+    dp.setParameters(resolution=10000)
     # Spatial extent
-    x_min = -1E-8
-    x_max = 1E-8
+    # x_min = -1E-8
+    # x_max = 1E-8
+    x_min = -1000
+    x_max = 1000
     dp.setBoundaries(x_min, x_max)
 
     ni_si = 1E10 # in cm^-3
-    ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
+    # ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
+    ni_si = ni_si*1E-8*1E-8*1E-8 # conversion to metre^-3
     dp.setIntrinsicDensity(ni_si)
 
     # Dopant desity and profile
     dopant = 1E19 # in cm^-3
-    dopant = dopant*1E2*1E2*1E2
+    # dopant = dopant*1E2*1E2*1E2
+    dopant = dopant*1E-8*1E-8*1E-8
 
     # Scaling and offset for sigmoid
     # x_offset = -50E-9
-    x_offset = -2.5E-9
-    x_scaling = 100
+    # x_offset = -2.5E-9
+    x_offset = -300
+    x_scaling = 200
     x_arg = x_scaling*(dp.getXSpace()-x_offset)/x_max
 
     #Creating the doping profile
