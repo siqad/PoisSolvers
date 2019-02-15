@@ -221,7 +221,9 @@ class PoissonSolver():
         dopant_dens = dopant_dens*1E-8*1E-8*1E-8
 
         # Scaling and offset for sigmoid
-        x_offset = -300
+        # x_offset = -600
+        x_offset = -float(self.sim_params["depletion_depth"])
+        print("@@@ DEPTH : ", x_offset)
         x_scaling = 200
         x_arg = x_scaling*(dp.getXSpace()-x_offset)/self.bounds["zmax"]
 

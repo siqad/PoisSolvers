@@ -36,10 +36,16 @@
       </padding_y>
       <ground_depth>
         <T>float</T>
-        <val>600</val>
+        <val>1000</val>
         <label>Ground plane depth (ang)</label>
         <tip>The depth of the ground plane underneath the semiconductor.</tip>
       </ground_depth>
+      <depletion_depth>
+        <T>float</T>
+        <val>600</val>
+        <label>Depletion depth (ang)</label>
+        <tip>The depth of dopant depletion into the semiconductor bulk.</tip>
+      </depletion_depth>
       <eps_r_dielectric>
         <T>float</T>
         <val>1.0</val>
