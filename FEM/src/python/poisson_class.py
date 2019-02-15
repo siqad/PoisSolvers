@@ -202,10 +202,13 @@ class PoissonSolver():
         print("Setting charge density...")
         dp = dopant.Dopant()
         dp.setUnits("atomic")
-        dp.setParameters(resolution = 10000)
-        x_min = -1000
-        x_max = 1000
-        dp.setBoundaries(x_min, x_max)
+        dp.setParameters(sim_params=self.sim_params, resolution=10000)
+
+        # x_min = -1000
+        # x_max = 1000
+        print("zmin: ", self.bounds["zmin"])
+        print("zmax: ", self.bounds["zmax"])
+        dp.setBoundaries(self.bounds["zmin"], self.bounds["zmax"])
 
         ni_si = 1E10 # in cm^-3
         # ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
@@ -220,7 +223,7 @@ class PoissonSolver():
         # Scaling and offset for sigmoid
         x_offset = -300
         x_scaling = 200
-        x_arg = x_scaling*(dp.getXSpace()-x_offset)/x_max
+        x_arg = x_scaling*(dp.getXSpace()-x_offset)/self.bounds["zmax"]
 
         #Creating the doping profile
         profile = 1 - 1/(1+np.exp(-x_arg))

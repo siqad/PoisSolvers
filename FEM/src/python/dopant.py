@@ -30,15 +30,17 @@ class Dopant:
         plt.xlabel(x_label) #set label text
         plt.ylabel(y_label)
         plt.title(title)
-        plt.savefig("{}{}".format(file_name, ".pdf"))
+        # plt.savefig("{}{}".format(file_name, ".pdf"))
 
     # Simulation parameters
-    def setParameters(self, T=293, resolution=20, eps_r=11.9):
+    def setParameters(self, T=293, resolution=20, eps_r=11.9, sim_params=None):
+        # if sim_params == None:
+        #     sys.exit(0)
         self.T = T # Temperature - Kelvin
         self.resolution = resolution
         self.eps_r = eps_r
         self.eps = self.eps_r*self.eps_0
-
+        # self.setBoundaries()
     # Assume only in one dimension
     def setBoundaries(self, min, max):
         self.min = min
@@ -72,7 +74,7 @@ class Dopant:
         # Find the electric field that results in a drift current
         # which exactly balances diffusion current
         self.E = -self.k*self.T/self.q/self.n*self.dndx
-        print(np.trapz(self.E, x=x))
+        print("V_bi: ",-np.trapz(self.E, x=x))
 
         # Resulting spatial charge density
         # Can be obtained by taking another derivative of E, and scaling by eps.
@@ -83,7 +85,7 @@ class Dopant:
         # Possible functions that can live on this mesh
         V = df.FunctionSpace(mesh, 'CG', 1)
         #Get the parameter
-        F = df.Expression('x[3]',  degree=1)
+        F = df.Expression('x[2]',  degree=1)
         return ChargeDensity(F, data=self.rho,x=x, degree=1)
 
     def getRhoAsFunction(self, mesh):
@@ -91,7 +93,7 @@ class Dopant:
         rho_exp = self.getRhoAsExpression(mesh)
         return df.interpolate(rho_exp, V)
 
-    def plot(self):
+    def plotFigures(self):
         # Plot what we have so far
         fig, ax = plt.subplots()
         x = self.getXSpace()
@@ -103,6 +105,9 @@ class Dopant:
             plot(x, n, "Electron Density", "X (angstrom)", "Electron density (angstrom^-3)", "n")
             plot(x, E, "Electric Field", "X (angstrom)", "Electric field (V angstrom^-1)", "E")
             plot(x, rho, "Charge Density", "X (angstrom)", "Charge density (angstrom^-3)", "rho")
+        plt.ion()
+        plt.show()
+
 
 if __name__ == "__main__":
 
@@ -138,7 +143,8 @@ if __name__ == "__main__":
     n_ext = profile*dopant
     dp.setDopantProfile(n_ext)
     dp.calculateRho()
-    mesh = df.RectangleMesh(df.Point(x_min, x_min), df.Point(x_max, x_max), 64, 64)
+    # mesh = df.RectangleMesh(df.Point(x_min, x_min), df.Point(x_max, x_max), 64, 64)
+    mesh = df.BoxMesh(df.Point(x_min, x_min, x_min), df.Point(x_max, x_max, x_max), 3, 3, 3)
     rho_exp = dp.getRhoAsExpression(mesh)
     rho_func = dp.getRhoAsFunction(mesh)
     df.plot(rho_func)
