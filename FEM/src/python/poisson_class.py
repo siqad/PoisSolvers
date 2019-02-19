@@ -14,7 +14,6 @@ import time
 import mesher
 import plotter
 import res_cap
-import dopant
 from dolfin_utils.meshconvert import meshconvert
 
 class PoissonSolver():
@@ -71,7 +70,6 @@ class PoissonSolver():
         # Initialize mesh function for boundary domains
         self.markBoundaries(self.mesh)
         self.setConstants()
-        self.setDoping(self.mesh)
         self.createNetlist()
         self.steps = self.getSteps()
 
@@ -197,45 +195,9 @@ class PoissonSolver():
         EPS_R = float(self.sim_params["eps_r_dielectric"])
         # mode = str(self.sim_params["mode"]))
         self.EPS_DIELECTRIC = dolfin.Constant(EPS_R*self.EPS_0)
-
-    def setDoping(self, mesh):
         print("Setting charge density...")
-        dp = dopant.Dopant()
-        dp.setUnits("atomic")
-        dp.setParameters(sim_params=self.sim_params, resolution=10000)
+        self.f = dolfin.Constant("0.0")
 
-        # x_min = -1000
-        # x_max = 1000
-        print("zmin: ", self.bounds["zmin"])
-        print("zmax: ", self.bounds["zmax"])
-        dp.setBoundaries(self.bounds["zmin"], self.bounds["zmax"])
-
-        ni_si = 1E10 # in cm^-3
-        # ni_si = ni_si*1E2*1E2*1E2 # conversion to metre^-3
-        ni_si = ni_si*1E-8*1E-8*1E-8 # conversion to metre^-3
-        dp.setIntrinsicDensity(ni_si)
-
-        # Dopant desity and profile
-        dopant_dens = 1E19 # in cm^-3
-        # dopant = dopant*1E2*1E2*1E2
-        dopant_dens = dopant_dens*1E-8*1E-8*1E-8
-
-        # Scaling and offset for sigmoid
-        # x_offset = -600
-        x_offset = -float(self.sim_params["depletion_depth"])
-        print("@@@ DEPTH : ", x_offset)
-        x_scaling = 200
-        x_arg = x_scaling*(dp.getXSpace()-x_offset)/self.bounds["zmax"]
-
-        #Creating the doping profile
-        profile = 1 - 1/(1+np.exp(-x_arg))
-        n_ext = profile*dopant_dens
-        dp.setDopantProfile(n_ext)
-        dp.calculateRho()
-        # mesh = df.RectangleMesh(df.Point(x_min, x_min), df.Point(x_max, x_max), 64, 64)
-        rho_exp = dp.getRhoAsExpression(mesh)
-        # self.f = dolfin.Constant("0.0")
-        self.f = rho_exp
 
     def createBoundaries(self):
         xs, ys = helpers.getBB(self.sqconn)
@@ -345,6 +307,7 @@ class PoissonSolver():
         else:
             return dolfin.FunctionSpace(mesh, "CG", 3)
 
+
     def getSteps(self):
         mode = str(self.sim_params["mode"])
         if mode == "standard":
@@ -412,6 +375,7 @@ class PoissonSolver():
         depth = float(self.sim_params['slice_depth']) #in angstroms
         res = int(self.sim_params['image_resolution'])
         X, Y, Z, nx, ny = self.plotter.create2DSlice(self.u, depth, res, self.bounds)
+        print("MAX: ", np.max(np.max(Z)))
         self.u_old = self.u #Set the potential to use as initial guess
 
         print("Saving 2D potential data to XML...")

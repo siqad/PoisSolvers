@@ -1,5 +1,24 @@
 import numpy as np
 import dolfin
+import itertools
+
+
+class ElectrodeDict:
+    def __init__(self):
+        self.dict = {} #start with empty dictionary
+
+    def __getitem__(self, key):
+        if key in self.dict:
+            return self.dict[key]
+        else:
+            raise KeyError(key)
+
+    def addKeyValue(self, key, value):
+        if key in self.dict:
+            self.dict[key].append(value)
+        else:
+            self.dict[key] = [value]
+
 class ResCap():
     def __init__(self, t = None, r = None):
         self.createData(t, r)
@@ -73,10 +92,40 @@ class ResCap():
         rho *= 1E-6 #now in ohm cm
         rho *= 1E10/1E2 # now in ohm angstroms
         print("rho", rho)
+
         R = rho*char_len/mmw/mmw
         print("R", R)
         tau = R*max(max(self.cap_matrix))
         print("{:.2e}".format(1/tau/2/np.pi))
+        # self.buildIntersections()
+
+    def checkOverlap(self, pair):
+        a = pair[0]
+        b = pair[1]
+        print(a.x1, b.x1)
+
+    def buildIntersections(self):
+        # Empty dictionary for electrodes
+        self.elec_dict = ElectrodeDict()
+
+        # Add all the electrodes into the dictionary, binned by net ID.
+        for elec in self.elec_list:
+            self.elec_dict.addKeyValue(elec.net, elec)
+
+
+        # Create all possible pair combinations of electrodes within a net
+        # pairs = []
+        for key in self.elec_dict.dict:
+            pairs = itertools.combinations(self.elec_dict[key], 2)
+
+            # Check for overlap
+            for pair in pairs:
+                self.checkOverlap(pair)
+
+
+
+
+
 
 # print(res)
 def test():
