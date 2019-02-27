@@ -123,6 +123,7 @@ class PoissonSolver():
         self.rc.elec_list = self.elec_list
         self.rc.boundaries = self.boundaries
         self.rc.u = self.u
+        self.rc.dir = self.abs_in_dir
 
     def exportDBs(self):
         if self.db_list:
