@@ -23,7 +23,7 @@ class ResGraph():
     def setZMaxes(self):
         self.z_bounds.append(min(elec.z1 for elec in self.elec_list))
         self.z_bounds.append(max(elec.z2 for elec in self.elec_list))
-        print(self.z_bounds)
+        # print(self.z_bounds)
 
     def addFromOverlap(self, pair):
         a, b = pair
@@ -141,40 +141,56 @@ class ResGraph():
 
     # Connect each node to its two nearest neighbours. End nodes are connected only to a single nearest neighbour.
     def connectSubgraph(self, sg, dist_dict):
+        #once for each node
         for node, attributes in sg.nodes(data=True):
+            #sort the pairs based on their distances
+            sorted_pairs = sorted(dist_dict, key=lambda x: (dist_dict[x]))
+            #get the pairs relevant to this node
+            sorted_filtered_pairs = list(filter(lambda x: node in x, sorted_pairs))
+
+            for pair in sorted_filtered_pairs:
+                #if a path exists between these two nodes, try next pair
+                if nx.has_path(sg, pair[0],pair[1]):
+                    continue
+                #no path exists between this pair of closest nodes. Connect them!
+                a, b = pair
+                self.addEdge(a,b)
+                print("Connecting ", a, b)
+                #this node is now connected in the graph. head to the next node.
+                break
+
+            # print(sorted_filtered_pairs)
+
             #for each entry in the dist
-            for pair in dist_dict:
-                #Only about the pair if it includes the current node of interest
-                if node in pair:
-                    # print(pair, node)
-                    #get the relevant pair keys in ascending order.
-                    sorted_pairs = sorted(dist_dict, key=lambda x: (dist_dict[x]))
-                    sorted_filtered_pairs = list(filter(lambda x: node in x, sorted_pairs))
-                    if attributes["end"] == True:
-                        #End item, connect only the closest one.
-                        a, b = sorted_filtered_pairs[0]
-                        self.addEdge(a, b)
-                        print("Connecting: ", a, b)
-                    else:
-                        #Connect the two closest
-                        for i in range(2):
-                            a, b = sorted_filtered_pairs[i]
-                            self.addEdge(a, b)
-                            print("Connecting: ", a, b)
+            # for pair in dist_dict:
+            #     #Only about the pair if it includes the current node of interest
+            #     if node in pair:
+            #         print(pair, node)
+            #         #get the relevant pair keys in ascending order.
+            #         sorted_pairs = sorted(dist_dict, key=lambda x: (dist_dict[x]))
+            #         print(sorted_pairs)
+            #         sorted_filtered_pairs = list(filter(lambda x: node in x, sorted_pairs))
+            #         if attributes["end"] == True:
+            #             #End item, connect only the closest one.
+            #             a, b = sorted_filtered_pairs[0]
+            #             self.addEdge(a, b)
+            #             print("Connecting: ", a, b)
+            #         else:
+            #             #Connect the two closest
+            #             for i in range(2):
+            #                 a, b = sorted_filtered_pairs[i]
+            #                 self.addEdge(a, b)
+            #                 print("Connecting: ", a, b)
 
     #mark the two nodes farthest from each other as being the ends
     def markMaxDist(self, dist_dict, sg):
         max_key = max(dist_dict, key=lambda x: dist_dict[x])
         # max_key should be a list with two node keys
         for node in sg.nodes():
-            print("Node: ", node, "max_key: ", max_key)
+            # print("Node: ", node, "max_key: ", max_key)
             if node in max_key:
                 self.addNode(node, end=True)
-                print("Setting node ", node, " as end node.")
-            # else:
-                # self.addNode(node, end=False)
-        # for key in max_key:
-        #     self.addNode(key, end=True)
+                # print("Setting node ", node, " as end node.")
 
     #edges are defined by the electrode geometries
     def buildEdges(self):
