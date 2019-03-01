@@ -94,10 +94,10 @@ class ResCap():
     def createResGraph(self):
         self.res_graph = res_graph.ResGraph(self.elec_dict, self.elec_list, self.dir)
 
-    #get a delay estimate based on the simulation size and the capacitance
-    def getDelays(self, bounds, temp):
-        self.buildElecDict()
-        self.createResGraph()
+    # #get a delay estimate based on the simulation size and the capacitance
+    # def getDelays(self, bounds, temp):
+    #     self.buildElecDict()
+    #     self.createResGraph()
 
 
         #have capacitance, resistivities, now need cross sectional area and length.

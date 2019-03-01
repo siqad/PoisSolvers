@@ -13,7 +13,8 @@ import helpers
 import time
 import mesher
 import plotter
-import res_cap
+import capacitance
+import resistance
 from dolfin_utils.meshconvert import meshconvert
 
 class PoissonSolver():
@@ -37,7 +38,7 @@ class PoissonSolver():
         self.net_list = []
 
         #Resistance and capacitance tools
-        self.rc = res_cap.ResCap()
+        self.cap = capacitance.CapacitanceEstimator()
 
         #calculated values and ones used during simulation
         self.cap_matrix = []
@@ -109,21 +110,21 @@ class PoissonSolver():
     def getCaps(self, step):
         mode = str(self.sim_params["mode"])
         if mode == "cap":
-            self.rc.calcCaps()
+            self.cap.calcCaps()
             if step == self.steps-1:
-                self.rc.formCapMatrix()
-                self.rc.getDelays(self.bounds, float(self.sim_params["temp"]))
+                self.cap.formCapMatrix()
+                # self.rc.getDelays(self.bounds, float(self.sim_params["temp"]))
 
     def initRC(self):
         print("Setting RC params..")
-        self.rc.mesh = self.mesh
-        self.rc.EPS_SI = self.EPS_SI
-        self.rc.EPS_DIELECTRIC = self.EPS_DIELECTRIC
-        self.rc.net_list = self.net_list
-        self.rc.elec_list = self.elec_list
-        self.rc.boundaries = self.boundaries
-        self.rc.u = self.u
-        self.rc.dir = self.abs_in_dir
+        self.cap.mesh = self.mesh
+        self.cap.EPS_SI = self.EPS_SI
+        self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
+        self.cap.net_list = self.net_list
+        self.cap.elec_list = self.elec_list
+        self.cap.boundaries = self.boundaries
+        self.cap.u = self.u
+        self.cap.dir = self.abs_in_dir
 
     def exportDBs(self):
         if self.db_list:

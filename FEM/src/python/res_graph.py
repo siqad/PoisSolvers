@@ -35,7 +35,7 @@ class ResGraph():
         box_a = spgeom.box(a.x1, a.y1, a.x2, a.y2)
         box_b = spgeom.box(b.x1, b.y1, b.x2, b.y2)
         # clockwise is - and counterclockwise is + in shapely, but the vertical axis in SiQAD is flipped.
-        # Therefore, clockwise rotation on SiQAD GUI is +.
+        # Therefore, a clockwise rotation on SiQAD GUI is represented in shapely as +.
         box_a = spaffn.rotate(box_a, a.angle)
         box_b = spaffn.rotate(box_b, b.angle)
         line_a_z = spgeom.LineString([(a.z1,0),(a.z2,0)])
