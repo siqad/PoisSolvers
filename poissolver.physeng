@@ -97,6 +97,7 @@
           <standard>Standard</standard>
           <clock>Clock</clock>
           <cap>Capacitance</cap>
+          <res>Resistance</res>
         </value_selection>
       </mode>
       <init_guess>

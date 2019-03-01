@@ -2,22 +2,6 @@ import numpy as np
 import dolfin
 import itertools
 
-class ElectrodeDict:
-    def __init__(self):
-        self.dict = {} #start with empty dictionary
-
-    def __getitem__(self, key):
-        if key in self.dict:
-            return self.dict[key]
-        else:
-            raise KeyError(key)
-
-    def addKeyValue(self, key, value):
-        if key in self.dict:
-            self.dict[key].append(value)
-        else:
-            self.dict[key] = [value]
-
 class CapacitanceEstimator():
     def __init__(self, t = None, r = None):
         self.cap_matrix = []
@@ -49,10 +33,3 @@ class CapacitanceEstimator():
             v = dolfin.assemble(m)
             cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
         self.cap_matrix.append(cap_list)
-
-def test():
-    rc = ResCap()
-    print(rc.approxRes(77)) #Should be between 0.469 and 0.629
-
-if __name__ == "__main__":
-    test()

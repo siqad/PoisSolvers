@@ -39,6 +39,7 @@ class PoissonSolver():
 
         #Resistance and capacitance tools
         self.cap = capacitance.CapacitanceEstimator()
+        self.res = resistance.ResistanceEstimator()
 
         #calculated values and ones used during simulation
         self.cap_matrix = []
@@ -96,35 +97,54 @@ class PoissonSolver():
         self.exportDBs()
         self.exportPotential(step)
         #last step, finish off by creating gif and getting capacitances if applicable
-        self.getCaps(step)
-        if step == self.steps-1:
-            self.createGif()
+        mode = str(self.sim_params["mode"])
+        if mode == "cap":
+            self.getCaps(step)
+            if step == self.steps-1:
+                self.createGif()
+        # elif mode == "res":
+        #     self.getRes()
+
 
     def loopSolve(self):
         for step in range(self.steps):
             self.setupDolfinSolver(step)
             self.solve()
             self.export(step)
+        mode = str(self.sim_params["mode"])
+        if mode == "res":
+            self.initRC()
+            self.getRes()
+
 
 #Functions that the user shouldn't have to call.
+    def getRes(self):
+        print("@@ GET RES @@")
+        self.res.createResGraph()
+
     def getCaps(self, step):
-        mode = str(self.sim_params["mode"])
-        if mode == "cap":
-            self.cap.calcCaps()
-            if step == self.steps-1:
-                self.cap.formCapMatrix()
-                # self.rc.getDelays(self.bounds, float(self.sim_params["temp"]))
+        # mode = str(self.sim_params["mode"])
+        # if mode == "cap":
+        self.cap.calcCaps()
+        if step == self.steps-1:
+            self.cap.formCapMatrix()
+            # self.rc.getDelays(self.bounds, float(self.sim_params["temp"]))
 
     def initRC(self):
         print("Setting RC params..")
-        self.cap.mesh = self.mesh
-        self.cap.EPS_SI = self.EPS_SI
-        self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
-        self.cap.net_list = self.net_list
-        self.cap.elec_list = self.elec_list
-        self.cap.boundaries = self.boundaries
-        self.cap.u = self.u
-        self.cap.dir = self.abs_in_dir
+        mode = str(self.sim_params["mode"])
+        if mode == "cap":
+            self.cap.mesh = self.mesh
+            self.cap.EPS_SI = self.EPS_SI
+            self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
+            self.cap.net_list = self.net_list
+            self.cap.elec_list = self.elec_list
+            self.cap.boundaries = self.boundaries
+            self.cap.u = self.u
+            self.cap.dir = self.abs_in_dir
+        elif mode == "res":
+            self.res.elec_list = self.elec_list
+            self.res.dir = self.abs_in_dir
 
     def exportDBs(self):
         if self.db_list:
@@ -318,6 +338,8 @@ class PoissonSolver():
             steps = int(self.sim_params["steps"])
         elif mode == "cap":
             steps = len(self.net_list)
+        elif mode == "res":
+            steps = 0
         return steps
 
     def createNetlist(self):
@@ -339,6 +361,8 @@ class PoissonSolver():
                     self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+self.elec_list.index(electrode)))
                 else:
                     self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+self.elec_list.index(electrode)))
+        else:
+            return
 
 # MESHING
 
