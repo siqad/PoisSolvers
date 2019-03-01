@@ -13,7 +13,6 @@ class ResGraph():
         self.elec_list = elec_list
         self.dir = dir
         self.z_bounds = []
-        self.edge_ind = 0
         self.node_ind = 0
         self.setZMaxes()
 
@@ -35,23 +34,12 @@ class ResGraph():
 
         box_a = spgeom.box(a.x1, a.y1, a.x2, a.y2)
         box_b = spgeom.box(b.x1, b.y1, b.x2, b.y2)
-        # clockwise is -, counterclockwise is +, but the vertical axis in SiQAD is flipped.
+        # clockwise is - and counterclockwise is + in shapely, but the vertical axis in SiQAD is flipped.
         # Therefore, clockwise rotation on SiQAD GUI is +.
         box_a = spaffn.rotate(box_a, a.angle)
         box_b = spaffn.rotate(box_b, b.angle)
         line_a_z = spgeom.LineString([(a.z1,0),(a.z2,0)])
         line_b_z = spgeom.LineString([(b.z1,0),(b.z2,0)])
-
-        # print("pair: ", a.id, b.id)
-        # print("Box intersect: ",box_a.intersects(box_b))
-        # print("Z touch", line_a_z.touches(line_b_z))
-        #
-        # print("Box touch",box_a.touches(box_b))
-        # print("Z intersect",line_a_z.intersects(line_b_z))
-        #
-        #
-        # print(box_a)
-        # print(box_b)
 
         #Overlap exists between electrodes, this pair is connected.
         #Find which coordinate overlaps, ignore rotated ones for now.
@@ -214,14 +202,16 @@ class ResGraph():
             print("Working on electrode", item.id)
             self.connectSubgraph(sg, dist_dict)
 
-    def buildGraph(self):
+    def refreshGraph(self):
         self.g = nx.Graph()
-
         self.addNode("ceiling")
         self.addNode("floor")
+        self.node_ind = 0
 
+    def buildGraph(self):
         #Once per net, build from top down.
         for key in self.elec_dict.dict:
+            self.refreshGraph()
             #identify the electrodes that have the highest height.
             ceil_nodes = self.addCeilingNodes(self.elec_dict[key])
             #identify the electrodes that have the lowest height.
@@ -236,13 +226,12 @@ class ResGraph():
             #Connect the floor nodes to floor
             for node in floor_nodes:
                 self.addEdge(node,"floor")
+            self.exportGraph(key)
 
-        self.exportGraph()
-
-    def exportGraph(self):
+    def exportGraph(self, net_id):
         plt.figure()
         nx.draw(self.g, with_labels=True)
-        plt.savefig(self.dir+"/graph.pdf", bbox_inches='tight')
+        plt.savefig(self.dir+"/graph"+str(net_id)+".pdf", bbox_inches='tight')
 
     def debugPrint(self):
         print(list(self.g.nodes(data=True)))
