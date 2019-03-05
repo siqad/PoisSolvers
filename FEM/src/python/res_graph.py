@@ -8,8 +8,6 @@ import numpy as np
 class ResGraph():
 
     def __init__(self, elec_dict, elec_list, dir, rho):
-        # self.g = nx.DiGraph()
-        # self.g = nx.Graph()
         self.elec_dict = elec_dict
         self.elec_list = elec_list
         self.dir = dir
@@ -53,7 +51,6 @@ class ResGraph():
 
             # no rotation allowed for anything except vertical junctions
             #y and z coordinates form the intersection
-            # print("overlap!")
             if a.x1 == b.x2:
                 box_a = spgeom.box(a.y1, a.z1, a.y2, a.z2)
                 box_b = spgeom.box(b.y1, b.z1, b.y2, b.z2)
@@ -211,11 +208,6 @@ class ResGraph():
     def refreshGraph(self):
         self.g = nx.Graph()
         self.node_ind = 0
-        # self.addNode("ceiling")
-        # self.ceiling_ind = self.node_ind
-        # self.addNode(self.ceiling_ind)
-        # self.addNode("floor")
-        # self.node_ind = 0
 
     def setEdgeWeights(self):
         # get the edges and the nodes they are associated with.
@@ -260,19 +252,15 @@ class ResGraph():
             floor_nodes = self.addFloorNodes(self.elec_dict[key])
             #Connect the ceiling nodes to ceiling
             for node in ceil_nodes:
-                # self.addEdge(self.g, node,"ceiling", elec_id=None, weight=0)
-                # self.addEdge(self.g, self.ceiling_ind, node, elec_id=None, weight=0.00)
+                # give them a high weight so that they do not affect the path resistance (high conductance, low resistance)
                 self.addEdge(self.g, self.ceiling_ind, node, elec_id=None, weight=1E10)
             #build intermediate nodes
             self.buildNodes(key)
-            # print(self.g.nodes())
             self.buildEdges()
             #Connect the floor nodes to floor
             self.floor_ind = self.node_ind
             self.addNode(self.floor_ind)
             for node in floor_nodes:
-                # self.addEdge(self.g, node,"floor", elec_id=None, weight=0)
-                # self.addEdge(self.g, node, self.floor_ind, elec_id=None, weight=0.00)
                 self.addEdge(self.g, node, self.floor_ind, elec_id=None, weight=1E10)
             self.setEdgeWeights()
             self.exportGraph(key)
@@ -288,14 +276,8 @@ class ResGraph():
         L = np.matrix(nx.linalg.laplacianmatrix.laplacian_matrix(self.g).toarray(), dtype="float")
         # get Moore-Penrose pseudoinverse
         L_pinv = np.linalg.pinv(L)
-        # print("L_pinv: ", L_pinv)
-        # print(L_pinv.shape)
-        # print("i: ", i)
         v = np.dot(i, L_pinv)
-        # print(v.shape)
-        # print(v)
         v = np.dot(v, i)
-        # print("v: ", v)
 
     def cleanLabels(self):
         #get an iterator over the edges
@@ -303,8 +285,6 @@ class ResGraph():
         weights = nx.get_edge_attributes(self.g,'weight')
         for pair in edge_iter:
             self.addEdge(self.g, pair[0], pair[1], label="{0:.2f}".format(weights[pair]))
-            # print(pair, weights[pair])
-
 
     def exportGraph(self, net_id):
         plt.figure()
