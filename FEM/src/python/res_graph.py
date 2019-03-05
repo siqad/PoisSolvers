@@ -8,7 +8,8 @@ import numpy as np
 class ResGraph():
 
     def __init__(self, elec_dict, elec_list, dir, rho):
-        self.g = nx.Graph()
+        # self.g = nx.DiGraph()
+        # self.g = nx.Graph()
         self.elec_dict = elec_dict
         self.elec_list = elec_list
         self.dir = dir
@@ -132,7 +133,7 @@ class ResGraph():
     def addNode(self, key=None, **kwargs):
         if key == None:
             key = self.node_ind
-            self.node_ind += 1
+        self.node_ind += 1
         self.g.add_node(key, **kwargs)
         return key
 
@@ -209,9 +210,12 @@ class ResGraph():
 
     def refreshGraph(self):
         self.g = nx.Graph()
-        self.addNode("ceiling")
-        self.addNode("floor")
         self.node_ind = 0
+        # self.addNode("ceiling")
+        # self.ceiling_ind = self.node_ind
+        # self.addNode(self.ceiling_ind)
+        # self.addNode("floor")
+        # self.node_ind = 0
 
     def setEdgeWeights(self):
         # get the edges and the nodes they are associated with.
@@ -241,28 +245,57 @@ class ResGraph():
                 # path now has the xyz decomposed length of the electrode.
                 # Obtain the resistances by R = rho*l/A
                 res_sum = np.sum(res) * self.rho
-                self.addEdge(self.g, nodes[0], nodes[1], weight=res_sum)
+                print(res_sum, 1/res_sum)
+                self.addEdge(self.g, nodes[0], nodes[1], weight=1/res_sum)
 
     def buildGraph(self):
         #Once per net, build from top down.
         for key in self.elec_dict.dict:
             self.refreshGraph()
+            self.ceiling_ind = self.node_ind
+            self.addNode(self.ceiling_ind)
             #identify the electrodes that have the highest height.
             ceil_nodes = self.addCeilingNodes(self.elec_dict[key])
             #identify the electrodes that have the lowest height.
             floor_nodes = self.addFloorNodes(self.elec_dict[key])
             #Connect the ceiling nodes to ceiling
             for node in ceil_nodes:
-                self.addEdge(self.g, node,"ceiling", elec_id=None, weight=0)
+                # self.addEdge(self.g, node,"ceiling", elec_id=None, weight=0)
+                # self.addEdge(self.g, self.ceiling_ind, node, elec_id=None, weight=0.00)
+                self.addEdge(self.g, self.ceiling_ind, node, elec_id=None, weight=1E10)
             #build intermediate nodes
             self.buildNodes(key)
             # print(self.g.nodes())
             self.buildEdges()
             #Connect the floor nodes to floor
+            self.floor_ind = self.node_ind
+            self.addNode(self.floor_ind)
             for node in floor_nodes:
-                self.addEdge(self.g, node,"floor", elec_id=None, weight=0)
+                # self.addEdge(self.g, node,"floor", elec_id=None, weight=0)
+                # self.addEdge(self.g, node, self.floor_ind, elec_id=None, weight=0.00)
+                self.addEdge(self.g, node, self.floor_ind, elec_id=None, weight=1E10)
             self.setEdgeWeights()
             self.exportGraph(key)
+            self.calculateEffectiveResistance()
+
+    def calculateEffectiveResistance(self):
+        # create the current vector
+        i = np.zeros(self.floor_ind + 1)
+        i[self.ceiling_ind] = 1
+        i[self.floor_ind] = -1
+        # get the laplacian matrix of the graph, uses "weight" as edge key.
+        # laplacian_matrix returns a scipy sparse matrix, change to numpy
+        L = np.matrix(nx.linalg.laplacianmatrix.laplacian_matrix(self.g).toarray(), dtype="float")
+        # get Moore-Penrose pseudoinverse
+        L_pinv = np.linalg.pinv(L)
+        # print("L_pinv: ", L_pinv)
+        # print(L_pinv.shape)
+        # print("i: ", i)
+        v = np.dot(i, L_pinv)
+        # print(v.shape)
+        # print(v)
+        v = np.dot(v, i)
+        # print("v: ", v)
 
     def cleanLabels(self):
         #get an iterator over the edges
@@ -279,7 +312,8 @@ class ResGraph():
         nx.draw(self.g, pos, with_labels=True)
         self.cleanLabels()
         labels = nx.get_edge_attributes(self.g,'label')
-        nx.draw_networkx_edge_labels(self.g, pos, edge_labels=labels)
+        nx.draw_networkx_edge_labels(self.g, pos, edge_labels=labels, font_size=8)
+        nx.draw_networkx_edges(self.g, pos)
         plt.savefig(self.dir+"/graph"+str(net_id)+".pdf", bbox_inches='tight')
 
     def debugPrint(self):
