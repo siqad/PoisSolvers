@@ -7,11 +7,15 @@ import numpy as np
 
 class ResGraph():
 
-    def __init__(self, elec_dict, elec_list, dir):
+    def __init__(self, elec_dict, elec_list, dir, rho):
         self.g = nx.Graph()
         self.elec_dict = elec_dict
         self.elec_list = elec_list
         self.dir = dir
+        self.rho = rho #resistivity is in E6 ohm cm
+        self.rho *= 1E-6 #now in ohm cm
+        self.rho *= 1E8 #now in ohm angstrom
+
         self.z_bounds = []
         self.node_ind = 0
         self.setZMaxes()
@@ -48,7 +52,7 @@ class ResGraph():
 
             # no rotation allowed for anything except vertical junctions
             #y and z coordinates form the intersection
-            print("overlap!")
+            # print("overlap!")
             if a.x1 == b.x2:
                 box_a = spgeom.box(a.y1, a.z1, a.y2, a.z2)
                 box_b = spgeom.box(b.y1, b.z1, b.y2, b.z2)
@@ -80,14 +84,14 @@ class ResGraph():
                 box_a = spaffn.rotate(box_a, a.angle, origin='centroid')
                 box_b = spaffn.rotate(box_b, b.angle, origin='centroid')
                 inter = box_a.intersection(box_b)
-                pos = [inter.centroid.x, inter.centroid.x, a.z1]
+                pos = [inter.centroid.x, inter.centroid.y, a.z1]
             if a.z2 == b.z1:
                 box_a = spgeom.box(a.x1, a.y1, a.x2, a.y2)
                 box_b = spgeom.box(b.x1, b.y1, b.x2, b.y2)
                 box_a = spaffn.rotate(box_a, a.angle, origin='centroid')
                 box_b = spaffn.rotate(box_b, b.angle, origin='centroid')
                 inter = box_a.intersection(box_b)
-                pos = [inter.centroid.x, inter.centroid.x, a.z2]
+                pos = [inter.centroid.x, inter.centroid.y, a.z2]
             includes = [a.id, b.id]
             curr_node = self.addNode(pos=pos, includes=includes)
 
@@ -119,9 +123,10 @@ class ResGraph():
         return floor_nodes
 
     # Adds an edge to the graph between two nodes a and b, where a and b are node keys.
-    def addEdge(self, a, b, **kwargs):
+    # Basically for conveniencec, to add in a print before each connection takes place.
+    def addEdge(self, graph, a, b, **kwargs):
         print("Connecting ", a, b)
-        self.g.add_edge(a, b, **kwargs)
+        graph.add_edge(a, b, **kwargs)
 
     # Adds a node to the graph at with a specified key. If no key is specified, the internal node index is used and incremented.
     def addNode(self, key=None, **kwargs):
@@ -161,7 +166,7 @@ class ResGraph():
         return dict(zip(pairs, distances))
 
     # Connect nodes based on distance.
-    def connectSubgraph(self, sg, dist_dict):
+    def connectSubgraph(self, sg, dist_dict, elec_id):
         #sort the pairs based on their distances
         sorted_pairs = sorted(dist_dict, key=lambda x: (dist_dict[x]))
         #Number of connections that need to be made
@@ -178,8 +183,8 @@ class ResGraph():
             #no path exists between this pair of closest nodes.
             #create the connection in the subgraph
             a, b = pair
-            sg.add_edge(a, b)
-            print("Connecting ", a, b)
+            #mark the edge with the electrode id to pull geometry info.
+            self.addEdge(sg, a, b, elec_id=elec_id)
 
             #take note of how many connections we've made
             curr_conn += 1
@@ -200,13 +205,43 @@ class ResGraph():
             sg = self.g.subgraph(rel_nodes).copy()
             dist_dict = self.getDistanceDict(sg, rel_nodes)
             print("Working on electrode", item.id)
-            self.connectSubgraph(sg, dist_dict)
+            self.connectSubgraph(sg, dist_dict, item.id)
 
     def refreshGraph(self):
         self.g = nx.Graph()
         self.addNode("ceiling")
         self.addNode("floor")
         self.node_ind = 0
+
+    def setEdgeWeights(self):
+        # get the edges and the nodes they are associated with.
+        edge_id_dict = nx.get_edge_attributes(self.g, "elec_id")
+        # each electrode is represented by one or more edges
+        for nodes, elec_id in edge_id_dict.items():
+            if elec_id != None:
+                elec = self.elec_list[elec_id]
+                #difference in position between nodes (where different electrodes contact)
+                path = np.array(self.g.nodes[nodes[0]]["pos"]) - np.array(self.g.nodes[nodes[1]]["pos"])
+                if self.elec_list[elec_id].angle != 0:
+                    #electrode is rotated, need to find directions unrotated.
+                    path = np.transpose(path)
+                    theta = -np.deg2rad(self.elec_list[elec_id].angle)
+                    rot_matrix = np.matrix([[np.cos(theta), -np.sin(theta), 0], \
+                                            [np.sin(theta), np.cos(theta), 0], \
+                                            [0, 0, 1]])
+                    path = np.dot(rot_matrix, path)
+                path = np.abs(path)
+                min = np.array([elec.x1, elec.y1, elec.z1])
+                max = np.array([elec.x2, elec.y2, elec.z2])
+                dims = max - min
+                area = np.array([dims[1]*dims[2], dims[0]*dims[2], dims[0]*dims[1]])
+                # remember that res is now in units of angstrom^-1
+                res = path/area
+                print("res: ", res)
+                # path now has the xyz decomposed length of the electrode.
+                # Obtain the resistances by R = rho*l/A
+                res_sum = np.sum(res) * self.rho
+                self.addEdge(self.g, nodes[0], nodes[1], weight=res_sum)
 
     def buildGraph(self):
         #Once per net, build from top down.
@@ -218,19 +253,33 @@ class ResGraph():
             floor_nodes = self.addFloorNodes(self.elec_dict[key])
             #Connect the ceiling nodes to ceiling
             for node in ceil_nodes:
-                self.addEdge(node,"ceiling")
+                self.addEdge(self.g, node,"ceiling", elec_id=None, weight=0)
             #build intermediate nodes
             self.buildNodes(key)
-            print(self.g.nodes())
+            # print(self.g.nodes())
             self.buildEdges()
             #Connect the floor nodes to floor
             for node in floor_nodes:
-                self.addEdge(node,"floor")
+                self.addEdge(self.g, node,"floor", elec_id=None, weight=0)
+            self.setEdgeWeights()
             self.exportGraph(key)
+
+    def cleanLabels(self):
+        #get an iterator over the edges
+        edge_iter = self.g.edges()
+        weights = nx.get_edge_attributes(self.g,'weight')
+        for pair in edge_iter:
+            self.addEdge(self.g, pair[0], pair[1], label="{0:.2f}".format(weights[pair]))
+            # print(pair, weights[pair])
+
 
     def exportGraph(self, net_id):
         plt.figure()
-        nx.draw(self.g, with_labels=True)
+        pos=nx.spring_layout(self.g)
+        nx.draw(self.g, pos, with_labels=True)
+        self.cleanLabels()
+        labels = nx.get_edge_attributes(self.g,'label')
+        nx.draw_networkx_edge_labels(self.g, pos, edge_labels=labels)
         plt.savefig(self.dir+"/graph"+str(net_id)+".pdf", bbox_inches='tight')
 
     def debugPrint(self):

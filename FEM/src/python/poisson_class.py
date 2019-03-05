@@ -119,8 +119,8 @@ class PoissonSolver():
 
 #Functions that the user shouldn't have to call.
     def getRes(self):
-        print("@@ GET RES @@")
-        self.res.createResGraph()
+        # print("@@ GET RES @@")
+        self.res.createResGraph(float(self.sim_params["temp"]))
 
     def getCaps(self, step):
         # mode = str(self.sim_params["mode"])

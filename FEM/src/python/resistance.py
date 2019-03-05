@@ -41,7 +41,7 @@ class ResistanceEstimator():
             self.resistivities = [0.0901,0.0917,0.0956,0.103,0.116, \
                              0.161,0.234,0.339,0.469,0.629, \
                              0.809,0.999,1.409,1.869,2.349, \
-                             2.839,3.319,3.809,4.589,5.239,5.889] #E-6 ohm cm
+                             2.839,3.319,3.809,4.589,5.239,5.889] #E6 ohm cm
     #Get the polynomial coefficients of the interpolant.
     def getInterpolant(self, deg = None):
         if deg == None:
@@ -61,6 +61,6 @@ class ResistanceEstimator():
             elec.id = self.elec_list.index(elec)
             self.elec_dict.addKeyValue(elec.net, elec)
 
-    def createResGraph(self):
+    def createResGraph(self, temp):
         self.buildElecDict()
-        self.res_graph = res_graph.ResGraph(self.elec_dict, self.elec_list, self.dir)
+        self.res_graph = res_graph.ResGraph(self.elec_dict, self.elec_list, self.dir, self.approxRes(temp))
