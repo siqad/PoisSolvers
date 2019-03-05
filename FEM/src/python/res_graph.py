@@ -249,35 +249,38 @@ class ResGraph():
             #identify the electrodes that have the highest height.
             ceil_nodes = self.addCeilingNodes(self.elec_dict[key])
             #identify the electrodes that have the lowest height.
-            floor_nodes = self.addFloorNodes(self.elec_dict[key])
+            self.floor_nodes = self.addFloorNodes(self.elec_dict[key])
             #Connect the ceiling nodes to ceiling
             for node in ceil_nodes:
                 # give them a high weight so that they do not affect the path resistance (high conductance, low resistance)
-                self.addEdge(self.g, self.ceiling_ind, node, elec_id=None, weight=1E10)
+                self.addEdge(self.g, self.ceiling_ind, node, elec_id=None, weight=1E12)
             #build intermediate nodes
             self.buildNodes(key)
             self.buildEdges()
             #Connect the floor nodes to floor
-            self.floor_ind = self.node_ind
-            self.addNode(self.floor_ind)
-            for node in floor_nodes:
-                self.addEdge(self.g, node, self.floor_ind, elec_id=None, weight=1E10)
+            # self.floor_ind = self.node_ind
+            # self.addNode(self.floor_ind)
+            # mark the bottom ones, with an infinite resistance so the ends aren't connected together.
+            # for node in self.floor_nodes:
+            #     self.addEdge(self.g, node, self.floor_ind, elec_id=None, weight=0)
             self.setEdgeWeights()
             self.exportGraph(key)
             self.calculateEffectiveResistance()
 
     def calculateEffectiveResistance(self):
-        # create the current vector
-        i = np.zeros(self.floor_ind + 1)
-        i[self.ceiling_ind] = 1
-        i[self.floor_ind] = -1
-        # get the laplacian matrix of the graph, uses "weight" as edge key.
-        # laplacian_matrix returns a scipy sparse matrix, change to numpy
-        L = np.matrix(nx.linalg.laplacianmatrix.laplacian_matrix(self.g).toarray(), dtype="float")
-        # get Moore-Penrose pseudoinverse
-        L_pinv = np.linalg.pinv(L)
-        v = np.dot(i, L_pinv)
-        v = np.dot(v, i)
+        for node in self.floor_nodes:
+            # create the current vector
+            i = np.zeros(nx.number_of_nodes(self.g))
+            i[self.ceiling_ind] = 1
+            i[node] = -1
+            # get the laplacian matrix of the graph, uses "weight" as edge key.
+            # laplacian_matrix returns a scipy sparse matrix, change to numpy
+            L = np.matrix(nx.linalg.laplacianmatrix.laplacian_matrix(self.g).toarray(), dtype="float")
+            # get Moore-Penrose pseudoinverse
+            L_pinv = np.linalg.pinv(L)
+            v = np.dot(i, L_pinv)
+            v = np.dot(v, i)
+            print("Resistance from node {} to node {} is {}".format(self.ceiling_ind, node, v))
 
     def cleanLabels(self):
         #get an iterator over the edges
