@@ -72,27 +72,14 @@ class PeriodicBoundary(dolfin.SubDomain):
         if dolfin.near(x[0], self.x_max) and dolfin.near(x[1], self.y_max):
             y[0] = x[0] - self.x_max + self.x_min
             y[1] = x[1] - self.y_max + self.y_min
-            # y[0] = self.x_min
-            # y[1] = self.y_min
             y[2] = x[2]
-        # elif dolfin.near(x[0], self.x_max, 1E-3):
         elif dolfin.near(x[0], self.x_max):
-            # print("x: ", x[0] - (self.x_max - self.x_min), x[1], x[2])
-            # y[0] = x[0]
-            # y[0] = x[0] - (self.x_max - self.x_min)
-            # print("x: ", x[0], x[0] - self.x_max + self.x_min)
-            # print("x: ", x[0], x[0] - self.x_max + self.x_min)
             y[0] = x[0] - self.x_max + self.x_min
             y[1] = x[1]
             y[2] = x[2]
-            # print(self.x_min, y[0], x[0])
         elif dolfin.near(x[1], self.y_max):
-            # print("y: ", x[1], x[1] - self.y_max + self.y_min)
-            # print("y: ", x[1] - (self.y_max - self.y_min))
             y[0] = x[0]
-            # y[1] = x[1] - (self.y_max - self.y_min)
             y[1] = x[1] - self.y_max + self.y_min
-            # y[1] = self.y_min
             y[2] = x[2]
         else:
             y[0] = (self.x_max + self.x_min)/2
@@ -127,12 +114,10 @@ class Electrode(dolfin.SubDomain):
         centered_x = [x - origin[0] for x in self.xs]
         centered_y = [y - origin[1] for y in self.ys]
         for vertex in itertools.product(centered_x, centered_y):
-        #     #for each vertex rotate about the origin
+        #for each vertex rotate about the origin
             new_vertex = np.array([vertex[0]*np.cos(theta)-np.sin(theta)*vertex[1], \
                           vertex[0]*np.sin(theta)+vertex[1]*np.cos(theta)])
             self.vertices.append(tuple(new_vertex + origin))
-        # print(self.vertices)
-            # print(tuple(new_vertex + origin))
     def inside(self, x, on_boundary):
         if np.abs(self.electrode.angle) > 1e-16:
             if self.point_inside_polygon(x[0],x[1]):
@@ -146,10 +131,8 @@ class Electrode(dolfin.SubDomain):
                  self.point_inside_polygon(x[0]-self.tol,x[1]-self.tol) or \
                  self.point_inside_polygon(x[0],x[1]+self.tol) or \
                  self.point_inside_polygon(x[0],x[1]-self.tol):
-                # print(x, "True after modification.")
                 return True
             else:
-                # print(x, "Outside")
                 return False
         else:
             return ( self.point_inside_polygon(x[0], x[1]) \

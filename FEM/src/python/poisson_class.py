@@ -102,9 +102,6 @@ class PoissonSolver():
             self.getCaps(step)
         if step == self.steps-1 and mode == "clock":
             self.createGif()
-        # elif mode == "res":
-        #     self.getRes()
-
 
     def loopSolve(self):
         for step in range(self.steps):

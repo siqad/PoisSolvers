@@ -82,10 +82,6 @@ class MeshWriter():
         if angle != None:
             self.file_string += "Rotate { {0,0,1}, {%.3f,%.3f,%.3f}, %.3f } { Volume{%d};}\n"\
                 %((x_min+x_max)/2, (y_min+y_max)/2, (z_min+z_max)/2, np.deg2rad(angle), self.ind_vol)
-            # self.addPhysicalVolume()
-            # for i in range(6):
-            #     self.file_string += "Surface{%d} In Volume{%d};\n"\
-            #         %(self.ind_2d+i, self.ind_bounding_vol)
         #increase the indices to account for elements created by using Box()
         self.ind_2d += 6 #surfaces
         self.ind_2d += 12 #lines
@@ -94,6 +90,7 @@ class MeshWriter():
             self.ind_bounding_vol = self.ind_vol
             self.file_string += "Physical Volume(%d) = {%d};\n"\
                 %(self.ind_phys_vol, self.ind_vol)
+            #The outer bound face should have vertices relative to the resolution
             self.file_string += "Characteristic Length{ PointsOf{ Volume{%d}; } } = %.3f;\n"\
                 %(self.ind_vol, self.resolution/3*scale)
             # Characteristic Length{ PointsOf{ Volume{1}; } } = 200;
@@ -106,18 +103,10 @@ class MeshWriter():
             %(self.ind_phys_vol, self.ind_vol)
 
     def addSurface(self, p1, p2, p3, p4, scale, option):
-        # self.addPoint(p1, 1.0)
-        # self.addPoint(p2, 1.0)
-        # self.addPoint(p3, 1.0)
-        # self.addPoint(p4, 1.0)
         self.addPoint(p1, scale)
         self.addPoint(p2, scale)
         self.addPoint(p3, scale)
         self.addPoint(p4, scale)
-        # l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, 1.0)
-        # l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, 1.0)
-        # l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, 1.0)
-        # l1 = self.addLineByIndex(self.ind_point-1, self.ind_point-4, 1.0)
         l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
         l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)
         l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
