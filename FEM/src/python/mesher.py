@@ -56,6 +56,7 @@ class Mesher():
         print("Creating outer boundaries...")
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
                        [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], self.resolution, option="bound")
+                       # [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], 1.0, option="bound")
 
     def addDielectricSurface(self, resolution=1.0):
         print("Inserting dielectric surface...")
@@ -65,20 +66,25 @@ class Mesher():
         y_max = self.bounds['ymax']
         z = self.bounds['dielectric']
         # add the surface using 4 points of a rectangle
-        self.mw.addSurface([x_min,y_min,z], [x_max,y_min,z], [x_max,y_max,z], [x_min,y_max,z], self.resolution, option="seam")
+        self.mw.addSurface([x_min,y_min,z], [x_max,y_min,z], [x_max,y_max,z], [x_min,y_max,z], 1, option="seam")
 
     def addDielectricField(self, res_in=0.25, res_out=1.0):
-        x_min = self.bounds['xmin']
-        y_min = self.bounds['ymin']
-        x_max = self.bounds['xmax']
-        y_max = self.bounds['ymax']
+        #Shift the points in a bit, so the field doesn't affect the boundary vertices.
+        x_length = abs(self.bounds['xmax']-self.bounds['xmin'])
+        y_length = abs(self.bounds['ymax']-self.bounds['ymin'])
+        z_length = abs(self.bounds['zmax']-self.bounds['zmin'])
+        x_min = self.bounds['xmin'] + 0.01*x_length
+        y_min = self.bounds['ymin'] + 0.01*y_length
+        x_max = self.bounds['xmax'] - 0.01*x_length
+        y_max = self.bounds['ymax'] - 0.01*y_length
         dielec = self.bounds['dielectric']
         z_min = self.bounds['zmin']
         z_max = self.bounds['zmax']
         self.fields = []
         #construct a field using the given resolutions and the dimensions of the box.
         self.fields += [self.mw.addBoxField(res_in, res_out, [x_min, x_max], [y_min, y_max], \
-                  [dielec-0.05*np.abs(z_min), dielec+0.05*np.abs(z_max)])]
+                  # [dielec-0.1*np.abs(z_min), dielec+0.1*np.abs(z_max)])]
+                  [dielec-0.1*z_length, dielec+0.1*z_length])]
         self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrode(self, electrode, resolution):

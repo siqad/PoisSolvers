@@ -55,32 +55,48 @@ class Front(dolfin.SubDomain): #z_max
 # Sub domain for Periodic boundary condition in x and y
 class PeriodicBoundary(dolfin.SubDomain):
     def __init__(self, x_min, x_max, y_min, y_max):
-        self.x_min = x_min
-        self.x_max = x_max
-        self.y_min = y_min
-        self.y_max = y_max
-        # print(x_min, x_max, y_min, y_max)
-        dolfin.SubDomain.__init__(self)
+        self.x_min = float(x_min)
+        self.x_max = float(x_max)
+        self.y_min = float(y_min)
+        self.y_max = float(y_max)
+        # print("Periodic:", self.x_min, self.x_max, self.y_min, self.y_max)
+        # print(self.inside([-200,-100,10], True))
+        dolfin.SubDomain.__init__(self, map_tol=1e-2)
+        print(self.map_tolerance)
     def inside(self, x, on_boundary):
         return bool((dolfin.near(x[0], self.x_min) or dolfin.near(x[1], self.y_min)) and
                 (not ((dolfin.near(x[0], self.x_min) and dolfin.near(x[1], self.y_max)) or
                         (dolfin.near(x[0], self.x_max) and dolfin.near(x[1], self.y_min)))) and on_boundary)
+
     def map(self, x, y):
         if dolfin.near(x[0], self.x_max) and dolfin.near(x[1], self.y_max):
-            y[0] = self.x_min
-            y[1] = self.y_min
+            y[0] = x[0] - self.x_max + self.x_min
+            y[1] = x[1] - self.y_max + self.y_min
+            # y[0] = self.x_min
+            # y[1] = self.y_min
             y[2] = x[2]
+        # elif dolfin.near(x[0], self.x_max, 1E-3):
         elif dolfin.near(x[0], self.x_max):
-            y[0] = self.x_min
+            # print("x: ", x[0] - (self.x_max - self.x_min), x[1], x[2])
+            # y[0] = x[0]
+            # y[0] = x[0] - (self.x_max - self.x_min)
+            # print("x: ", x[0], x[0] - self.x_max + self.x_min)
+            # print("x: ", x[0], x[0] - self.x_max + self.x_min)
+            y[0] = x[0] - self.x_max + self.x_min
             y[1] = x[1]
             y[2] = x[2]
+            # print(self.x_min, y[0], x[0])
         elif dolfin.near(x[1], self.y_max):
+            # print("y: ", x[1], x[1] - self.y_max + self.y_min)
+            # print("y: ", x[1] - (self.y_max - self.y_min))
             y[0] = x[0]
-            y[1] = self.y_min
+            # y[1] = x[1] - (self.y_max - self.y_min)
+            y[1] = x[1] - self.y_max + self.y_min
+            # y[1] = self.y_min
             y[2] = x[2]
         else:
-            y[0] = x[0]
-            y[1] = x[1]
+            y[0] = (self.x_max + self.x_min)/2
+            y[1] = (self.y_max + self.y_min)/2
             y[2] = x[2]
 
 # INTERNAL BOUNDARY CONDITION FOR DIELECTRIC

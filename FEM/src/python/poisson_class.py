@@ -100,8 +100,8 @@ class PoissonSolver():
         mode = str(self.sim_params["mode"])
         if mode == "cap":
             self.getCaps(step)
-            if step == self.steps-1:
-                self.createGif()
+        if step == self.steps-1 and mode == "clock":
+            self.createGif()
         # elif mode == "res":
         #     self.getRes()
 
@@ -324,6 +324,7 @@ class PoissonSolver():
 
     def getFunctionSpace(self, mesh):
         if self.sim_params["bcs"] == "periodic":
+            print(self.bounds['xmin'], self.bounds['xmax'], self.bounds['ymin'], self.bounds['ymax'])
             self.pbc = sd.PeriodicBoundary(self.bounds['xmin'], self.bounds['xmax'], self.bounds['ymin'], self.bounds['ymax'])
             return dolfin.FunctionSpace(mesh, "CG", 3, constrained_domain=self.pbc)
         else:

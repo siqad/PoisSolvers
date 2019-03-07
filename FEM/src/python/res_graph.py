@@ -14,6 +14,7 @@ class ResGraph():
         self.rho = rho #resistivity is in E6 ohm cm
         self.rho *= 1E-6 #now in ohm cm
         self.rho *= 1E8 #now in ohm angstrom
+        print(self.rho)
 
         self.z_bounds = []
         self.node_ind = 0
@@ -21,7 +22,7 @@ class ResGraph():
 
         self.buildGraph()
 
-        self.debugPrint()
+        # self.debugPrint()
 
     def setZMaxes(self):
         self.z_bounds.append(min(elec.z1 for elec in self.elec_list))
@@ -123,7 +124,7 @@ class ResGraph():
     # Adds an edge to the graph between two nodes a and b, where a and b are node keys.
     # Basically for conveniencec, to add in a print before each connection takes place.
     def addEdge(self, graph, a, b, **kwargs):
-        print("Connecting ", a, b)
+        # print("Connecting ", a, b)
         graph.add_edge(a, b, **kwargs)
 
     # Adds a node to the graph at with a specified key. If no key is specified, the internal node index is used and incremented.
@@ -202,7 +203,7 @@ class ResGraph():
             rel_nodes = self.getRelevantNodes(item.id)
             sg = self.g.subgraph(rel_nodes).copy()
             dist_dict = self.getDistanceDict(sg, rel_nodes)
-            print("Working on electrode", item.id)
+            # print("Working on electrode", item.id)
             self.connectSubgraph(sg, dist_dict, item.id)
 
     def refreshGraph(self):
@@ -233,11 +234,9 @@ class ResGraph():
                 area = np.array([dims[1]*dims[2], dims[0]*dims[2], dims[0]*dims[1]])
                 # remember that res is now in units of angstrom^-1
                 res = path/area
-                print("res: ", res)
                 # path now has the xyz decomposed length of the electrode.
                 # Obtain the resistances by R = rho*l/A
                 res_sum = np.sum(res) * self.rho
-                print(res_sum, 1/res_sum)
                 self.addEdge(self.g, nodes[0], nodes[1], weight=1/res_sum)
 
     def buildGraph(self):
@@ -280,7 +279,7 @@ class ResGraph():
             L_pinv = np.linalg.pinv(L)
             v = np.dot(i, L_pinv)
             v = np.dot(v, i)
-            print("Resistance from node {} to node {} is {}".format(self.ceiling_ind, node, v))
+            print("Resistance from node {} to node {} is {} Ohms.".format(self.ceiling_ind, node, v))
 
     def cleanLabels(self):
         #get an iterator over the edges

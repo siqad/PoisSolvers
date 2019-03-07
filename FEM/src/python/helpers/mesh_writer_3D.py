@@ -54,6 +54,8 @@ class MeshWriter():
         if option == "seam":
             self.file_string += "Surface{%d} In Volume{%d};\n"\
                 %(self.ind_2d,self.ind_bounding_vol)
+            # self.file_string += "Characteristic Length{ PointsOf{ Surface{%d}; } } = %.3f;\n"\
+            #     %(self.ind_2d, self.resolution/3)
             if box == True:
                 self.ind_boundaries[-1].append(self.ind_2d)
         if option == "bound":
@@ -92,6 +94,9 @@ class MeshWriter():
             self.ind_bounding_vol = self.ind_vol
             self.file_string += "Physical Volume(%d) = {%d};\n"\
                 %(self.ind_phys_vol, self.ind_vol)
+            self.file_string += "Characteristic Length{ PointsOf{ Volume{%d}; } } = %.3f;\n"\
+                %(self.ind_vol, self.resolution/3*scale)
+            # Characteristic Length{ PointsOf{ Volume{1}; } } = 200;
         self.ind_vol += 1
         return
 
@@ -101,10 +106,18 @@ class MeshWriter():
             %(self.ind_phys_vol, self.ind_vol)
 
     def addSurface(self, p1, p2, p3, p4, scale, option):
+        # self.addPoint(p1, 1.0)
+        # self.addPoint(p2, 1.0)
+        # self.addPoint(p3, 1.0)
+        # self.addPoint(p4, 1.0)
         self.addPoint(p1, scale)
         self.addPoint(p2, scale)
         self.addPoint(p3, scale)
         self.addPoint(p4, scale)
+        # l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, 1.0)
+        # l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, 1.0)
+        # l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, 1.0)
+        # l1 = self.addLineByIndex(self.ind_point-1, self.ind_point-4, 1.0)
         l4 = self.addLineByIndex(self.ind_point-4, self.ind_point-3, scale)
         l3 = self.addLineByIndex(self.ind_point-3, self.ind_point-2, scale)
         l2 = self.addLineByIndex(self.ind_point-2, self.ind_point-1, scale)
