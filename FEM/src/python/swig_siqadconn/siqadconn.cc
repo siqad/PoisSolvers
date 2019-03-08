@@ -378,11 +378,14 @@ bpt::ptree SiQADConnector::dbPotentialPropertyTree()
   for (unsigned int i = 0; i < db_pot_data.size(); i++){
     bpt::ptree node_dbdot;
     bpt::ptree node_physloc;
-    node_physloc.put("<xmlattr>.x", db_pot_data[i][0].c_str());
-    node_physloc.put("<xmlattr>.y", db_pot_data[i][1].c_str());
+    boost::property_tree::ptree node_db_step;
+    node_db_step.put("", db_pot_data[i][0].c_str());
+    node_dbdot.add_child("step", node_db_step);
+    node_physloc.put("<xmlattr>.x", db_pot_data[i][1].c_str());
+    node_physloc.put("<xmlattr>.y", db_pot_data[i][2].c_str());
     node_dbdot.add_child("physloc", node_physloc);
     boost::property_tree::ptree node_db_pot;
-    node_db_pot.put("", db_pot_data[i][2].c_str());
+    node_db_pot.put("", db_pot_data[i][3].c_str());
     node_dbdot.add_child("potential", node_db_pot);
     node_dbdots.add_child("dbdot", node_dbdot);
   }

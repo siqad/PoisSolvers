@@ -152,6 +152,7 @@ namespace phys{
     // Exportable data
     std::vector<std::vector<std::string>> pot_data;
     std::vector<std::vector<std::string>> db_pot_data;
+    // std::vector<std::vector<std::vector<std::string>>> db_pot_history;
     std::vector<std::vector<std::string>> elec_data;
     std::vector<std::pair<std::string, std::string>> dbl_data;        // pair of location x and y
     std::vector<std::vector<std::string>> db_charge_data;  // pair of elec dist and energy

@@ -29,6 +29,7 @@ class PoissonSolver():
         self.in_path = None
         self.out_path_path = None
         self.plotter = plotter.Plotter()
+        self.db_hist = []
 
         #parameters gotten from sqconn
         self.sim_params = None
@@ -94,7 +95,7 @@ class PoissonSolver():
     def export(self, step = None):
         print("Exporting...")
         self.u.set_allow_extrapolation(True)
-        self.exportDBs()
+        self.exportDBs(step)
         self.exportPotential(step)
         #last step, finish off by creating gif and getting capacitances if applicable
         mode = str(self.sim_params["mode"])
@@ -102,6 +103,8 @@ class PoissonSolver():
             self.getCaps(step)
         if step == self.steps-1 and mode == "clock":
             self.createGif()
+            self.exportDBHistory()
+            print(self.db_hist)
 
     def loopSolve(self):
         for step in range(self.steps):
@@ -143,12 +146,17 @@ class PoissonSolver():
             self.res.elec_list = self.elec_list
             self.res.dir = self.abs_in_dir
 
-    def exportDBs(self):
+    def exportDBs(self, step):
         if self.db_list:
             db_pots = []
             for db in self.db_list:
-                db_pots.append([db.x, db.y, u(db.x, db.y, self.bounds['dielectric'])])
-            self.sqconn.export(db_pot=db_pots)
+                db_pots.append([2*np.pi*step/self.steps, db.x, db.y, self.u(db.x, db.y, self.bounds['dielectric'])])
+            self.db_hist.extend(db_pots)
+            # self.sqconn.export(db_pot=db_pots)
+
+    def exportDBHistory(self):
+            self.sqconn.export(db_pot=self.db_hist)
+
 
     def setSolverParams(self, step = None):
         self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u, self.bcs)

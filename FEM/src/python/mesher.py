@@ -72,10 +72,10 @@ class Mesher():
         x_length = abs(self.bounds['xmax']-self.bounds['xmin'])
         y_length = abs(self.bounds['ymax']-self.bounds['ymin'])
         # z_length = abs(self.bounds['zmax']-self.bounds['zmin'])
-        x_min = self.bounds['xmin'] + 0.01*x_length
-        y_min = self.bounds['ymin'] + 0.01*y_length
-        x_max = self.bounds['xmax'] - 0.01*x_length
-        y_max = self.bounds['ymax'] - 0.01*y_length
+        x_min = self.bounds['xmin'] + 0.05*x_length
+        y_min = self.bounds['ymin'] + 0.05*y_length
+        x_max = self.bounds['xmax'] - 0.05*x_length
+        y_max = self.bounds['ymax'] - 0.05*y_length
         dielec = self.bounds['dielectric']
         z_min = self.bounds['zmin']
         z_max = self.bounds['zmax']
