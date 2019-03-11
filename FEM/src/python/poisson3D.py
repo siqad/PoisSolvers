@@ -22,10 +22,11 @@ from argparse import ArgumentParser
 from dolfin_utils.meshconvert import meshconvert
 
 ######################PREAMBLE
-def file_must_exist(path):
+def file_must_exist(fpath):
     '''Check if input file exists for argument parser'''
     if not os.path.exists(fpath):
         raise argparse.ArgumentTypeError("{0} does not exist".format(fpath))
+    return fpath
 #Parse command arguments
 parser = ArgumentParser(description="PoisSolver is an electric potential "
         "landscape solver for SiQAD.")
