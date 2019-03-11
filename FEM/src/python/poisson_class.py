@@ -6,6 +6,7 @@
  # @desc:     Class definition for physics engine
 
 import numpy as np
+import json
 import os
 import subdomains as sd
 import dolfin
@@ -28,8 +29,11 @@ class PoissonSolver():
         self.sqconn = None
         self.in_path = None
         self.out_path_path = None
+        self.json_export_path = None
         self.plotter = plotter.Plotter()
         self.db_hist = []
+        self.db_pots_export = {}
+        self.db_pots_export['pots'] = []
 
         #parameters gotten from sqconn
         self.sim_params = None
@@ -57,14 +61,15 @@ class PoissonSolver():
         self.V = None
 
 #Functions that users are expected to use.
-    def initialize(self):
+    def initialize(self, json_export_path=None):
         print("Initialising PoissonSolver...")
         self.metal_params = helpers.getMetalParams(self.sqconn)
         self.elec_list = helpers.getElectrodeCollections(self.sqconn)
         self.db_list = helpers.getDBCollections(self.sqconn)
         self.sim_params = self.sqconn.getAllParameters()
         self.createBoundaries()
-        self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath())
+        self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath(), 
+                json_export_path)
 
 
     def setupSim(self):
@@ -105,6 +110,10 @@ class PoissonSolver():
             self.createGif()
             self.exportDBHistory()
             print(self.db_hist)
+            #json export
+            if self.json_export_path and len(self.db_pots_export['pots']) > 0:
+                with open(self.json_export_path, 'w') as export_file:
+                    json.dump(self.db_pots_export, export_file)
 
     def loopSolve(self):
         for step in range(self.steps):
@@ -149,9 +158,12 @@ class PoissonSolver():
     def exportDBs(self, step):
         if self.db_list:
             db_pots = []
+            pots_snapshot = []
             for db in self.db_list:
                 db_pots.append([2*np.pi*step/self.steps, db.x, db.y, self.u(db.x, db.y, self.bounds['dielectric'])])
+                pots_snapshot.append(self.u(db.x, db.y, self.bounds['dielectric']))
             self.db_hist.extend(db_pots)
+            self.db_pots_export['pots'].append(pots_snapshot)
             # self.sqconn.export(db_pot=db_pots)
 
     def exportDBHistory(self):
@@ -241,13 +253,14 @@ class PoissonSolver():
         self.bounds = dict(zip(keys, bounds))
         print(self.bounds)
 
-    def setPaths(self, in_path="", out_path=""):
+    def setPaths(self, in_path="", out_path="", json_export_path=None):
         if in_path != "":
             self.in_path = in_path
             self.abs_in_dir = os.path.abspath(os.path.dirname(self.in_path))
         if out_path != "":
             self.out_path = out_path
             self.abs_out_dir = os.path.abspath(os.path.dirname(self.out_path))
+        self.json_export_path = json_export_path
 
     def setSimParams(self, sim_params=None):
         if sim_params:

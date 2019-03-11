@@ -18,18 +18,34 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 import siqadconn
 import subdomains as sd
+from argparse import ArgumentParser
 from dolfin_utils.meshconvert import meshconvert
 
 ######################PREAMBLE
-#Get the I/O locations
-in_path = sys.argv[1]
-out_path = sys.argv[2]
+def file_must_exist(path):
+    '''Check if input file exists for argument parser'''
+    if not os.path.exists(fpath):
+        raise argparse.ArgumentTypeError("{0} does not exist".format(fpath))
+#Parse command arguments
+parser = ArgumentParser(description="PoisSolver is an electric potential "
+        "landscape solver for SiQAD.")
+#Positional argument for input file path
+parser.add_argument(dest="in_path", type=file_must_exist, help="Path to the "
+        "problem file.", metavar="IN_PATH")
+#Positional argument for output file path
+parser.add_argument(dest="out_path", help="Path to the output file.",
+        metavar="OUT_PATH")
+#Optional argument for JSON export file path
+parser.add_argument("--pot-json-export-path", dest="json_export_path", 
+        help="Path to the JSON export file intended for Hopping Dynamics "
+        "simulator.", metavar="JSON_EXPORT_PATH")
+args = parser.parse_args()
 
 #Instatiate an empty PoissonSolver object
 ps = poisson_class.PoissonSolver()
 
 #Create a SiQADConnector object for I/O between the tool and the simulation engine
-sqconn = siqadconn.SiQADConnector("PoisSolver", in_path, out_path)
+sqconn = siqadconn.SiQADConnector("PoisSolver", args.in_path, args.out_path)
 
 #...and give it to PoissonSolver
 ps.setConnector(sqconn)
@@ -38,7 +54,7 @@ ps.setConnector(sqconn)
 #including simulation parameters, defining mesh geometry, and I/O paths.
 #Users should modify existing sim_params after initialize(), but before createMesh()
 #to ensure their modications are reflected.
-ps.initialize()
+ps.initialize(json_export_path=args.json_export_path)
 
 #Kick-start the mesh definition process. Defines the boundaries, and inserts
 #electrodes surfaces into the mesh, adding coarseness guides as well.
