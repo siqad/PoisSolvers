@@ -1,9 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+Available path/command replacements:
+    @INTERP@        : Interpreter command/path (cannot be used in the interpreter field).
+    @PYTHON@        : Use a Python interpreter command/path provided by SiQAD (either from the default settings or the user's overriden choice).
+    @BINPATH@       : Path to the binary or script path to the engine (cannot be used in the bin_path field).
+    @BINPATH["NAME"]: Path to the binary or script path to the engine with the specified name. If not present, that command cannot be ran.
+    @PHYSENGPATH@   : Path to the directory containing this *.physeng file.
+    @PROBLEMPATH@   : Path to the problem file describing the simulation problem and parameters.
+    @RESULTPATH@    : Path to the result file that will be read by SiQAD after the simulation is complete.
+    @JOBTMP@        : Temporary path for this simulation job to store generated files.
+
+These replacements are done on the following fields:
+    interpreter, bin_path, command
+-->
+
 <physeng>
     <name>PoisSolver with Hopping Dynamics</name>
     <version>0.1</version>
-    <interpreter>python</interpreter> <!-- used for calling a script with python, java, etc. Leave blank otherwise -->
-    <bin_path>pois_with_hopdyn.py</bin_path> <!-- relative to engines.xml -->
+    <!-- Interpreter field used for calling a script with python, java, etc. SiQAD attempts to find an interpreter suitable for running the command. Leave blank if this is a compiled binary which does not need an interpreter. -->
+    <interpreter>@PYTHON@</interpreter> 
+    <!-- Path to the engine script or compiled binary. -->
+    <bin_path>@PHYSENGPATH@/pois_with_hopdyn.py</bin_path>
+    <!-- Selection of invocation commands to call this engine, from most preferred to least. A command is passed over if certain replacement variables cannot be satisfied (e.g. suitable candidate for @BINPATH["NAME"]@ not found). -->
+    <commands>
+        <!-- Directly invoke HoppingDynamics after PoisSolver is done. -->
+        <command>@INTERP@ @BINPATH@ @PROBLEMPATH@ --tmp-path @JOBTMP@ --hopdyn-path @BINPATH["HoppingDynamics Animator"]@</command>
+        <!-- Store the JSON DB potentials file at the temp path without invoking HoppingDynamics. -->
+        <command>@INTERP@ @BINPATH@ @PROBLEMPATH@ --tmp-path @JOBTMP@</command>
+    </commands>
     <sim_params preserve_order="true">
       <bcs>
         <T>string</T>
@@ -90,7 +115,7 @@
       </image_resolution>
       <mode>
         <T>string</T>
-        <val>Capacitance</val>
+        <val>Clock</val>
         <label>Mode</label>
         <tip>The mode of simulation. Standard mode runs a PoisSolver simulation and disables the potential on the design panel. Clock mode generates a bunch of results stored in a file with clocking potentials on the electrodes.</tip>
         <value_selection type="ComboBox">

@@ -44,6 +44,11 @@ class poisHoppingInterposer:
                 help="Path to the input problem file.", metavar="IN_FILE")
         parser.add_argument(dest="out_file", help="Path to the output file.",
                 metavar="OUT_FILE")
+        parser.add_argument("--tmp-path", dest="tmp_path", help="Path to the "
+                "temporary directory where intermediate voltage data is "
+                "written to.", metavar="TEMP_PATH")
+        parser.add_argument("--hopdyn-path", dest="hopdyn_path", help="Path to "
+                "the HoppingDynamics script location.", metavar="HOPDYN_PATH")
         self.args = parser.parse_args()
 
     def extract_simulation_paths(self):
