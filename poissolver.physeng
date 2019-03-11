@@ -1,9 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+Available path/command replacements:
+    @INTERP@        : Interpreter command/path (cannot be used in the interpreter field).
+    @PYTHON@        : Use a Python interpreter command/path provided by SiQAD (either from the default settings or the user's overriden choice).
+    @BINPATH@       : Path to the binary or script path to the engine (cannot be used in the bin_path field).
+    @PHYSENGPATH@   : Path to the directory containing this *.physeng file.
+    @PROBLEMPATH@   : Path to the problem file describing the simulation problem and parameters.
+    @RESULTPATH@    : Path to the result file that will be read by SiQAD after the simulation is complete.
+    @JOBTMP@        : Temporary path for this simulation job to store generated files.
+
+These replacements are done on the following fields:
+    interpreter, bin_path, command
+-->
+
 <physeng>
     <name>PoisSolver</name>
     <version>0.1</version>
-    <interpreter>python</interpreter> <!-- used for calling a script with python, java, etc. Leave blank otherwise -->
-    <bin_path>poisson3D.py</bin_path> <!-- relative to engines.xml -->
+    <!-- Interpreter field used for calling a script with python, java, etc. SiQAD attempts to find an interpreter suitable for running the command. Leave blank if this is a compiled binary which does not need an interpreter. -->
+    <interpreter>@PYTHON@</interpreter>
+    <!-- Path to the engine script or compiled binary. -->
+    <!--<bin_path>@PHYSENGPATH@/poisson3D.py</bin_path> TODO switch to this form later-->
+    <bin_path>poisson3D.py</bin_path>
+    <!-- Selection of invocation commands to call this engine. The first one is the one that is shown in SiQAD by default. TODO tie this to presets in some ways. -->
+    <commands>
+        <!-- Default command. -->
+        <command label="Default">@INTERP@ @BINPATH@ @PROBLEMPATH@ @RESULTPATH@</command>
+        <!-- Output potential to json for HoppingDynamics. -->
+        <command label="JSON for HoppingDynamics">@INTERP@ @BINPATH@ @PROBLEMPATH@ @RESULTPATH@ --pot-json-export-path @JOBTMP@/db_pots.json</command>
+    </commands>
     <sim_params preserve_order="true">
       <bcs>
         <T>string</T>
