@@ -2,7 +2,6 @@
 
 <!-- 
 Available path/command replacements:
-    @INTERP@        : Interpreter command/path (cannot be used in the interpreter field).
     @PYTHON@        : Use a Python interpreter command/path provided by SiQAD (either from the default settings or the user's overriden choice).
     @BINPATH@       : Path to the binary or script path to the engine (cannot be used in the bin_path field).
     @PHYSENGPATH@   : Path to the directory containing this *.physeng file.
@@ -17,8 +16,6 @@ These replacements are done on the following fields:
 <physeng>
     <name>PoisSolver</name>
     <version>0.1</version>
-    <!-- Interpreter field used for calling a script with python, java, etc. SiQAD attempts to find an interpreter suitable for running the command. Leave blank if this is a compiled binary which does not need an interpreter. -->
-    <interpreter>@PYTHON@</interpreter>
     <!-- Path to the engine script or compiled binary. -->
     <!--<bin_path>@PHYSENGPATH@/poisson3D.py</bin_path> TODO switch to this form later-->
     <bin_path>poisson3D.py</bin_path>
@@ -26,19 +23,29 @@ These replacements are done on the following fields:
     <commands>
         <!-- Default command. -->
         <command label="Default">
-            <program>@INTERP@</program>
+            <program>@PYTHON@</program>
             <arg>@BINPATH@</arg>
             <arg>@PROBLEMPATH@</arg>
             <arg>@RESULTPATH@</arg>
         </command>
         <!-- Output potential to json for HoppingDynamics. -->
         <command label="JSON for HoppingDynamics">
-            <program>@INTERP@</program>
+            <program>@PYTHON@</program>
             <arg>@BINPATH@</arg>
             <arg>@PROBLEMPATH@</arg>
             <arg>@RESULTPATH@</arg>
             <arg>--pot-json-export-path</arg>
             <arg>@JOBTMP@/db_pots.json</arg>
+        </command>
+        <!-- Use Docker -->
+        <command label="Run in Docker">
+            <program>docker</program>
+            <arg>run</arg>
+            <arg>-v</arg>
+            <arg>"@JOBTMP@":"@JOBTMP@"</arg>
+            <arg>poissolver</arg>
+            <arg>@PROBLEMPATH@</arg>
+            <arg>@RESULTPATH@</arg>
         </command>
     </commands>
     <!-- Python dependencies file path, relative to the directory containing this physeng file. -->
@@ -100,7 +107,7 @@ These replacements are done on the following fields:
       </sim_resolution>
       <slice_depth>
         <T>float</T>
-        <val>1050</val>
+        <val>0</val>
         <label>Slice z location (ang)</label>
         <tip>The 2D potential at the selected depth below the surface will de displayed/</tip>
       </slice_depth>
