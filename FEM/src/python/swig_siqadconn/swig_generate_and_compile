@@ -17,7 +17,7 @@ if [ "$FOR_OS" == "win64" ]; then
     mv _siqadconn.pyd "${DEST_DIR}"
 else
     python3 setup.py build_ext --inplace
-    mv _siqadconn.cpython-36m-x86_64-linux-gnu.so "${DEST_DIR}"
+    mv _siqadconn.*.so "${DEST_DIR}"
 fi
 
 mv siqadconn.py "${DEST_DIR}"
