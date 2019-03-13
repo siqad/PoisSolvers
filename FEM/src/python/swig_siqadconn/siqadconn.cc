@@ -1,7 +1,7 @@
 // @file:     siqadconn.cc
 // @author:   Samuel
 // @created:  2017.08.23
-// @editted:  2019.01.23 - Nathan
+// @editted:  2019.03.12 - Samuel
 // @license:  Apache License 2.0
 //
 // @desc:     Convenient functions for interacting with SiQAD
@@ -166,7 +166,7 @@ void SiQADConnector::readItemTree(const bpt::ptree &subtree, const std::shared_p
 void SiQADConnector::readElectrode(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
 {
   double x1, x2, y1, y2, pixel_per_angstrom, potential, phase, angle;
-  int layer_id, electrode_type, net;
+  int layer_id, electrode_type=0, net;
   // read values from XML stream
   layer_id = subtree.get<int>("layer_id");
   angle = subtree.get<double>("angle");
@@ -195,7 +195,7 @@ void SiQADConnector::readElectrodePoly(const bpt::ptree &subtree, const std::sha
 {
   double pixel_per_angstrom, potential, phase;
   std::vector<std::pair<double, double>> vertices;
-  int layer_id, electrode_type, net;
+  int layer_id, electrode_type=0, net;
   // read values from XML stream
   layer_id = subtree.get<int>("layer_id");
   potential = subtree.get<double>("property_map.potential.val");

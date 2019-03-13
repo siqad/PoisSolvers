@@ -5,6 +5,12 @@
  #
  # @desc:     Main function for physics engine
 
+import matplotlib
+
+#Change matplotlib backend to support systems with no X server (e.g. when 
+#running inside a docker container).
+matplotlib.use('Agg')
+
 import sys
 import dolfin
 import subprocess

@@ -7,6 +7,7 @@
 
 import numpy as np
 import os
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 from PIL import Image
