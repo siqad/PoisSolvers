@@ -12,9 +12,11 @@
 #                                                                              #
 ################################################################################
 
-# Base off the Ubuntu 18.04 LTS version
-#FROM ubuntu:18.04
+# Base off the official Fenics image
 FROM quay.io/fenicsproject/stable:latest
+
+# NOTE when basing off the Ubuntu 18.04 image there are MPI related errors that 
+# prevent simulation from working
 
 # Install dependencies
 # TODO get pip packages from a requirements.txt instead

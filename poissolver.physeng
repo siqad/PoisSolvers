@@ -37,12 +37,19 @@ These replacements are done on the following fields:
             <arg>--pot-json-export-path</arg>
             <arg>@JOBTMP@/db_pots.json</arg>
         </command>
+        <!-- Rebuild Docker -->
+        <command label="Build Docker (no sim)">
+            <program>docker</program>
+            <arg>build</arg>
+            <arg>--tag=poissolver</arg>
+            <arg>@PHYSENGPATH@</arg>
+        </command>
         <!-- Use Docker -->
         <command label="Run in Docker">
             <program>docker</program>
             <arg>run</arg>
             <arg>-v</arg>
-            <arg>"@JOBTMP@":"@JOBTMP@"</arg>
+            <arg>@JOBTMP@:@JOBTMP@</arg>
             <arg>poissolver</arg>
             <arg>@PROBLEMPATH@</arg>
             <arg>@RESULTPATH@</arg>
