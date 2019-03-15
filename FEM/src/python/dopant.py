@@ -24,13 +24,13 @@ class Dopant:
         elif units == "atomic":
             self.eps_0 = 8.85E-22 # Absolute permittivity - Farad / angstrom
 
-    def plot(x, y, title, x_label, y_label, file_name):
+    def plot(self, x, y, title, x_label, y_label, file_name):
         plt.clf()
         plt.plot(x,y)
         plt.xlabel(x_label) #set label text
         plt.ylabel(y_label)
         plt.title(title)
-        # plt.savefig("{}{}".format(file_name, ".pdf"))
+        plt.savefig("{}{}".format(file_name, ".pdf"))
 
     # Simulation parameters
     def setParameters(self, T=293, resolution=20, eps_r=11.9, sim_params=None):
@@ -98,13 +98,13 @@ class Dopant:
         fig, ax = plt.subplots()
         x = self.getXSpace()
         if self.units == "mks":
-            plot(x, n, "Electron Density", "X (m)", "Electron density (m^-3)", "n")
-            plot(x, E, "Electric Field", "X (m)", "Electric field (V m^-1)", "E")
-            plot(x, rho, "Charge Density", "X (m)", "Charge density (m^-3)", "rho")
+            self.plot(x, self.n, "Electron Density", "X (m)", "Electron density (m^-3)", "n")
+            self.plot(x, self.E, "Electric Field", "X (m)", "Electric field (V m^-1)", "E")
+            self.plot(x, self.rho, "Charge Density", "X (m)", "Charge density (m^-3)", "rho")
         elif self.units == "atomic":
-            plot(x, n, "Electron Density", "X (angstrom)", "Electron density (angstrom^-3)", "n")
-            plot(x, E, "Electric Field", "X (angstrom)", "Electric field (V angstrom^-1)", "E")
-            plot(x, rho, "Charge Density", "X (angstrom)", "Charge density (angstrom^-3)", "rho")
+            self.plot(x, self.n, "Electron Density", "X (angstrom)", "Electron density (angstrom^-3)", "n")
+            self.plot(x, self.E, "Electric Field", "X (angstrom)", "Electric field (V angstrom^-1)", "E")
+            self.plot(x, self.rho, "Charge Density", "X (angstrom)", "Charge density (angstrom^-3)", "rho")
         plt.ion()
         plt.show()
 
@@ -149,3 +149,4 @@ if __name__ == "__main__":
     rho_func = dp.getRhoAsFunction(mesh)
     df.plot(rho_func)
     plt.show()
+    # dp.plotFigures()
