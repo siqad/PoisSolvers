@@ -1,7 +1,7 @@
 // @file:     siqadconn.h
 // @author:   Samuel
 // @created:  2017.08.23
-// @editted:  2019.01.23 - Nathan
+// @editted:  2019.03.12 - Samuel
 // @license:  Apache License 2.0
 //
 // @desc:     Convenient functions for interacting with SiQAD including
@@ -233,7 +233,7 @@ namespace phys{
               double in_potential, double in_phase, int in_electrode_type, double in_pixel_per_angstrom, int in_net)
       : layer_id(in_layer_id), vertices(in_vertices), \
         potential(in_potential), phase(in_phase), electrode_type(in_electrode_type), \
-        pixel_per_angstrom(in_pixel_per_angstrom), net(in_net) {};
+        net(in_net), pixel_per_angstrom(in_pixel_per_angstrom) {};
   };
 
   class ElecPolyIterator
@@ -281,7 +281,7 @@ namespace phys{
               double in_potential, double in_phase, int in_electrode_type, double in_pixel_per_angstrom, int in_net, double in_angle)
       : layer_id(in_layer_id), x1(in_x1), x2(in_x2), y1(in_y1), y2(in_y2), \
         potential(in_potential), phase(in_phase), electrode_type(in_electrode_type), \
-        pixel_per_angstrom(in_pixel_per_angstrom), net(in_net), angle(in_angle) {};
+        net(in_net), angle(in_angle), pixel_per_angstrom(in_pixel_per_angstrom) {};
   };
 
   class ElecIterator

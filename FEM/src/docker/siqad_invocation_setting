@@ -1,0 +1,5 @@
+docker run -v @JOBTMP@:@JOBTMP@ poissolver
+
+@INTERP@
+@PROBLEMPATH@
+@RESULTPATH@

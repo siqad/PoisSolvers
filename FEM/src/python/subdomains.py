@@ -62,7 +62,10 @@ class PeriodicBoundary(dolfin.SubDomain):
         # print("Periodic:", self.x_min, self.x_max, self.y_min, self.y_max)
         # print(self.inside([-200,-100,10], True))
         dolfin.SubDomain.__init__(self, map_tol=1e-2)
-        print(self.map_tolerance)
+        try:
+            print(self.map_tolerance)
+        except AttributeError:
+            pass
     def inside(self, x, on_boundary):
         return bool((dolfin.near(x[0], self.x_min) or dolfin.near(x[1], self.y_min)) and
                 (not ((dolfin.near(x[0], self.x_min) and dolfin.near(x[1], self.y_max)) or
