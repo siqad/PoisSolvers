@@ -16,6 +16,7 @@ import mesher
 import plotter
 import capacitance
 import resistance
+import ac
 from dolfin_utils.meshconvert import meshconvert
 
 class PoissonSolver():
@@ -67,8 +68,9 @@ class PoissonSolver():
         self.elec_list = helpers.getElectrodeCollections(self.sqconn)
         self.db_list = helpers.getDBCollections(self.sqconn)
         self.sim_params = self.sqconn.getAllParameters()
+        self.mode = self.getMode()
         self.createBoundaries()
-        self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath(), 
+        self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath(),
                 json_export_path)
 
 
@@ -103,10 +105,7 @@ class PoissonSolver():
         self.exportDBs(step)
         self.exportPotential(step)
         #last step, finish off by creating gif and getting capacitances if applicable
-        mode = str(self.sim_params["mode"])
-        if mode == "cap":
-            self.getCaps(step)
-        if step == self.steps-1 and mode == "clock":
+        if step == self.steps-1 and self.mode == "clock":
             self.createGif()
             self.exportDBHistory()
             print(self.db_hist)
@@ -120,29 +119,28 @@ class PoissonSolver():
             self.setupDolfinSolver(step)
             self.solve()
             self.export(step)
-        mode = str(self.sim_params["mode"])
-        if mode == "res":
+            if self.mode == "cap" or self.mode == "ac":
+                self.getCaps(step)
+        if self.mode == "res" or self.mode == "ac":
             self.initRC()
             self.getRes()
 
 
 #Functions that the user shouldn't have to call.
+    def getMode(self):
+        return str(self.sim_params["mode"])
+
     def getRes(self):
-        # print("@@ GET RES @@")
         self.res.createResGraph(float(self.sim_params["temp"]))
 
     def getCaps(self, step):
-        # mode = str(self.sim_params["mode"])
-        # if mode == "cap":
         self.cap.calcCaps()
         if step == self.steps-1:
             self.cap.formCapMatrix()
-            # self.rc.getDelays(self.bounds, float(self.sim_params["temp"]))
 
     def initRC(self):
         print("Setting RC params..")
-        mode = str(self.sim_params["mode"])
-        if mode == "cap":
+        if self.mode == "cap" or self.mode == "ac":
             self.cap.mesh = self.mesh
             self.cap.EPS_SI = self.EPS_SI
             self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
@@ -151,7 +149,7 @@ class PoissonSolver():
             self.cap.boundaries = self.boundaries
             self.cap.u = self.u
             self.cap.dir = self.abs_in_dir
-        elif mode == "res":
+        if self.mode == "res" or self.mode == "ac":
             self.res.elec_list = self.elec_list
             self.res.dir = self.abs_in_dir
 
@@ -232,7 +230,6 @@ class PoissonSolver():
         self.Q_E = 1.6E-19
         self.EPS_SI = dolfin.Constant(11.6*self.EPS_0)
         EPS_R = float(self.sim_params["eps_r_dielectric"])
-        # mode = str(self.sim_params["mode"]))
         self.EPS_DIELECTRIC = dolfin.Constant(EPS_R*self.EPS_0)
         print("Setting charge density...")
         self.f = dolfin.Constant("0.0")
@@ -292,9 +289,8 @@ class PoissonSolver():
         phi_gold = 5.1 #eV
         phi_bi = phi_gold - chi_si
         elec_str = "Electrode "+str(i)+" is "
-        mode = str(self.sim_params["mode"])
 
-        if (electrode.electrode_type == 1 and mode == "clock"):
+        if (electrode.electrode_type == 1 and self.mode == "clock"):
             elec_str += "clocked, "
             tot_phase = electrode.phase + step*360/steps
             potential_to_set = electrode.potential*np.sin( np.deg2rad(tot_phase) )
@@ -350,14 +346,13 @@ class PoissonSolver():
 
 
     def getSteps(self):
-        mode = str(self.sim_params["mode"])
-        if mode == "standard":
+        if self.mode == "standard":
             steps = 1
-        elif mode == "clock":
+        elif self.mode == "clock":
             steps = int(self.sim_params["steps"])
-        elif mode == "cap":
+        elif self.mode == "cap" or self.mode == "ac":
             steps = len(self.net_list)
-        elif mode == "res":
+        elif self.mode == "res":
             steps = 0
         return steps
 
@@ -369,12 +364,11 @@ class PoissonSolver():
     def setElectrodePotentials(self, step):
         print("Defining Dirichlet boundaries on electrodes...")
         self.bcs = []
-        mode = str(self.sim_params["mode"])
-        if mode == "standard" or mode == "clock":
+        if self.mode == "standard" or self.mode == "clock":
             for electrode in self.elec_list:
                 potential_to_set = self.getElecPotential(electrode, step, self.steps, self.elec_list.index(electrode))
                 self.bcs.append(dolfin.DirichletBC(self.V, float(potential_to_set), self.boundaries, 7+self.elec_list.index(electrode)))
-        elif mode == "cap":
+        elif self.mode == "cap" or self.mode == "ac":
             for electrode in self.elec_list:
                 if self.net_list[step] == electrode.net:
                     self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+self.elec_list.index(electrode)))
@@ -410,7 +404,6 @@ class PoissonSolver():
 # PLOTTING
 
     def createGif(self):
-        mode = str(self.sim_params["mode"])
         dir = self.abs_in_dir
         dir_files = os.listdir(os.path.dirname(self.in_path))
         self.plotter.makeGif(mode, dir, dir_files)

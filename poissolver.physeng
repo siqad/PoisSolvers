@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- 
+<!--
 Available path/command replacements:
     @PYTHON@        : Use a Python interpreter command/path provided by SiQAD (either from the default settings or the user's overriden choice).
     @BINPATH@       : Path to the binary or script path to the engine (cannot be used in the bin_path field).
@@ -56,7 +56,7 @@ These replacements are done on the following fields:
         </command>
     </commands>
     <!-- Python dependencies file path, relative to the directory containing this physeng file. -->
-    <dep_path>requirements.txt</dep_path> 
+    <dep_path>requirements.txt</dep_path>
     <!-- Simulation parameters, read into SiQAD as a property map. -->
     <sim_params preserve_order="true">
       <bcs>
@@ -152,6 +152,7 @@ These replacements are done on the following fields:
           <clock>Clock</clock>
           <cap>Capacitance</cap>
           <res>Resistance</res>
+          <ac>AC Power</ac>
         </value_selection>
       </mode>
       <init_guess>
