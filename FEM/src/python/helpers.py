@@ -54,7 +54,7 @@ def getBB(sqconn):
 
     xs = [min_x-abs(padding_x), max_x+abs(padding_x)]
     ys = [min_y-abs(padding_y), max_y+abs(padding_y)]
-    return xs, ys
+    return xs, ys, [min_x, max_x], [min_y, max_y]
 
 
 def getMetalParams(sqconn):

@@ -19,6 +19,7 @@ class ResGraph():
         self.z_bounds = []
         self.node_ind = 0
         self.setZMaxes()
+        self.max_resistances = []
 
         self.buildGraph()
 
@@ -240,6 +241,8 @@ class ResGraph():
                 self.addEdge(self.g, nodes[0], nodes[1], weight=1/res_sum)
 
     def buildGraph(self):
+
+        # max_resistances = {}
         #Once per net, build from top down.
         for key in self.elec_dict.dict:
             self.refreshGraph()
@@ -264,9 +267,14 @@ class ResGraph():
             #     self.addEdge(self.g, node, self.floor_ind, elec_id=None, weight=0)
             self.setEdgeWeights()
             self.exportGraph(key)
-            self.calculateEffectiveResistance()
+            self.max_resistances.append(self.calculateEffectiveResistance())
+        # print(max_resistances)
+
+    def getCalculatedResistances(self):
+        return self.max_resistances
 
     def calculateEffectiveResistance(self):
+        resistances = []
         for node in self.floor_nodes:
             # create the current vector
             i = np.zeros(nx.number_of_nodes(self.g))
@@ -280,6 +288,9 @@ class ResGraph():
             v = np.dot(i, L_pinv)
             v = np.dot(v, i)
             print("Resistance from node {} to node {} is {} Ohms.".format(self.ceiling_ind, node, v))
+            resistances.append(v.item())
+        return max(resistances)
+
 
     def cleanLabels(self):
         #get an iterator over the edges
@@ -297,6 +308,7 @@ class ResGraph():
         nx.draw_networkx_edge_labels(self.g, pos, edge_labels=labels, font_size=8)
         nx.draw_networkx_edges(self.g, pos)
         plt.savefig(self.dir+"/graph"+str(net_id)+".pdf", bbox_inches='tight')
+        plt.close()
 
     def debugPrint(self):
         print(list(self.g.nodes(data=True)))

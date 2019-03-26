@@ -46,8 +46,10 @@ class PoissonSolver():
         #Resistance and capacitance tools
         self.cap = capacitance.CapacitanceEstimator()
         self.res = resistance.ResistanceEstimator()
+        self.ac = ac.PowerEstimator()
 
         #calculated values and ones used during simulation
+        self.resistances = {}
         self.cap_matrix = []
         self.steps = None
         self.bcs = []
@@ -123,7 +125,11 @@ class PoissonSolver():
                 self.getCaps(step)
         if self.mode == "res" or self.mode == "ac":
             self.initRC()
-            self.getRes()
+            self.resistances = self.getRes()
+        if self.mode == "ac":
+            self.ac.setup(self.resistances, self.cap_matrix)
+            # print("AC MODE")
+            # self.ac = ac.PowerEstimator()
 
 
 #Functions that the user shouldn't have to call.
@@ -132,26 +138,32 @@ class PoissonSolver():
 
     def getRes(self):
         self.res.createResGraph(float(self.sim_params["temp"]))
+        return self.res.getResistances()
 
     def getCaps(self, step):
         self.cap.calcCaps()
         if step == self.steps-1:
-            self.cap.formCapMatrix()
+            self.cap_matrix = self.cap.formCapMatrix()
 
     def initRC(self):
         print("Setting RC params..")
-        if self.mode == "cap" or self.mode == "ac":
-            self.cap.mesh = self.mesh
-            self.cap.EPS_SI = self.EPS_SI
-            self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
-            self.cap.net_list = self.net_list
-            self.cap.elec_list = self.elec_list
-            self.cap.boundaries = self.boundaries
-            self.cap.u = self.u
-            self.cap.dir = self.abs_in_dir
-        if self.mode == "res" or self.mode == "ac":
-            self.res.elec_list = self.elec_list
-            self.res.dir = self.abs_in_dir
+    # if self.mode == "cap" or self.mode == "ac":
+        self.cap.mesh = self.mesh
+        self.cap.EPS_SI = self.EPS_SI
+        self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
+        self.cap.net_list = self.net_list
+        self.cap.elec_list = self.elec_list
+        self.cap.boundaries = self.boundaries
+        self.cap.u = self.u
+        self.cap.dir = self.abs_in_dir
+    # if self.mode == "res" or self.mode == "ac":
+        self.res.elec_list = self.elec_list
+        self.res.dir = self.abs_in_dir
+
+        self.ac.dir = self.abs_in_dir
+        self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
+        # self.ac.xs = self.xs_unpadded
+        # self.ac.ys = self.ys_unpadded
 
     def exportDBs(self, step):
         if self.db_list:
@@ -236,7 +248,7 @@ class PoissonSolver():
 
 
     def createBoundaries(self):
-        xs, ys = helpers.getBB(self.sqconn)
+        xs, ys, self.xs_unpadded, self.ys_unpadded = helpers.getBB(self.sqconn)
         ground_plane = float(self.sim_params["ground_depth"])
         vals = helpers.adjustBoundaries(xs, ys, self.metal_params, ground_plane)
         # vals = helpers.adjustBoundaries(xs, ys, self.metal_params)

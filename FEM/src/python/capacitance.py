@@ -19,6 +19,8 @@ class CapacitanceEstimator():
             print("C_net{} = {}F".format(self.net_list[i],tot_cap))
             matrix_string = matrix_string + "\n"
         print(matrix_string)
+        # print(cap_matrix)
+        return cap_matrix
 
     def calcCaps(self):
         x0, x1, x2 = dolfin.MeshCoordinates(self.mesh)

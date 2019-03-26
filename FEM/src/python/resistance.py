@@ -64,3 +64,6 @@ class ResistanceEstimator():
     def createResGraph(self, temp):
         self.buildElecDict()
         self.res_graph = res_graph.ResGraph(self.elec_dict, self.elec_list, self.dir, self.approxRes(temp))
+
+    def getResistances(self):
+        return self.res_graph.getCalculatedResistances()
