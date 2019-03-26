@@ -127,7 +127,7 @@ class PoissonSolver():
             self.initRC()
             self.resistances = self.getRes()
         if self.mode == "ac":
-            self.ac.setup(self.resistances, self.cap_matrix)
+            self.ac.run(self.resistances, self.cap_matrix)
             # print("AC MODE")
             # self.ac = ac.PowerEstimator()
 
