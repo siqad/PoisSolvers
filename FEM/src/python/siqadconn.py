@@ -181,6 +181,9 @@ class SiQADConnector(_object):
     def setExport(self, *args):
         return _siqadconn.SiQADConnector_setExport(self, *args)
 
+    def addSQCommand(self, arg2):
+        return _siqadconn.SiQADConnector_addSQCommand(self, arg2)
+
     def parameterExists(self, key):
         return _siqadconn.SiQADConnector_parameterExists(self, key)
 
@@ -217,6 +220,13 @@ class SiQADConnector(_object):
             self.setExport(key, StringPairVector(self.tuplify(kwargs[key])))
         else:
             self.setExport(key, StringVector2D(self.tuplify(kwargs[key])))
+
+
+    def addCommand(self, *args, **kwargs):
+      command_action = args[0]  # e.g. add, remove
+      command_item = args[1]    # e.g. DBDot, Aggregate
+      if command_action == 'add' and command_item == 'Aggregate':
+        self.addSQCommand(AggregateCommand(FloatPairVector(kwargs['dbagg'])))
 
 
     def tuplify(self, data):
@@ -676,6 +686,117 @@ class Aggregate(_object):
 Aggregate_swigregister = _siqadconn.Aggregate_swigregister
 Aggregate_swigregister(Aggregate)
 
+class SQCommand(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, SQCommand, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, SQCommand, name)
+    __repr__ = _swig_repr
+    NoItem = _siqadconn.SQCommand_NoItem
+    DBDot = _siqadconn.SQCommand_DBDot
+    Electrode = _siqadconn.SQCommand_Electrode
+    Aggregate = _siqadconn.SQCommand_Aggregate
+    Add = _siqadconn.SQCommand_Add
+    Remove = _siqadconn.SQCommand_Remove
+    Echo = _siqadconn.SQCommand_Echo
+    Run = _siqadconn.SQCommand_Run
+    Move = _siqadconn.SQCommand_Move
+
+    def __init__(self, *args):
+        this = _siqadconn.new_SQCommand(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_destroy__ = _siqadconn.delete_SQCommand
+    __del__ = lambda self: None
+    if _newclass:
+        commandItemString = staticmethod(_siqadconn.SQCommand_commandItemString)
+    else:
+        commandItemString = _siqadconn.SQCommand_commandItemString
+    if _newclass:
+        commandActionString = staticmethod(_siqadconn.SQCommand_commandActionString)
+    else:
+        commandActionString = _siqadconn.SQCommand_commandActionString
+    if _newclass:
+        commandItemEnum = staticmethod(_siqadconn.SQCommand_commandItemEnum)
+    else:
+        commandItemEnum = _siqadconn.SQCommand_commandItemEnum
+    if _newclass:
+        commandActionEnum = staticmethod(_siqadconn.SQCommand_commandActionEnum)
+    else:
+        commandActionEnum = _siqadconn.SQCommand_commandActionEnum
+
+    def commandItem(self):
+        return _siqadconn.SQCommand_commandItem(self)
+
+    def commandAction(self):
+        return _siqadconn.SQCommand_commandAction(self)
+
+    def finalCommand(self):
+        return _siqadconn.SQCommand_finalCommand(self)
+
+    def addActionCommand(self):
+        return _siqadconn.SQCommand_addActionCommand(self)
+
+    def addActionArguments(self):
+        return _siqadconn.SQCommand_addActionArguments(self)
+SQCommand_swigregister = _siqadconn.SQCommand_swigregister
+SQCommand_swigregister(SQCommand)
+
+def SQCommand_commandItemString(arg2):
+    return _siqadconn.SQCommand_commandItemString(arg2)
+SQCommand_commandItemString = _siqadconn.SQCommand_commandItemString
+
+def SQCommand_commandActionString(arg2):
+    return _siqadconn.SQCommand_commandActionString(arg2)
+SQCommand_commandActionString = _siqadconn.SQCommand_commandActionString
+
+def SQCommand_commandItemEnum(arg2):
+    return _siqadconn.SQCommand_commandItemEnum(arg2)
+SQCommand_commandItemEnum = _siqadconn.SQCommand_commandItemEnum
+
+def SQCommand_commandActionEnum(arg2):
+    return _siqadconn.SQCommand_commandActionEnum(arg2)
+SQCommand_commandActionEnum = _siqadconn.SQCommand_commandActionEnum
+
+class AggregateCommand(SQCommand):
+    __swig_setmethods__ = {}
+    for _s in [SQCommand]:
+        __swig_setmethods__.update(getattr(_s, '__swig_setmethods__', {}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, AggregateCommand, name, value)
+    __swig_getmethods__ = {}
+    for _s in [SQCommand]:
+        __swig_getmethods__.update(getattr(_s, '__swig_getmethods__', {}))
+    __getattr__ = lambda self, name: _swig_getattr(self, AggregateCommand, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        this = _siqadconn.new_AggregateCommand(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+
+    def setLayer(self, t_layer):
+        return _siqadconn.AggregateCommand_setLayer(self, t_layer)
+
+    def getLayer(self):
+        return _siqadconn.AggregateCommand_getLayer(self)
+
+    def addActionArguments(self):
+        return _siqadconn.AggregateCommand_addActionArguments(self)
+
+    def addDBsToAggregateFormation(self, t_db_locs):
+        return _siqadconn.AggregateCommand_addDBsToAggregateFormation(self, t_db_locs)
+
+    def dbLocations(self):
+        return _siqadconn.AggregateCommand_dbLocations(self)
+    __swig_destroy__ = _siqadconn.delete_AggregateCommand
+    __del__ = lambda self: None
+AggregateCommand_swigregister = _siqadconn.AggregateCommand_swigregister
+AggregateCommand_swigregister(AggregateCommand)
+
 class DoublePair(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, DoublePair, name, value)
@@ -828,6 +949,159 @@ class DoublePairVector(_object):
     __del__ = lambda self: None
 DoublePairVector_swigregister = _siqadconn.DoublePairVector_swigregister
 DoublePairVector_swigregister(DoublePairVector)
+
+class FloatPair(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, FloatPair, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, FloatPair, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        this = _siqadconn.new_FloatPair(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+    __swig_setmethods__["first"] = _siqadconn.FloatPair_first_set
+    __swig_getmethods__["first"] = _siqadconn.FloatPair_first_get
+    if _newclass:
+        first = _swig_property(_siqadconn.FloatPair_first_get, _siqadconn.FloatPair_first_set)
+    __swig_setmethods__["second"] = _siqadconn.FloatPair_second_set
+    __swig_getmethods__["second"] = _siqadconn.FloatPair_second_get
+    if _newclass:
+        second = _swig_property(_siqadconn.FloatPair_second_get, _siqadconn.FloatPair_second_set)
+    def __len__(self):
+        return 2
+    def __repr__(self):
+        return str((self.first, self.second))
+    def __getitem__(self, index): 
+        if not (index % 2):
+            return self.first
+        else:
+            return self.second
+    def __setitem__(self, index, val):
+        if not (index % 2):
+            self.first = val
+        else:
+            self.second = val
+    __swig_destroy__ = _siqadconn.delete_FloatPair
+    __del__ = lambda self: None
+FloatPair_swigregister = _siqadconn.FloatPair_swigregister
+FloatPair_swigregister(FloatPair)
+
+class FloatPairVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, FloatPairVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, FloatPairVector, name)
+    __repr__ = _swig_repr
+
+    def iterator(self):
+        return _siqadconn.FloatPairVector_iterator(self)
+    def __iter__(self):
+        return self.iterator()
+
+    def __nonzero__(self):
+        return _siqadconn.FloatPairVector___nonzero__(self)
+
+    def __bool__(self):
+        return _siqadconn.FloatPairVector___bool__(self)
+
+    def __len__(self):
+        return _siqadconn.FloatPairVector___len__(self)
+
+    def __getslice__(self, i, j):
+        return _siqadconn.FloatPairVector___getslice__(self, i, j)
+
+    def __setslice__(self, *args):
+        return _siqadconn.FloatPairVector___setslice__(self, *args)
+
+    def __delslice__(self, i, j):
+        return _siqadconn.FloatPairVector___delslice__(self, i, j)
+
+    def __delitem__(self, *args):
+        return _siqadconn.FloatPairVector___delitem__(self, *args)
+
+    def __getitem__(self, *args):
+        return _siqadconn.FloatPairVector___getitem__(self, *args)
+
+    def __setitem__(self, *args):
+        return _siqadconn.FloatPairVector___setitem__(self, *args)
+
+    def pop(self):
+        return _siqadconn.FloatPairVector_pop(self)
+
+    def append(self, x):
+        return _siqadconn.FloatPairVector_append(self, x)
+
+    def empty(self):
+        return _siqadconn.FloatPairVector_empty(self)
+
+    def size(self):
+        return _siqadconn.FloatPairVector_size(self)
+
+    def swap(self, v):
+        return _siqadconn.FloatPairVector_swap(self, v)
+
+    def begin(self):
+        return _siqadconn.FloatPairVector_begin(self)
+
+    def end(self):
+        return _siqadconn.FloatPairVector_end(self)
+
+    def rbegin(self):
+        return _siqadconn.FloatPairVector_rbegin(self)
+
+    def rend(self):
+        return _siqadconn.FloatPairVector_rend(self)
+
+    def clear(self):
+        return _siqadconn.FloatPairVector_clear(self)
+
+    def get_allocator(self):
+        return _siqadconn.FloatPairVector_get_allocator(self)
+
+    def pop_back(self):
+        return _siqadconn.FloatPairVector_pop_back(self)
+
+    def erase(self, *args):
+        return _siqadconn.FloatPairVector_erase(self, *args)
+
+    def __init__(self, *args):
+        this = _siqadconn.new_FloatPairVector(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+
+    def push_back(self, x):
+        return _siqadconn.FloatPairVector_push_back(self, x)
+
+    def front(self):
+        return _siqadconn.FloatPairVector_front(self)
+
+    def back(self):
+        return _siqadconn.FloatPairVector_back(self)
+
+    def assign(self, n, x):
+        return _siqadconn.FloatPairVector_assign(self, n, x)
+
+    def resize(self, *args):
+        return _siqadconn.FloatPairVector_resize(self, *args)
+
+    def insert(self, *args):
+        return _siqadconn.FloatPairVector_insert(self, *args)
+
+    def reserve(self, n):
+        return _siqadconn.FloatPairVector_reserve(self, n)
+
+    def capacity(self):
+        return _siqadconn.FloatPairVector_capacity(self)
+    __swig_destroy__ = _siqadconn.delete_FloatPairVector
+    __del__ = lambda self: None
+FloatPairVector_swigregister = _siqadconn.FloatPairVector_swigregister
+FloatPairVector_swigregister(FloatPairVector)
 
 class IntVector(_object):
     __swig_setmethods__ = {}
