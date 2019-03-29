@@ -418,7 +418,7 @@ class PoissonSolver():
     def createGif(self):
         dir = self.abs_in_dir
         dir_files = os.listdir(os.path.dirname(self.in_path))
-        self.plotter.makeGif(mode, dir, dir_files)
+        self.plotter.makeGif(self.mode, dir, dir_files)
 
     def exportPotential(self, step = None):
         print("Creating 2D data slice...")
