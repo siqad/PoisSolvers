@@ -67,7 +67,7 @@ class Mesher():
         # add the surface using 4 points of a rectangle
         self.mw.addSurface([x_min,y_min,z], [x_max,y_min,z], [x_max,y_max,z], [x_min,y_max,z], 1, option="seam")
 
-    def addDielectricField(self, res_in=0.25, res_out=1.0):
+    def addDielectricField(self, res_in=0.1, res_out=1.0):
         #Shift the points in a bit, so the field doesn't affect the boundary vertices.
         x_length = abs(self.bounds['xmax']-self.bounds['xmin'])
         y_length = abs(self.bounds['ymax']-self.bounds['ymin'])
@@ -134,7 +134,7 @@ class Mesher():
             elec.z1 = zs[0]
             elec.z2 = zs[1] #fill in the z dimension
             self.electrodes.append(sd.Electrode(elec)) #add to the list of electrodes
-            self.addElectrode(elec, resolution=1.0) #add the electrode into the mesh
+            self.addElectrode(elec, resolution=0.5) #add the electrode into the mesh
         return self.electrodes
 
     def finalize(self):

@@ -13,6 +13,12 @@ class MeshWriter():
     def __init__(self, resolution=0.1):
         self.resolution = resolution
         self.file_string = "SetFactory(\"OpenCASCADE\");\n"
+
+
+        # self.file_string += "Mesh.CharacteristicLengthFromPoints = 0;\n"
+        # self.file_string += "Mesh.CharacteristicLengthFromCurvature = 0;\n"
+        # self.file_string += "Mesh.CharacteristicLengthExtendFromBoundary = 0;\n"
+
         self.ind_point = 1
         self.ind_2d = 1
         self.ind_bounding_vol = 1
@@ -83,6 +89,8 @@ class MeshWriter():
             self.file_string += "Rotate { {0,0,1}, {%.3f,%.3f,%.3f}, %.3f } { Volume{%d};}\n"\
                 %((x_min+x_max)/2, (y_min+y_max)/2, (z_min+z_max)/2, np.deg2rad(angle), self.ind_vol)
         #increase the indices to account for elements created by using Box()
+        # self.file_string += "Characteristic Length{ PointsOf{ Volume{%d}; } } = %.3f;\n"\
+        #     %(self.ind_vol, self.resolution/10)
         self.ind_2d += 6 #surfaces
         self.ind_2d += 12 #lines
         self.ind_point += 8 #points

@@ -110,7 +110,7 @@ class PoissonSolver():
         if step == self.steps-1 and self.mode == "clock":
             self.createGif()
             self.exportDBHistory()
-            print(self.db_hist)
+            # print(self.db_hist)
             #json export
             if self.json_export_path and len(self.db_pots_export['pots']) > 0:
                 with open(self.json_export_path, 'w') as export_file:
