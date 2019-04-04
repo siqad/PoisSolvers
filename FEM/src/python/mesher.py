@@ -27,7 +27,8 @@ class Mesher():
         self.setResolution()
         self.createOuterBounds()
         self.addDielectricSurface()
-        self.addDielectricField()
+        self.addDielectricField(res_in=1.0)
+        # self.addDielectricField()
         surfaces = ['left', 'top', 'right', 'bottom', 'front', 'back', 'air']
         sd_list = list(self.setSubdomains())
         subdomains = dict(zip(surfaces, sd_list))

@@ -61,7 +61,7 @@ class MeshWriter():
             self.file_string += "Surface{%d} In Volume{%d};\n"\
                 %(self.ind_2d,self.ind_bounding_vol)
             self.file_string += "Characteristic Length{ PointsOf{ Surface{%d}; } } = %.3f;\n"\
-                %(self.ind_2d, self.resolution/2)
+                %(self.ind_2d, self.resolution/10)
             if box == True:
                 self.ind_boundaries[-1].append(self.ind_2d)
         if option == "bound":
