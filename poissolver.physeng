@@ -73,6 +73,16 @@ These replacements are done on the following fields:
           <periodic>Periodic</periodic>
         </value_selection>
       </bcs>
+      <material>
+        <T>string</T>
+        <val>cobalt</val>
+        <label>Electrode Material</label>
+        <tip>Metal selection for electrode. Affects the conductance of the material.</tip>
+        <value_selection type="ComboBox">
+          <cobalt>Cobalt</cobalt>
+          <copper>Copper</copper>
+        </value_selection>
+      </material>
       <temp>
         <T>float</T>
         <val>77</val>

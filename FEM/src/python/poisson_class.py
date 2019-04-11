@@ -159,7 +159,8 @@ class PoissonSolver():
     # if self.mode == "res" or self.mode == "ac":
         self.res.elec_list = self.elec_list
         self.res.dir = self.abs_in_dir
-
+        self.res.material = str(self.sim_params["material"])
+        self.res.setData()
         self.ac.dir = self.abs_in_dir
         self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
         # self.ac.xs = self.xs_unpadded

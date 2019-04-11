@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 class PowerEstimator():
     def __init__(self):
@@ -26,10 +27,20 @@ class PowerEstimator():
         self.p = self.p / self.area #self.p now in watts/angstrom^2
         self.p = self.p * 1E8 * 1E8 #self.p now in watts/cm^2
 
+    def save(self):
+        print("SAVING")
+        x = np.logspace(0, 20, num=self.num)
+        np.save(os.path.join(self.dir,"x.npy"), x)
+        os.mkdir(os.path.join(self.dir,"ac_powers"))
+        for i in range(4):
+            # plt.loglog(x, self.p[:,i], label="R{}".format(i))
+            np.save(os.path.join(self.dir,"ac_powers","p{}.npy").format(i), self.p[:,i])
+
     #plot the 4 resistor power draws on loglog.
     def plot(self):
         x = np.logspace(0, 20, num=self.num)
         plt.figure()
+
         for i in range(4):
             plt.loglog(x, self.p[:,i], label="R{}".format(i))
 
@@ -47,6 +58,7 @@ class PowerEstimator():
         self.createCircuit()
         self.normalizePower()
         self.plot()
+        self.save()
 
     #set the voltages and sweep impedances over frequencies.
     def createCircuit(self):
