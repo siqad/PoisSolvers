@@ -98,7 +98,7 @@ class Mesher():
         dist_y = 0.5*(ys[1] - ys[0])
         dist_z = 0.5*(zs[1] - zs[0])
 
-        self.fields += [self.mw.addBoxField(0.1, 1.0, \
+        self.fields += [self.mw.addBoxField(resolution, 1.0, \
                   [xs[0]-dist_x, xs[1]+dist_x], \
                   [ys[0]-dist_y, ys[1]+dist_y], \
                   [zs[0]-dist_z, zs[1]+dist_z])]
