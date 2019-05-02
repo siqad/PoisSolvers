@@ -29,12 +29,12 @@ class Plotter():
         cbar = plt.colorbar()
         cbar.set_label("Potential (V)")
         # get nice round numbers close to the y graduation values
-        self.adjustTicks()
-        plt.xlabel("X (nm)") #set label text
-        plt.ylabel("Y (nm)")
-        plt.title('Electric potential landscape from clocking electrodes')
+        # self.adjustTicks()
+        plt.xlabel("X (angstrom)") #set label text
+        plt.ylabel("Y (angstrom)")
+        # plt.title('Electric potential landscape from clocking electrodes')
         #save the picture to file, and close
-        plt.savefig(file_name, bbox_inces="tight", pad_inches=0)
+        plt.savefig(file_name, bbox_inches='tight', pad_inches=0)
         plt.close(fig)
 
     #Produces figures with the potential gradient, with axes
@@ -46,9 +46,9 @@ class Plotter():
         plt.title('Electric field from clocking electrodes')
         plt.quiver(X,Y,-Zgrad[1]/maxval,Zgrad[0]/maxval)
         # get nice round numbers close to the y graduation values
-        self.adjustTicks()
-        plt.xlabel("X (nm)") #set label text
-        plt.ylabel("Y (nm)")
+        # self.adjustTicks()
+        plt.xlabel("X (angstrom)") #set label text
+        plt.ylabel("Y (angstrom)")
         plt.savefig(file_name)
         plt.close(fig)
 

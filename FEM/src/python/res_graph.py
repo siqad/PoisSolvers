@@ -14,7 +14,7 @@ class ResGraph():
         self.rho = rho #resistivity is in E6 ohm cm
         self.rho *= 1E-6 #now in ohm cm
         self.rho *= 1E8 #now in ohm angstrom
-        print(self.rho)
+        # print(self.rho)
 
         self.z_bounds = []
         self.node_ind = 0

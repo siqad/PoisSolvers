@@ -25,7 +25,7 @@ class Mesher():
 
     def createGeometry(self):
         self.setResolution()
-        self.createOuterBounds()
+        self.createOuterBounds(0.5)
         self.addDielectricSurface()
         self.addDielectricField(res_in=1.0)
         # self.addDielectricField()
@@ -56,7 +56,7 @@ class Mesher():
     def createOuterBounds(self, resolution=1.0):
         print("Creating outer boundaries...")
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
-                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], self.resolution, option="bound")
+                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], self.mw.resolution*resolution, option="bound")
 
     def addDielectricSurface(self, resolution=1.0):
         print("Inserting dielectric surface...")
@@ -88,15 +88,22 @@ class Mesher():
         self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrode(self, electrode, resolution):
+        x_min = self.bounds['xmin']
+        y_min = self.bounds['ymin']
+        x_max = self.bounds['xmax']
+        y_max = self.bounds['ymax']
+        z_min = self.bounds['zmin']
+        z_max = self.bounds['zmax']
         xs = [electrode.x1,electrode.x2]
         ys = [electrode.y1,electrode.y2]
         zs = [electrode.z1,electrode.z2]
         self.mw.addBox([xs[0],ys[0],zs[0]], \
                   [xs[1],ys[1],zs[1]], resolution,angle=electrode.angle,option="seam")
+                  # [xs[1],ys[1],zs[1]], resolution,angle=electrode.angle,option="bound")
         #The physical extent of the field
-        dist_x = 0.5*(xs[1] - xs[0])
-        dist_y = 0.5*(ys[1] - ys[0])
-        dist_z = 0.5*(zs[1] - zs[0])
+        dist_x = 0.01*(x_max - x_min)
+        dist_y = 0.01*(y_max - y_min)
+        dist_z = 0.01*(z_max - z_min)
 
         self.fields += [self.mw.addBoxField(resolution, 1.0, \
                   [xs[0]-dist_x, xs[1]+dist_x], \
@@ -104,7 +111,7 @@ class Mesher():
                   [zs[0]-dist_z, zs[1]+dist_z])]
         self.fields = [self.mw.addMinField(self.fields)]
 
-    def setBGField(self, delta=10):
+    def setBGField(self, delta=5):
         bg_field_ind = self.mw.addMeanField(self.fields, delta)
         self.mw.setBGField(bg_field_ind)
 

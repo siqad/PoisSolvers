@@ -3,6 +3,7 @@ import dolfin
 import itertools
 import networkx as nx
 import res_graph
+import scipy.interpolate
 
 class ElectrodeDict:
     def __init__(self):
@@ -59,15 +60,18 @@ class ResistanceEstimator():
         self.createData()
         self.getInterpolant()
 
-    #Get the polynomial coefficients of the interpolant.
     def getInterpolant(self, deg = None):
-        if deg == None:
-            deg = len(self.temps) - 1
-        self.poly_coeffs = np.polyfit(np.array(self.temps),np.array(self.resistivities), deg)
+        # if deg == None:
+        #     deg = len(self.temps) - 1
+        # self.poly_coeffs = np.polyfit(np.array(self.temps),np.array(self.resistivities), deg)
+        self.interp = scipy.interpolate.interp1d(self.temps,self.resistivities)
 
     #Approximate
     def approxRes(self, x):
-        return np.polyval(self.poly_coeffs, x)
+        print(self.interp(x))
+        return self.interp(x)
+        # print(np.polyval(self.poly_coeffs, x))
+        # return np.polyval(self.poly_coeffs, x)
 
     def buildElecDict(self):
         # Empty dictionary for electrodes
