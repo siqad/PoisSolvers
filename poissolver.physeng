@@ -64,7 +64,7 @@ These replacements are done on the following fields:
     <sim_params preserve_order="true">
       <bcs>
         <T>string</T>
-        <val>Robin</val>
+        <val>robin</val>
         <label>Boundary conditions</label>
         <tip>The boundary conditions used at the simulation boundaries.</tip>
         <value_selection type="ComboBox">
@@ -157,7 +157,7 @@ These replacements are done on the following fields:
       </image_resolution>
       <mode>
         <T>string</T>
-        <val>Capacitance</val>
+        <val>clock</val>
         <label>Mode</label>
         <tip>The mode of simulation. Standard mode runs a PoisSolver simulation and disables the potential on the design panel. Clock mode generates a bunch of results stored in a file with clocking potentials on the electrodes.</tip>
         <value_selection type="ComboBox">
@@ -168,6 +168,34 @@ These replacements are done on the following fields:
           <ac>AC Power</ac>
         </value_selection>
       </mode>
+      <method>
+        <T>string</T>
+        <val>bicgstab</val>
+        <label>Method</label>
+        <tip>The solver iterative method.</tip>
+        <value_selection type="ComboBox">
+          <bicgstab>BiCGSTAB</bicgstab>
+          <cg>CG</cg>
+          <gmres>Generalised minimal residual</gmres>
+          <minres>Minimal Residual</minres>
+          <richardson>Richardson</richardson>
+          <tfqmr>TFQMR</tfqmr>
+        </value_selection>
+      </method>
+      <preconditioner>
+        <T>string</T>
+        <val>icc</val>
+        <label>Preconditioner</label>
+        <tip>The solver preconditioner.</tip>
+        <value_selection type="ComboBox">
+          <amg>Algebraic multigrid</amg>
+          <icc>Incomplete Cholesky</icc>
+          <ilu>Incomplete LU</ilu>
+          <jacobi>Jacobi</jacobi>
+          <none>None</none>
+          <sor>Successive Over-relaxation</sor>
+        </value_selection>
+      </preconditioner>
       <init_guess>
         <T>string</T>
         <val>Previous solution</val>

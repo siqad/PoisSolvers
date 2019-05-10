@@ -184,8 +184,19 @@ class PoissonSolver():
     def setSolverParams(self, step = None):
         self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u, self.bcs)
         self.solver = dolfin.LinearVariationalSolver(self.problem)
-        self.solver.parameters['linear_solver'] = 'gmres'
-        self.solver.parameters['preconditioner'] = 'sor'
+        # self.solver.parameters['linear_solver'] = 'cg'
+        # dolfin.parameters['num_threads'] = 4
+        dolfin.parameters['form_compiler']['optimize'] = True
+        self.solver.parameters['linear_solver'] = self.sim_params['method']
+        # self.solver.parameters['linear_solver'] = 'bicgstab'
+        # self.solver.parameters['linear_solver'] = 'tfqmr'
+        # self.solver.parameters['linear_solver'] = 'gmres'
+        self.solver.parameters['preconditioner'] = self.sim_params['preconditioner']
+        # self.solver.parameters['preconditioner'] = 'sor'
+        # self.solver.parameters['preconditioner'] = 'jacobi'
+        # self.solver.parameters['preconditioner'] = 'icc'
+        # self.solver.parameters['preconditioner'] = 'petsc_amg'
+        # self.solver.parameters['preconditioner'] = 'ilu'
         spec_param = self.solver.parameters['krylov_solver']
         init_guess = str(self.sim_params["init_guess"])
         if init_guess == "prev":
