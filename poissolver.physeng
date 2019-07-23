@@ -212,5 +212,15 @@ These replacements are done on the following fields:
         <label>Steps</label>
         <tip>Number of steps between low and high potentials when generating clock results</tip>
       </steps>
+      <contour>
+        <T>string</T>
+        <val>n</val>
+        <label>Contour</label>
+        <tip>Drawing contours on potential solution.</tip>
+        <value_selection type="ComboBox">
+          <n>No</n>
+          <y>Yes</y>
+        </value_selection>
+      </steps>
     </sim_params>
 </physeng>

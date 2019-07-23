@@ -53,7 +53,7 @@ class Plotter():
         plt.close(fig)
 
     #Produces a 2D slice of the potential at the given timestep without axes.
-    def savePotential(self, X, Y, Z, step, file_name):
+    def savePotential(self, X, Y, Z, step, file_name, draw_contour):
         fig = plt.figure(frameon=False)
         plt.gca().invert_yaxis()
         plt.axis('off')
@@ -62,8 +62,9 @@ class Plotter():
         plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         # plt.contour([X, Y], Z, [-0.1, -0.05, 0, 0.05, 0.1])
-        contour_plot = plt.contour(X, Y, Z, levels=[-0.1, -0.05, 0, 0.05, 0.1], colors='k')
-        plt.clabel(contour_plot, inline=1, fontsize=10)
+        if draw_contour:
+            contour_plot = plt.contour(X, Y, Z, levels=[-0.1, -0.05, 0, 0.05, 0.1], colors='k')
+            plt.clabel(contour_plot, inline=1, fontsize=10)
         plt.savefig(file_name)
         plt.close(fig)
 

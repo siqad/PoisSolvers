@@ -452,4 +452,9 @@ class PoissonSolver():
             grad_file_name = os.path.join(self.abs_out_dir,'grad.pdf')
             self.plotter.saveGrad(X,Y,Z,grad_file_name)
         pot_file_name = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
-        self.plotter.savePotential(X,Y,Z,step,pot_file_name)
+
+        if str(self.sim_params["contour"]) == 'y':
+            draw_contour = True
+        else:
+            draw_contour = False
+        self.plotter.savePotential(X,Y,Z,step,pot_file_name, draw_contour)
