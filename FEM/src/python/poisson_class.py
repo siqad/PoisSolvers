@@ -69,12 +69,11 @@ class PoissonSolver():
         self.metal_params = helpers.getMetalParams(self.sqconn)
         self.elec_list = helpers.getElectrodeCollections(self.sqconn)
         self.db_list = helpers.getDBCollections(self.sqconn)
+        self.initParameters(self.sqconn.getAllParameters())
         self.sim_params = self.sqconn.getAllParameters()
-        self.mode = self.getMode()
         self.createBoundaries()
         self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath(),
                 json_export_path)
-
 
     def setupSim(self):
         print("Setting up simulation...")
@@ -133,11 +132,28 @@ class PoissonSolver():
 
 
 #Functions that the user shouldn't have to call.
-    def getMode(self):
-        return str(self.sim_params["mode"])
+    def initParameters(self, params):
+        self.bc_type = str(params["bcs"])
+        self.depletion_depth = float(params["depletion_depth"])
+        self.eps_r = float(params["eps_r_dielectric"])
+        self.ground_depth = float(params["ground_depth"])
+        self.img_res = int(params["image_resolution"])
+        self.init_guess = str(params["init_guess"])
+        self.material = str(params["material"])
+        self.max_abs_error = float(params["max_abs_error"])
+        self.max_rel_error = float(params["max_rel_error"])
+        self.max_linear_iters = int(params["max_linear_iters"])
+        self.method = str(params["method"])
+        self.mode = str(params["mode"])
+        self.pad = [float(params["padding_x"]), float(params["padding_y"])]
+        self.preconditioner = str(params["preconditioner"])
+        self.sim_res = float(params["sim_resolution"])
+        self.slice_depth = float(params["slice_depth"])
+        self.sim_steps = int(params["steps"])
+        self.temp = float(params["temp"])
 
     def getRes(self):
-        self.res.createResGraph(float(self.sim_params["temp"]))
+        self.res.createResGraph(self.temp)
         return self.res.getResistances()
 
     def getCaps(self, step):
@@ -159,7 +175,7 @@ class PoissonSolver():
     # if self.mode == "res" or self.mode == "ac":
         self.res.elec_list = self.elec_list
         self.res.dir = self.abs_in_dir
-        self.res.material = str(self.sim_params["material"])
+        self.res.material = self.material
         self.res.setData()
         self.ac.dir = self.abs_in_dir
         self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
@@ -184,41 +200,30 @@ class PoissonSolver():
     def setSolverParams(self, step = None):
         self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u, self.bcs)
         self.solver = dolfin.LinearVariationalSolver(self.problem)
-        # self.solver.parameters['linear_solver'] = 'cg'
-        # dolfin.parameters['num_threads'] = 4
         dolfin.parameters['form_compiler']['optimize'] = True
-        self.solver.parameters['linear_solver'] = self.sim_params['method']
-        # self.solver.parameters['linear_solver'] = 'bicgstab'
-        # self.solver.parameters['linear_solver'] = 'tfqmr'
-        # self.solver.parameters['linear_solver'] = 'gmres'
-        self.solver.parameters['preconditioner'] = self.sim_params['preconditioner']
-        # self.solver.parameters['preconditioner'] = 'sor'
-        # self.solver.parameters['preconditioner'] = 'jacobi'
-        # self.solver.parameters['preconditioner'] = 'icc'
-        # self.solver.parameters['preconditioner'] = 'petsc_amg'
-        # self.solver.parameters['preconditioner'] = 'ilu'
+        self.solver.parameters['linear_solver'] = self.method
+        self.solver.parameters['preconditioner'] = self.preconditioner
         spec_param = self.solver.parameters['krylov_solver']
-        init_guess = str(self.sim_params["init_guess"])
-        if init_guess == "prev":
+        #These only accessible after spec_param available.
+        if self.init_guess == "prev":
             if step == 0:
                 spec_param['nonzero_initial_guess'] = False
             else:
                 spec_param['nonzero_initial_guess'] = True
-        elif init_guess == "zero":
+        elif self.init_guess == "zero":
             spec_param['nonzero_initial_guess'] = False
-        spec_param['absolute_tolerance'] = float(self.sim_params["max_abs_error"])
-        spec_param['relative_tolerance'] = float(self.sim_params["max_rel_error"])
-        spec_param['maximum_iterations'] = int(self.sim_params["max_linear_iters"])
+        spec_param['absolute_tolerance'] = self.max_abs_error
+        spec_param['relative_tolerance'] = self.max_rel_error
+        spec_param['maximum_iterations'] = self.max_linear_iters
 
     def setInitGuess(self, step):
         print("Setting initial guess...")
-        init_guess = str(self.sim_params["init_guess"])
-        if init_guess == "prev":
+        if self.init_guess == "prev":
             if step == 0:
                 self.u = dolfin.Function(self.V)
             else:
                 self.u = dolfin.interpolate(self.u_old,self.V)
-        elif init_guess == "zero":
+        elif self.init_guess == "zero":
             self.u = dolfin.Function(self.V)
 
     def setGroundPlane(self):
@@ -253,17 +258,14 @@ class PoissonSolver():
         self.EPS_0 = 8.854E-22 #in angstroms
         self.Q_E = 1.6E-19
         self.EPS_SI = dolfin.Constant(11.6*self.EPS_0)
-        EPS_R = float(self.sim_params["eps_r_dielectric"])
-        self.EPS_DIELECTRIC = dolfin.Constant(EPS_R*self.EPS_0)
+        self.EPS_DIELECTRIC = dolfin.Constant(self.eps_r*self.EPS_0)
         print("Setting charge density...")
         self.f = dolfin.Constant("0.0")
 
 
     def createBoundaries(self):
-        xs, ys, self.xs_unpadded, self.ys_unpadded = helpers.getBB(self.sqconn)
-        ground_plane = float(self.sim_params["ground_depth"])
-        vals = helpers.adjustBoundaries(xs, ys, self.metal_params, ground_plane)
-        # vals = helpers.adjustBoundaries(xs, ys, self.metal_params)
+        xs, ys, self.xs_unpadded, self.ys_unpadded = helpers.getBB(self.sqconn, self.pad)
+        vals = helpers.adjustBoundaries(xs, ys, self.metal_params, self.ground_depth)
         self.setBounds(list(vals))
 
     def setConnector(self,connector):
@@ -331,7 +333,7 @@ class PoissonSolver():
         return potential_to_set
 
     def getBoundaryComponent(self, u, v, ds):
-        if self.sim_params["bcs"] == "robin":
+        if self.bc_type == "robin":
             h_L = dolfin.Constant("0.0")
             h_R = dolfin.Constant("0.0")
             h_T = dolfin.Constant("0.0")
@@ -342,7 +344,7 @@ class PoissonSolver():
                 + h_T*u*v*ds(2) + h_Bo*u*v*ds(4) \
                 + h_F*u*v*ds(5)
                 # + h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
-        elif self.sim_params["bcs"] == "neumann":
+        elif self.bc_type == "neumann":
             g_L = dolfin.Constant("0.0")
             g_R = dolfin.Constant("0.0")
             g_T = dolfin.Constant("0.0")
@@ -353,7 +355,7 @@ class PoissonSolver():
                  - g_T*v*ds(2) - g_Bo*v*ds(4) \
                  - g_F*v*ds(5)
                  # - g_F*v*ds(5) - g_Ba*v*ds(6)
-        elif self.sim_params["bcs"] == "periodic":
+        elif self.bc_type == "periodic":
             h_F = dolfin.Constant("0.0")
             h_Ba = dolfin.Constant("0.0")
             component =  h_F*u*v*ds(5)
@@ -361,7 +363,7 @@ class PoissonSolver():
         return component
 
     def getFunctionSpace(self, mesh):
-        if self.sim_params["bcs"] == "periodic":
+        if self.bc_type == "periodic":
             print(self.bounds['xmin'], self.bounds['xmax'], self.bounds['ymin'], self.bounds['ymax'])
             self.pbc = sd.PeriodicBoundary(self.bounds['xmin'], self.bounds['xmax'], self.bounds['ymin'], self.bounds['ymax'])
             return dolfin.FunctionSpace(mesh, "CG", 3, constrained_domain=self.pbc)
@@ -373,7 +375,7 @@ class PoissonSolver():
         if self.mode == "standard":
             steps = 1
         elif self.mode == "clock":
-            steps = int(self.sim_params["steps"])
+            steps = self.sim_steps
         elif self.mode == "cap" or self.mode == "ac":
             steps = len(self.net_list)
         elif self.mode == "res":
@@ -413,7 +415,7 @@ class PoissonSolver():
         self.setMesh()
 
     def initMesher(self):
-        self.mesher.resolution = float(self.sim_params["sim_resolution"])
+        self.mesher.resolution = self.sim_res
         self.mesher.dir = self.abs_in_dir
         self.mesher.bounds = self.bounds
         self.mesher.elec_list = self.elec_list
@@ -434,9 +436,7 @@ class PoissonSolver():
 
     def exportPotential(self, step = None):
         print("Creating 2D data slice...")
-        depth = float(self.sim_params['slice_depth']) #in angstroms
-        res = int(self.sim_params['image_resolution'])
-        X, Y, Z, nx, ny = self.plotter.create2DSlice(self.u, depth, res, self.bounds)
+        X, Y, Z, nx, ny = self.plotter.create2DSlice(self.u, self.slice_depth, self.img_res, self.bounds)
         print("MAX: ", np.max(np.max(Z)))
         self.u_old = self.u #Set the potential to use as initial guess
 

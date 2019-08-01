@@ -8,12 +8,12 @@
 import numpy as np
 import itertools
 #elec_list and elec_poly_list are a list of electrodes and list of polygonal electrodes
-def getBB(sqconn):
+def getBB(sqconn, pad):
     elec_list = getElectrodeCollections(sqconn)
     sim_params = sqconn.getAllParameters()
-    bcs = sim_params["bcs"]
-    padding_x = float(sim_params["padding_x"])
-    padding_y = float(sim_params["padding_y"])
+    # bcs = sim_params["bcs"]
+    # padding_x = float(sim_params["padding_x"])
+    # padding_y = float(sim_params["padding_y"])
     x_list = []
     y_list = []
 
@@ -52,8 +52,10 @@ def getBB(sqconn):
     #     ys = [min_y-abs(padding), max_y+abs(padding)]
     #     return xs, ys
 
-    xs = [min_x-abs(padding_x), max_x+abs(padding_x)]
-    ys = [min_y-abs(padding_y), max_y+abs(padding_y)]
+    # xs = [min_x-abs(padding_x), max_x+abs(padding_x)]
+    # ys = [min_y-abs(padding_y), max_y+abs(padding_y)]
+    xs = [min_x-abs(pad[0]), max_x+abs(pad[0])]
+    ys = [min_y-abs(pad[1]), max_y+abs(pad[1])]
     return xs, ys, [min_x, max_x], [min_y, max_y]
 
 

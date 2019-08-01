@@ -14,11 +14,6 @@ class MeshWriter():
         self.resolution = resolution
         self.file_string = "SetFactory(\"OpenCASCADE\");\n"
 
-
-        # self.file_string += "Mesh.CharacteristicLengthFromPoints = 0;\n"
-        # self.file_string += "Mesh.CharacteristicLengthFromCurvature = 0;\n"
-        # self.file_string += "Mesh.CharacteristicLengthExtendFromBoundary = 0;\n"
-
         self.ind_point = 1
         self.ind_2d = 1
         self.ind_bounding_vol = 1

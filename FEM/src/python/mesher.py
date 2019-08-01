@@ -26,9 +26,6 @@ class Mesher():
     def createGeometry(self):
         self.setResolution()
         self.createOuterBounds(0.5)
-        self.addDielectricSurface()
-        self.addDielectricField(res_in=1.0)
-        # self.addDielectricField()
         surfaces = ['left', 'top', 'right', 'bottom', 'front', 'back', 'air']
         sd_list = list(self.setSubdomains())
         subdomains = dict(zip(surfaces, sd_list))
@@ -57,35 +54,9 @@ class Mesher():
         print("Creating outer boundaries...")
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
                        [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], self.mw.resolution*resolution, option="bound")
-
-    def addDielectricSurface(self, resolution=1.0):
-        print("Inserting dielectric surface...")
-        x_min = self.bounds['xmin']
-        y_min = self.bounds['ymin']
-        x_max = self.bounds['xmax']
-        y_max = self.bounds['ymax']
-        z = self.bounds['dielectric']
-        # add the surface using 4 points of a rectangle
-        self.mw.addSurface([x_min,y_min,z], [x_max,y_min,z], [x_max,y_max,z], [x_min,y_max,z], 1, option="seam")
-
-    def addDielectricField(self, res_in=0.1, res_out=1.0):
-        #Shift the points in a bit, so the field doesn't affect the boundary vertices.
-        x_length = abs(self.bounds['xmax']-self.bounds['xmin'])
-        y_length = abs(self.bounds['ymax']-self.bounds['ymin'])
-        # z_length = abs(self.bounds['zmax']-self.bounds['zmin'])
-        x_min = self.bounds['xmin'] + 0.05*x_length
-        y_min = self.bounds['ymin'] + 0.05*y_length
-        x_max = self.bounds['xmax'] - 0.05*x_length
-        y_max = self.bounds['ymax'] - 0.05*y_length
-        dielec = self.bounds['dielectric']
-        z_min = self.bounds['zmin']
-        z_max = self.bounds['zmax']
-        self.fields = []
-        #construct a field using the given resolutions and the dimensions of the box.
-        self.fields += [self.mw.addBoxField(res_in, res_out, [x_min, x_max], [y_min, y_max], \
-                  [dielec-0.1*np.abs(z_min), dielec+0.1*np.abs(z_max)])]
-                  # [dielec-0.1*z_length, dielec+0.1*z_length])]
-        self.fields = [self.mw.addMinField(self.fields)]
+        #Add in a box on the negative half, to get the plane surface at z = 0
+        self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
+                       [self.bounds['xmax'],self.bounds['ymax'],0], self.mw.resolution*resolution, option="seam")
 
     def addElectrode(self, electrode, resolution):
         x_min = self.bounds['xmin']

@@ -64,7 +64,7 @@ These replacements are done on the following fields:
     <sim_params preserve_order="true">
       <bcs>
         <T>string</T>
-        <val>robin</val>
+        <val>periodic</val>
         <label>Boundary conditions</label>
         <tip>The boundary conditions used at the simulation boundaries.</tip>
         <value_selection type="ComboBox">
@@ -75,7 +75,7 @@ These replacements are done on the following fields:
       </bcs>
       <material>
         <T>string</T>
-        <val>cobalt</val>
+        <val>copper</val>
         <label>Electrode Material</label>
         <tip>Metal selection for electrode. Affects the conductance of the material.</tip>
         <value_selection type="ComboBox">
@@ -91,13 +91,13 @@ These replacements are done on the following fields:
       </temp>
       <padding_x>
         <T>float</T>
-        <val>10</val>
+        <val>50</val>
         <label>x-Padding (ang)</label>
         <tip>Simulation padding size in the horizontal direction.</tip>
       </padding_x>
       <padding_y>
         <T>float</T>
-        <val>10</val>
+        <val>50</val>
         <label>y-Padding (ang)</label>
         <tip>Simulation padding size in the vertical direction.</tip>
       </padding_y>
@@ -114,14 +114,14 @@ These replacements are done on the following fields:
         <tip>The depth of dopant depletion into the semiconductor bulk.</tip>
       </depletion_depth>
       <eps_r_dielectric>
-        <T>float</T>
-        <val>1.0</val>
+        <T>double</T>
+        <val>3.9</val>
         <label>Relative permittivity</label>
         <tip>Relative permittivity (or dielectric constant) of material above semiconductor.</tip>
       </eps_r_dielectric>
       <sim_resolution>
-        <T>float</T>
-        <val>1.0</val>
+        <T>double</T>
+        <val>5</val>
         <label>Resolution</label>
         <tip>Resolution scaling factor. Warning: higher resolution calculations will take longer to complete.</tip>
       </sim_resolution>
@@ -170,7 +170,7 @@ These replacements are done on the following fields:
       </mode>
       <method>
         <T>string</T>
-        <val>bicgstab</val>
+        <val>gmres</val>
         <label>Method</label>
         <tip>The solver iterative method.</tip>
         <value_selection type="ComboBox">
@@ -184,7 +184,7 @@ These replacements are done on the following fields:
       </method>
       <preconditioner>
         <T>string</T>
-        <val>icc</val>
+        <val>sor</val>
         <label>Preconditioner</label>
         <tip>The solver preconditioner.</tip>
         <value_selection type="ComboBox">
@@ -208,7 +208,7 @@ These replacements are done on the following fields:
       </init_guess>
       <steps>
         <T>int</T>
-        <val>10</val>
+        <val>8</val>
         <label>Steps</label>
         <tip>Number of steps between low and high potentials when generating clock results</tip>
       </steps>
