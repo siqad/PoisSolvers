@@ -7,7 +7,7 @@
 
 import matplotlib
 
-#Change matplotlib backend to support systems with no X server (e.g. when 
+#Change matplotlib backend to support systems with no X server (e.g. when
 #running inside a docker container).
 matplotlib.use('Agg')
 
@@ -43,7 +43,7 @@ parser.add_argument(dest="in_path", type=file_must_exist, help="Path to the "
 parser.add_argument(dest="out_path", help="Path to the output file.",
         metavar="OUT_PATH")
 #Optional argument for JSON export file path
-parser.add_argument("--pot-json-export-path", dest="json_export_path", 
+parser.add_argument("--pot-json-export-path", dest="json_export_path",
         help="Path to the JSON export file intended for Hopping Dynamics "
         "simulator.", metavar="JSON_EXPORT_PATH")
 args = parser.parse_args()

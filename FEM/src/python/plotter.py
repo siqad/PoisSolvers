@@ -64,22 +64,14 @@ class Plotter():
         plt.savefig(file_name)
         plt.close(fig)
 
-    #Produces a 2D data slice, used for getting data in correct format for plotting
-    def create2DSlice(self, u, depth, resolution, bounds):
-        x = np.linspace(bounds['xmin'], bounds['xmax'], resolution)
-        y = np.linspace(bounds['ymin'], bounds['ymax'], resolution)
-        X, Y = np.meshgrid(x, y)
-        z = np.array([u(i, j, bounds['dielectric']+depth) for j in y for i in x])
-        Z = z.reshape(resolution, resolution)
-        return X, Y, Z, resolution, resolution
-
-    #Creates a gif from all "SiAirBoundary{}" files in the given directory.
-    def makeGif(self, mode, dir, dir_files):
+    #Creates a gif from all "key{}" files in the given directory.
+    def makeGif(self, mode, dir, key):
+        dir_files = os.listdir(dir)
         if mode == "clock":
             images = []
             image_files = []
             for file in dir_files:
-                if file.startswith("SiAirBoundary"):
+                if file.startswith(key):
                     image_files.append(os.path.join(dir, file))
             image_files.sort()
             for image_name in image_files:
@@ -102,3 +94,13 @@ class Plotter():
         for loc in locs:
             labels += [str(int(round(loc/10, 2)))]
         plt.xticks(locs, labels)
+
+    def plotPotential(self, step, data, out_dir):
+        X, Y, Z, nx, ny = data
+        if step == 0:
+            plot_file_name = os.path.join(out_dir,"SiAirPlot.png")
+            self.saveAxesPotential(X, Y, Z, plot_file_name)
+            grad_file_name = os.path.join(out_dir,'grad.pdf')
+            self.saveGrad(X,Y,Z,grad_file_name)
+        pot_file_name = os.path.join(out_dir,'SiAirBoundary{:03d}.png'.format(step))
+        self.savePotential(X,Y,Z,step,pot_file_name)

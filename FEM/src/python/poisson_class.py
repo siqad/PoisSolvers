@@ -18,23 +18,16 @@ import capacitance
 import resistance
 import ac
 from dolfin_utils.meshconvert import meshconvert
+from exporter import Exporter
 
 class PoissonSolver():
     #Constructor
     def __init__(self):
         #mesh generation
-        self.mesh = None
         self.mesher = mesher.Mesher()
 
         #I/O
-        self.sqconn = None
-        self.in_path = None
-        self.out_path_path = None
-        self.json_export_path = None
         self.plotter = plotter.Plotter()
-        self.db_hist = []
-        self.db_pots_export = {}
-        self.db_pots_export['pots'] = []
 
         #parameters gotten from sqconn
         self.sim_params = None
@@ -72,8 +65,8 @@ class PoissonSolver():
         self.initParameters(self.sqconn.getAllParameters())
         self.sim_params = self.sqconn.getAllParameters()
         self.createBoundaries()
-        self.setPaths(self.sqconn.inputPath(), self.sqconn.outputPath(),
-                json_export_path)
+        self.exporter = Exporter(in_path=self.sqconn.inputPath(), out_path=self.sqconn.outputPath(), json_path=json_export_path, sqconn=self.sqconn)
+
 
     def setupSim(self):
         print("Setting up simulation...")
@@ -103,23 +96,26 @@ class PoissonSolver():
     def export(self, step = None):
         print("Exporting...")
         self.u.set_allow_extrapolation(True)
-        self.exportDBs(step)
-        self.exportPotential(step)
+        self.exporter.exportDBs(step, self.steps, self.db_list, self.u, self.bounds['dielectric'])
+
+        print("Creating 2D data slice...")
+        data_2d = self.create2DSlice(self.u, self.slice_depth, self.img_res, self.bounds)
+        print("Plotting 2D data slice...")
+        self.plotter.plotPotential(step, data_2d, self.exporter.abs_out_dir)
+        print("Saving 2D potential data to XML...")
+        self.exporter.exportPotentialXML(data_2d)
         #last step, finish off by creating gif and getting capacitances if applicable
         if step == self.steps-1 and self.mode == "clock":
-            self.createGif()
-            self.exportDBHistory()
-            # print(self.db_hist)
-            #json export
-            if self.json_export_path and len(self.db_pots_export['pots']) > 0:
-                with open(self.json_export_path, 'w') as export_file:
-                    json.dump(self.db_pots_export, export_file)
+            self.plotter.makeGif(self.mode, self.exporter.abs_in_dir, "SiAirBoundary")
+            self.exporter.exportDBHistory()
+            self.exporter.exportDBJSON()
 
     def loopSolve(self):
         for step in range(self.steps):
             self.setupDolfinSolver(step)
             self.solve()
             self.export(step)
+            self.u_old = self.u #Set the potential to use as initial guess
             if self.mode == "cap" or self.mode == "ac":
                 self.getCaps(step)
         if self.mode == "res" or self.mode == "ac":
@@ -127,8 +123,6 @@ class PoissonSolver():
             self.resistances = self.getRes()
         if self.mode == "ac":
             self.ac.run(self.resistances, self.cap_matrix)
-            # print("AC MODE")
-            # self.ac = ac.PowerEstimator()
 
 
 #Functions that the user shouldn't have to call.
@@ -163,7 +157,6 @@ class PoissonSolver():
 
     def initRC(self):
         print("Setting RC params..")
-    # if self.mode == "cap" or self.mode == "ac":
         self.cap.mesh = self.mesh
         self.cap.EPS_SI = self.EPS_SI
         self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
@@ -171,31 +164,22 @@ class PoissonSolver():
         self.cap.elec_list = self.elec_list
         self.cap.boundaries = self.boundaries
         self.cap.u = self.u
-        self.cap.dir = self.abs_in_dir
-    # if self.mode == "res" or self.mode == "ac":
+        self.cap.dir = self.exporter.abs_in_dir
         self.res.elec_list = self.elec_list
-        self.res.dir = self.abs_in_dir
+        self.res.dir = self.exporter.abs_in_dir
         self.res.material = self.material
         self.res.setData()
-        self.ac.dir = self.abs_in_dir
+        self.ac.dir = self.exporter.abs_in_dir
         self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
-        # self.ac.xs = self.xs_unpadded
-        # self.ac.ys = self.ys_unpadded
 
-    def exportDBs(self, step):
-        if self.db_list:
-            db_pots = []
-            pots_snapshot = []
-            for db in self.db_list:
-                db_pots.append([2*np.pi*step/self.steps, db.x, db.y, self.u(db.x, db.y, self.bounds['dielectric'])])
-                pots_snapshot.append(self.u(db.x, db.y, self.bounds['dielectric']))
-            self.db_hist.extend(db_pots)
-            self.db_pots_export['pots'].append(pots_snapshot)
-            # self.sqconn.export(db_pot=db_pots)
-
-    def exportDBHistory(self):
-            self.sqconn.export(db_pot=self.db_hist)
-
+    #Produces a 2D data slice, used for getting data in correct format for plotting
+    def create2DSlice(self, u, depth, resolution, bounds):
+        x = np.linspace(bounds['xmin'], bounds['xmax'], resolution)
+        y = np.linspace(bounds['ymin'], bounds['ymax'], resolution)
+        X, Y = np.meshgrid(x, y)
+        z = np.array([u(i, j, bounds['dielectric']+depth) for j in y for i in x])
+        Z = z.reshape(resolution, resolution)
+        return X, Y, Z, resolution, resolution
 
     def setSolverParams(self, step = None):
         self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u, self.bcs)
@@ -268,22 +252,13 @@ class PoissonSolver():
         vals = helpers.adjustBoundaries(xs, ys, self.metal_params, self.ground_depth)
         self.setBounds(list(vals))
 
-    def setConnector(self,connector):
+    def setConnector(self, connector):
         self.sqconn = connector
 
     def setBounds(self, bounds):
         keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
         self.bounds = dict(zip(keys, bounds))
         print(self.bounds)
-
-    def setPaths(self, in_path="", out_path="", json_export_path=None):
-        if in_path != "":
-            self.in_path = in_path
-            self.abs_in_dir = os.path.abspath(os.path.dirname(self.in_path))
-        if out_path != "":
-            self.out_path = out_path
-            self.abs_out_dir = os.path.abspath(os.path.dirname(self.out_path))
-        self.json_export_path = json_export_path
 
     def setSimParams(self, sim_params=None):
         if sim_params:
@@ -416,40 +391,13 @@ class PoissonSolver():
 
     def initMesher(self):
         self.mesher.resolution = self.sim_res
-        self.mesher.dir = self.abs_in_dir
+        self.mesher.dir = self.exporter.abs_in_dir
         self.mesher.bounds = self.bounds
         self.mesher.elec_list = self.elec_list
         self.mesher.metal_params = self.metal_params
 
     def setMesh(self):
         print("Converting mesh from .msh to .xml...")
-        meshconvert.convert2xml(os.path.join(self.abs_in_dir,"domain.msh"), os.path.join(self.abs_in_dir,"domain.xml"))
+        meshconvert.convert2xml(os.path.join(self.exporter.abs_in_dir,"domain.msh"), os.path.join(self.exporter.abs_in_dir,"domain.xml"))
         print("Importing mesh from .xml...")
-        self.mesh = dolfin.Mesh(os.path.join(self.abs_in_dir,'domain.xml'))
-
-# PLOTTING
-
-    def createGif(self):
-        dir = self.abs_in_dir
-        dir_files = os.listdir(os.path.dirname(self.in_path))
-        self.plotter.makeGif(self.mode, dir, dir_files)
-
-    def exportPotential(self, step = None):
-        print("Creating 2D data slice...")
-        X, Y, Z, nx, ny = self.plotter.create2DSlice(self.u, self.slice_depth, self.img_res, self.bounds)
-        print("MAX: ", np.max(np.max(Z)))
-        self.u_old = self.u #Set the potential to use as initial guess
-
-        print("Saving 2D potential data to XML...")
-        XYZ = []
-        for i in range(nx):
-            for j in range(ny):
-                XYZ.append([X[i,j],Y[i,j],Z[i,j]])
-        self.sqconn.export(potential=XYZ)
-        if step == 0:
-            plot_file_name = os.path.join(self.abs_out_dir,"SiAirPlot.png")
-            self.plotter.saveAxesPotential(X, Y, Z, plot_file_name)
-            grad_file_name = os.path.join(self.abs_out_dir,'grad.pdf')
-            self.plotter.saveGrad(X,Y,Z,grad_file_name)
-        pot_file_name = os.path.join(self.abs_out_dir,'SiAirBoundary{:03d}.png'.format(step))
-        self.plotter.savePotential(X,Y,Z,step,pot_file_name)
+        self.mesh = dolfin.Mesh(os.path.join(self.exporter.abs_in_dir,'domain.xml'))
