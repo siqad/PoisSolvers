@@ -33,17 +33,14 @@ class PowerEstimator():
         np.save(os.path.join(self.dir,"x.npy"), x)
         os.mkdir(os.path.join(self.dir,"ac_powers"))
         for i in range(4):
-            # plt.loglog(x, self.p[:,i], label="R{}".format(i))
             np.save(os.path.join(self.dir,"ac_powers","p{}.npy").format(i), self.p[:,i])
 
     #plot the 4 resistor power draws on loglog.
     def plot(self):
         x = np.logspace(0, 20, num=self.num)
         plt.figure()
-
         for i in range(4):
             plt.loglog(x, self.p[:,i], label="R{}".format(i))
-
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Power in Watts/cm^2")
         plt.title("Power per area vs Frequency")

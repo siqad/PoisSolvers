@@ -23,8 +23,6 @@ class ElectrodeDict:
 
 class ResistanceEstimator():
     def __init__(self, t = None, r = None,):
-        # self.createData(t, r)
-        # self.getInterpolant()
         self.dir = ""
         self.resistances = {}
         # self.material = ""
@@ -36,7 +34,6 @@ class ResistanceEstimator():
             self.temps = t
             self.resistivities = r
         else:
-            # print(self.material)
             if material == "cobalt":
             #Otherwise use data from White and Woods, 1959
                 self.temps = [10,15,20,25,30, \
@@ -57,22 +54,13 @@ class ResistanceEstimator():
                                       0.3527, 0.4927, 0.6377, 0.7777, 0.9227, \
                                       1.0627, 1.2027, 1.4027, 1.5527, 1.7027]
 
-    # def setData(self):
-    #     self.setMaterialData()
-    #     self.getInterpolant()
-
     def getInterpolant(self, deg = None):
-        # if deg == None:
-        #     deg = len(self.temps) - 1
-        # self.poly_coeffs = np.polyfit(np.array(self.temps),np.array(self.resistivities), deg)
         self.interp = scipy.interpolate.interp1d(self.temps,self.resistivities)
 
     #Approximate
     def approxRes(self, x):
         print(self.interp(x))
         return self.interp(x)
-        # print(np.polyval(self.poly_coeffs, x))
-        # return np.polyval(self.poly_coeffs, x)
 
     def buildElecDict(self):
         # Empty dictionary for electrodes
@@ -92,5 +80,3 @@ class ResistanceEstimator():
         if self.mode == "res" or self.mode == "ac":
             self.createResGraph(temp)
             self.resistances = self.res_graph.getCalculatedResistances()
-
-            # return self.res_graph.getCalculatedResistances()

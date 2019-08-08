@@ -28,11 +28,8 @@ class Plotter():
         plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         cbar = plt.colorbar()
         cbar.set_label("Potential (V)")
-        # get nice round numbers close to the y graduation values
-        # self.adjustTicks()
         plt.xlabel("X (angstrom)") #set label text
         plt.ylabel("Y (angstrom)")
-        # plt.title('Electric potential landscape from clocking electrodes')
         #save the picture to file, and close
         plt.savefig(file_name, bbox_inches='tight', pad_inches=0)
         plt.close(fig)
@@ -45,8 +42,6 @@ class Plotter():
         maxval = np.max(np.max(np.abs(Zgrad)))
         plt.title('Electric field from clocking electrodes')
         plt.quiver(X,Y,-Zgrad[1]/maxval,Zgrad[0]/maxval)
-        # get nice round numbers close to the y graduation values
-        # self.adjustTicks()
         plt.xlabel("X (angstrom)") #set label text
         plt.ylabel("Y (angstrom)")
         plt.savefig(file_name)
@@ -81,19 +76,6 @@ class Plotter():
                        append_images=images[1:],
                        delay=0.5,
                        loop=0)
-
-    def adjustTicks(self):
-        locs, labels = plt.yticks()
-        labels = []
-        for loc in locs:
-            labels += [str(int(round(loc/10, 2)))]
-        plt.yticks(locs, labels)        #replace the labels
-        #do the same for x graduation values
-        locs, labels = plt.xticks()
-        labels = []
-        for loc in locs:
-            labels += [str(int(round(loc/10, 2)))]
-        plt.xticks(locs, labels)
 
     def plotPotential(self, step, data, out_dir):
         X, Y, Z, nx, ny = data

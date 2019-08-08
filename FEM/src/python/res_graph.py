@@ -14,16 +14,12 @@ class ResGraph():
         self.rho = rho #resistivity is in E6 ohm cm
         self.rho *= 1E-6 #now in ohm cm
         self.rho *= 1E8 #now in ohm angstrom
-        # print(self.rho)
-
         self.z_bounds = []
         self.node_ind = 0
         self.setZMaxes()
         self.max_resistances = []
 
         self.buildGraph()
-
-        # self.debugPrint()
 
     def setZMaxes(self):
         self.z_bounds.append(min(elec.z1 for elec in self.elec_list))

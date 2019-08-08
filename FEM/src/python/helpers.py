@@ -11,9 +11,6 @@ import itertools
 def getBB(sqconn, pad):
     elec_list = getElectrodeCollections(sqconn)
     sim_params = sqconn.getAllParameters()
-    # bcs = sim_params["bcs"]
-    # padding_x = float(sim_params["padding_x"])
-    # padding_y = float(sim_params["padding_y"])
     x_list = []
     y_list = []
 
@@ -39,25 +36,9 @@ def getBB(sqconn, pad):
     max_x = max(x_list)
     min_y = min(y_list)
     max_y = max(y_list)
-    # if padding == 0.0:
-    #     if bcs == "periodic":
-    #         scale = 0.2
-    #     else:
-    #         scale = 4.0
-    #     xs = [min_x-scale*(max_x-min_x), max_x+scale*(max_x-min_x)]
-    #     ys = [min_y-scale*(max_y-min_y), max_y+scale*(max_y-min_y)]
-    #     return xs, ys
-    # else:
-    #     xs = [min_x-abs(padding), max_x+abs(padding)]
-    #     ys = [min_y-abs(padding), max_y+abs(padding)]
-    #     return xs, ys
-
-    # xs = [min_x-abs(padding_x), max_x+abs(padding_x)]
-    # ys = [min_y-abs(padding_y), max_y+abs(padding_y)]
     xs = [min_x-abs(pad[0]), max_x+abs(pad[0])]
     ys = [min_y-abs(pad[1]), max_y+abs(pad[1])]
     return xs, ys, [min_x, max_x], [min_y, max_y]
-
 
 def getMetalParams(sqconn):
     metal_params = {}
@@ -88,8 +69,6 @@ def adjustBoundaries(xs, ys, m_p, gp_depth):
         if m_p[key]:
             candidates = np.append(candidates, m_p[key][0])
             candidates = np.append(candidates, sum(m_p[key]))
-    # zmin = -np.max(np.abs(candidates))*1.5
-    # zmax = -zmin
     zmax = np.max(np.abs(candidates))*1.5
     zmin = -gp_depth
     b_di = 0.0 #at the surface.
