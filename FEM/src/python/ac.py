@@ -53,12 +53,13 @@ class PowerEstimator():
 
     #setup the circuit using the resistance and capacitance values provided, and plot the result.
     def run(self, res, cap_m):
-        self.R = res
-        self.cap_m = cap_m
-        self.createCircuit()
-        self.normalizePower()
-        self.plot()
-        self.save()
+        if self.mode == "ac":
+            self.R = res
+            self.cap_m = cap_m
+            self.createCircuit()
+            self.normalizePower()
+            self.plot()
+            self.save()
 
     #set the voltages and sweep impedances over frequencies.
     def createCircuit(self):

@@ -23,38 +23,20 @@ from exporter import Exporter
 class PoissonSolver():
     #Constructor
     def __init__(self):
+
         #mesh generation
         self.mesher = mesher.Mesher()
-
-        #I/O
+        #plotting
         self.plotter = plotter.Plotter()
-
-        #parameters gotten from sqconn
-        self.sim_params = None
-        self.elec_list = None
-        self.metal_params = None
-        self.db_list = None
-        self.net_list = []
 
         #Resistance and capacitance tools
         self.cap = capacitance.CapacitanceEstimator()
         self.res = resistance.ResistanceEstimator()
         self.ac = ac.PowerEstimator()
 
-        #calculated values and ones used during simulation
-        self.resistances = {}
-        self.cap_matrix = []
-        self.steps = None
+        #empty lists and dictionaries
+        self.net_list = []
         self.bcs = []
-        self.dx = None
-        self.ds = None
-        self.F = None
-        self.a = None
-        self.L = None
-        self.u = None
-        self.u_old = None
-        self.v = None
-        self.V = None
 
 #Functions that users are expected to use.
     def initialize(self, json_export_path=None):
@@ -67,7 +49,6 @@ class PoissonSolver():
         self.createBoundaries()
         self.exporter = Exporter(in_path=self.sqconn.inputPath(), out_path=self.sqconn.outputPath(), json_path=json_export_path, sqconn=self.sqconn)
 
-
     def setupSim(self):
         print("Setting up simulation...")
         self.markDomains(self.mesh)
@@ -76,6 +57,7 @@ class PoissonSolver():
         self.setConstants()
         self.createNetlist()
         self.steps = self.getSteps()
+        self.initRC()
 
     def setupDolfinSolver(self, step = None):
         print("Setting up Dolfin solver...")
@@ -84,7 +66,6 @@ class PoissonSolver():
         self.defineVariationalForm()
         self.setInitGuess(step)
         self.setSolverParams()
-        self.initRC()
 
     def solve(self):
         print("Solving problem...")
@@ -97,14 +78,13 @@ class PoissonSolver():
         print("Exporting...")
         self.u.set_allow_extrapolation(True)
         self.exporter.exportDBs(step, self.steps, self.db_list, self.u, self.bounds['dielectric'])
-
         print("Creating 2D data slice...")
         data_2d = self.create2DSlice(self.u, self.slice_depth, self.img_res, self.bounds)
         print("Plotting 2D data slice...")
         self.plotter.plotPotential(step, data_2d, self.exporter.abs_out_dir)
         print("Saving 2D potential data to XML...")
         self.exporter.exportPotentialXML(data_2d)
-        #last step, finish off by creating gif and getting capacitances if applicable
+        #last step, finish off by creating gif and exporting DB potentials
         if step == self.steps-1 and self.mode == "clock":
             self.plotter.makeGif(self.mode, self.exporter.abs_in_dir, "SiAirBoundary")
             self.exporter.exportDBHistory()
@@ -115,14 +95,10 @@ class PoissonSolver():
             self.setupDolfinSolver(step)
             self.solve()
             self.export(step)
-            self.u_old = self.u #Set the potential to use as initial guess
-            if self.mode == "cap" or self.mode == "ac":
-                self.getCaps(step)
-        if self.mode == "res" or self.mode == "ac":
-            self.initRC()
-            self.resistances = self.getRes()
-        if self.mode == "ac":
-            self.ac.run(self.resistances, self.cap_matrix)
+            self.u_old = self.u # Set the potential to use as initial guess
+            self.cap.getCaps(step, self.steps, self.u)
+        self.res.getResistances(self.temp)
+        self.ac.run(self.res.resistances, self.cap.cap_matrix)
 
 
 #Functions that the user shouldn't have to call.
@@ -146,29 +122,22 @@ class PoissonSolver():
         self.sim_steps = int(params["steps"])
         self.temp = float(params["temp"])
 
-    def getRes(self):
-        self.res.createResGraph(self.temp)
-        return self.res.getResistances()
-
-    def getCaps(self, step):
-        self.cap.calcCaps()
-        if step == self.steps-1:
-            self.cap_matrix = self.cap.formCapMatrix()
-
     def initRC(self):
         print("Setting RC params..")
+        self.cap.mode = self.mode
         self.cap.mesh = self.mesh
         self.cap.EPS_SI = self.EPS_SI
         self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
         self.cap.net_list = self.net_list
         self.cap.elec_list = self.elec_list
         self.cap.boundaries = self.boundaries
-        self.cap.u = self.u
         self.cap.dir = self.exporter.abs_in_dir
+        self.res.mode = self.mode
         self.res.elec_list = self.elec_list
         self.res.dir = self.exporter.abs_in_dir
-        self.res.material = self.material
-        self.res.setData()
+        self.res.setMaterialData(self.material)
+        self.res.getInterpolant() #create interpolant for resistivity.
+        self.ac.mode = self.mode
         self.ac.dir = self.exporter.abs_in_dir
         self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
 
@@ -260,10 +229,6 @@ class PoissonSolver():
         self.bounds = dict(zip(keys, bounds))
         print(self.bounds)
 
-    def setSimParams(self, sim_params=None):
-        if sim_params:
-            self.sim_params = sim_params
-
     def markDomains(self, mesh):
         # Initialize mesh function for interior domains
         print("Marking boundaries...")
@@ -345,7 +310,6 @@ class PoissonSolver():
         else:
             return dolfin.FunctionSpace(mesh, "CG", 3)
 
-
     def getSteps(self):
         if self.mode == "standard":
             steps = 1
@@ -387,7 +351,12 @@ class PoissonSolver():
         #face subdomains as values.
         #electrodes is a list of the electrode subdomains.
         self.subdomains, self.electrodes = self.mesher.createGeometry()
-        self.setMesh()
+        #convert mesh to xml suitable for dolfin
+        print("Converting mesh from .msh to .xml...")
+        meshconvert.convert2xml(os.path.join(self.exporter.abs_in_dir,"domain.msh"), os.path.join(self.exporter.abs_in_dir,"domain.xml"))
+        print("Importing mesh from .xml...")
+        #set as mesh in model
+        self.mesh = dolfin.Mesh(os.path.join(self.exporter.abs_in_dir,'domain.xml'))
 
     def initMesher(self):
         self.mesher.resolution = self.sim_res
@@ -395,9 +364,3 @@ class PoissonSolver():
         self.mesher.bounds = self.bounds
         self.mesher.elec_list = self.elec_list
         self.mesher.metal_params = self.metal_params
-
-    def setMesh(self):
-        print("Converting mesh from .msh to .xml...")
-        meshconvert.convert2xml(os.path.join(self.exporter.abs_in_dir,"domain.msh"), os.path.join(self.exporter.abs_in_dir,"domain.xml"))
-        print("Importing mesh from .xml...")
-        self.mesh = dolfin.Mesh(os.path.join(self.exporter.abs_in_dir,'domain.xml'))

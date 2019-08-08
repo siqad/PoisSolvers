@@ -22,7 +22,7 @@ class CapacitanceEstimator():
         # print(cap_matrix)
         return cap_matrix
 
-    def calcCaps(self):
+    def calcCaps(self, u):
         x0, x1, x2 = dolfin.MeshCoordinates(self.mesh)
         eps = dolfin.conditional(x2 <= 0.0, self.EPS_SI, self.EPS_DIELECTRIC)
         cap_list = [0.0]*len(self.net_list)
@@ -30,8 +30,14 @@ class CapacitanceEstimator():
             curr_net = electrode.net
             dS = dolfin.Measure("dS")[self.boundaries]
             n = dolfin.FacetNormal(self.mesh)
-            m = dolfin.avg(dolfin.dot(eps*dolfin.grad(self.u), n))*dS(7+self.elec_list.index(electrode))
+            m = dolfin.avg(dolfin.dot(eps*dolfin.grad(u), n))*dS(7+self.elec_list.index(electrode))
             # average is used since +/- sides of facet are arbitrary
             v = dolfin.assemble(m)
             cap_list[self.net_list.index(curr_net)] = cap_list[self.net_list.index(curr_net)] + v
         self.cap_matrix.append(cap_list)
+
+    def getCaps(self, step=0, steps=0, u=None):
+        if self.mode == "cap" or self.mode == "ac":
+            self.calcCaps(u)
+            if step == steps-1:
+                self.cap_matrix = self.formCapMatrix()
