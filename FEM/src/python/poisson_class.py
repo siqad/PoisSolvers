@@ -12,27 +12,28 @@ import subdomains as sd
 import dolfin
 import helpers
 import time
-import mesher
-import plotter
-import capacitance
-import resistance
-import ac
 from dolfin_utils.meshconvert import meshconvert
+from mesher import Mesher
+from plotter import Plotter
 from exporter import Exporter
+from capacitance import CapacitanceEstimator
+from resistance import ResistanceEstimator
+from ac import PowerEstimator
+from dopant import Dopant
 
 class PoissonSolver():
     #Constructor
     def __init__(self):
 
         #mesh generation
-        self.mesher = mesher.Mesher()
+        self.mesher = Mesher()
         #plotting
-        self.plotter = plotter.Plotter()
+        self.plotter = Plotter()
 
         #Resistance and capacitance tools
-        self.cap = capacitance.CapacitanceEstimator()
-        self.res = resistance.ResistanceEstimator()
-        self.ac = ac.PowerEstimator()
+        self.cap = CapacitanceEstimator()
+        self.res = ResistanceEstimator()
+        self.ac = PowerEstimator()
 
         #empty lists and dictionaries
         self.net_list = []
