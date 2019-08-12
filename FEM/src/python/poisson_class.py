@@ -20,6 +20,7 @@ from capacitance import CapacitanceEstimator
 from resistance import ResistanceEstimator
 from ac import PowerEstimator
 from dopant import Dopant
+import matplotlib.pyplot as plt
 
 class PoissonSolver():
     #Constructor
@@ -56,6 +57,8 @@ class PoissonSolver():
         # Initialize mesh function for boundary domains
         self.markBoundaries(self.mesh)
         self.setConstants()
+        self.initDoping()
+        self.setChargeDensity()
         self.createNetlist()
         self.steps = self.getSteps()
         self.initRC()
@@ -81,8 +84,10 @@ class PoissonSolver():
         self.exporter.exportDBs(step, self.steps, self.db_list, self.u, self.bounds['dielectric'])
         print("Creating 2D data slice...")
         data_2d = self.create2DSlice(self.u, self.slice_depth, self.img_res, self.bounds)
+        data_2d_xz = self.create2DSliceXZ(self.u, self.img_res, self.bounds)
         print("Plotting 2D data slice...")
         self.plotter.plotPotential(step, data_2d, self.exporter.abs_out_dir)
+        self.plotter.plotPotential(step, data_2d_xz, self.exporter.abs_out_dir, prefix="xz")
         print("Saving 2D potential data to XML...")
         self.exporter.exportPotentialXML(data_2d)
         #last step, finish off by creating gif and exporting DB potentials
@@ -106,6 +111,7 @@ class PoissonSolver():
     def initParameters(self, params):
         self.bc_type = str(params["bcs"])
         self.depletion_depth = float(params["depletion_depth"])
+        self.doping_conc = float(params["doping_conc"])
         self.eps_r = float(params["eps_r_dielectric"])
         self.ground_depth = float(params["ground_depth"])
         self.img_res = int(params["image_resolution"])
@@ -142,6 +148,50 @@ class PoissonSolver():
         self.ac.dir = self.exporter.abs_in_dir
         self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
 
+    def setChargeDensity(self):
+        print("Setting charge density...")
+        self.f = dolfin.Constant("0.0")
+
+        self.dp.dopingCalc()
+        rho = self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
+        dolfin.plot(rho)
+        plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
+
+    def initDoping(self):
+        self.dp = Dopant(x_min=self.bounds['zmin'],
+                    x_max=0,
+                    nel=250,
+                    depth=-self.depletion_depth,
+                    conc=self.doping_conc,
+                    temp=self.temp)
+
+
+    # def dopingCalc(self, x_min, x_max, nel):
+    #     dp = Dopant()
+    #     dp.setUnits("atomic")
+    #     dp.setBulkParameters(T=293, resolution=nel)
+    #     dp.setBoundaries(x_min, x_max)
+    #     dp.setEps(11.9, 3.9)
+    #     dp.ni_si = 1E10 # in cm^-3
+    #     dp.ni_si = dp.ni_si*1E-8*1E-8*1E-8 # conversion to ang^-3
+    #     dp.setIntrinsicDensity(dp.ni_si)
+    #     # Dopant desity and profile
+    #     dp.d_conc = 1E19 # in cm^-3
+    #     dp.d_conc = dp.d_conc*1E-8*1E-8*1E-8 #conversion to ang^-3
+    #     # Scaling and offset for sigmoid
+    #     x_offset = -50E-9
+    #     x_offset = -2.5E-9
+    #     x_offset = -600
+    #     x_scaling = 0.1
+    #     x_arg = x_scaling*(dp.getXSpace()-x_offset)
+    #     #Creating the doping profile
+    #     profile = 1 - 1/(1+np.exp(-x_arg))
+    #     n_ext = profile*dp.d_conc
+    #     dp.setDopantProfile(n_ext)
+    #     dp.setN()
+    #     dp.calculateRho()
+    #     return dp
+
     #Produces a 2D data slice, used for getting data in correct format for plotting
     def create2DSlice(self, u, depth, resolution, bounds):
         x = np.linspace(bounds['xmin'], bounds['xmax'], resolution)
@@ -150,6 +200,16 @@ class PoissonSolver():
         z = np.array([u(i, j, bounds['dielectric']+depth) for j in y for i in x])
         Z = z.reshape(resolution, resolution)
         return X, Y, Z, resolution, resolution
+
+    def create2DSliceXZ(self, u, resolution, bounds):
+        x = np.linspace(bounds['xmin'], bounds['xmax'], resolution)
+        z = np.linspace(bounds['zmin'], bounds['zmax'], resolution)
+        y = (bounds['ymin'] + bounds['ymax'])/2
+        X, Z = np.meshgrid(x, z)
+        v = np.array([u(i, y, k) for k in z for i in x])
+        V = v.reshape(resolution, resolution)
+        return X, Z, V, resolution, resolution
+
 
     def setSolverParams(self, step = None):
         self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u, self.bcs)
@@ -213,8 +273,6 @@ class PoissonSolver():
         self.Q_E = 1.6E-19
         self.EPS_SI = dolfin.Constant(11.6*self.EPS_0)
         self.EPS_DIELECTRIC = dolfin.Constant(self.eps_r*self.EPS_0)
-        print("Setting charge density...")
-        self.f = dolfin.Constant("0.0")
 
 
     def createBoundaries(self):
@@ -340,11 +398,9 @@ class PoissonSolver():
                     self.bcs.append(dolfin.DirichletBC(self.V, float(1.0), self.boundaries, 7+self.elec_list.index(electrode)))
                 else:
                     self.bcs.append(dolfin.DirichletBC(self.V, float(0.0), self.boundaries, 7+self.elec_list.index(electrode)))
-        else:
-            return
 
-# MESHING
 
+### MESHING
     def createMesh(self):
         print("Defining mesh geometry...")
         self.initMesher()

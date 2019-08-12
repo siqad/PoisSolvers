@@ -25,7 +25,10 @@ class Mesher():
 
     def createGeometry(self):
         self.setResolution()
-        self.createOuterBounds(0.5)
+        self.createOuterBounds(1.0)
+        self.createSubstrateBox(1.0)
+        # self.createSubstrateBox(0.25)
+        self.createDopingBox(0.25)
         surfaces = ['left', 'top', 'right', 'bottom', 'front', 'back', 'air']
         sd_list = list(self.setSubdomains())
         subdomains = dict(zip(surfaces, sd_list))
@@ -54,9 +57,30 @@ class Mesher():
         print("Creating outer boundaries...")
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
                        [self.bounds['xmax'],self.bounds['ymax'],self.bounds['zmax']], self.mw.resolution*resolution, option="bound")
+
+    def createSubstrateBox(self, resolution=1.0):
         #Add in a box on the negative half, to get the plane surface at z = 0
         self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']], \
-                       [self.bounds['xmax'],self.bounds['ymax'],0], self.mw.resolution*resolution, option="seam")
+                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['dielectric']], self.mw.resolution*resolution, option="seam")
+        # z_size = self.bounds['dielectric'] - self.bounds['zmin']
+        # self.fields += [self.mw.addBoxField(resolution, 1.0, \
+        #           [self.bounds['xmin'], self.bounds['xmax']], \
+        #           [self.bounds['ymin'], self.bounds['ymax']], \
+        #           [self.bounds['zmin'], self.bounds['dielectric']])]
+        # self.fields = [self.mw.addMinField(self.fields)]
+
+
+    def createDopingBox(self, resolution=1.0):
+        #Add in a box on the negative half, to get the plane surface at z = 0
+        z_size = self.bounds['dielectric'] - self.bounds['zmin']
+        self.mw.addBox([self.bounds['xmin'],self.bounds['ymin'],self.bounds['zmin']+0.25*z_size], \
+                       [self.bounds['xmax'],self.bounds['ymax'],self.bounds['dielectric']-0.25*z_size], self.mw.resolution*resolution, option="seam")
+        # z_size = self.bounds['dielectric'] - self.bounds['zmin']
+        self.fields += [self.mw.addBoxField(resolution, 1.0, \
+                  [self.bounds['xmin'], self.bounds['xmax']], \
+                  [self.bounds['ymin'], self.bounds['ymax']], \
+                  [self.bounds['zmin']+0.35*z_size, self.bounds['dielectric']-0.35*z_size])]
+        self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrode(self, electrode, resolution):
         x_min = self.bounds['xmin']
@@ -83,8 +107,8 @@ class Mesher():
         self.fields = [self.mw.addMinField(self.fields)]
 
     def setBGField(self, delta=5):
-        bg_field_ind = self.mw.addMeanField(self.fields, delta)
-        self.mw.setBGField(bg_field_ind)
+        # bg_field_ind = self.mw.addMeanField(self.fields, delta)
+        self.mw.setBGField(self.fields[0])
 
     def writeGeoFile(self):
         if self.dir == None:
@@ -113,7 +137,7 @@ class Mesher():
             elec.z1 = zs[0]
             elec.z2 = zs[1] #fill in the z dimension
             self.electrodes.append(sd.Electrode(elec)) #add to the list of electrodes
-            self.addElectrode(elec, resolution=0.5) #add the electrode into the mesh
+            self.addElectrode(elec, resolution=1.0) #add the electrode into the mesh
         return self.electrodes
 
     def finalize(self):

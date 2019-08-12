@@ -113,6 +113,12 @@ These replacements are done on the following fields:
         <label>Depletion depth (ang)</label>
         <tip>The depth of dopant depletion into the semiconductor bulk.</tip>
       </depletion_depth>
+      <doping_conc>
+        <T>double</T>
+        <val>1E19</val>
+        <label>Doping concentration (cm^-3)</label>
+        <tip>The doping concentration of the doped portion of the silicon sample.</tip>
+      </doping_conc>
       <eps_r_dielectric>
         <T>double</T>
         <val>3.9</val>

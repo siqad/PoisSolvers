@@ -54,7 +54,8 @@ class Plotter():
         plt.axis('off')
         maxval = np.max(np.abs(Z))
         norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
-        plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        # plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        plt.pcolor(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plt.savefig(file_name)
         plt.close(fig)
@@ -77,12 +78,12 @@ class Plotter():
                        delay=0.5,
                        loop=0)
 
-    def plotPotential(self, step, data, out_dir):
+    def plotPotential(self, step, data, out_dir, prefix=""):
         X, Y, Z, nx, ny = data
         if step == 0:
-            plot_file_name = os.path.join(out_dir,"SiAirPlot.png")
+            plot_file_name = os.path.join(out_dir,prefix+"SiAirPlot.png")
             self.saveAxesPotential(X, Y, Z, plot_file_name)
-            grad_file_name = os.path.join(out_dir,'grad.pdf')
+            grad_file_name = os.path.join(out_dir,prefix+'grad.pdf')
             self.saveGrad(X,Y,Z,grad_file_name)
-        pot_file_name = os.path.join(out_dir,'SiAirBoundary{:03d}.png'.format(step))
+        pot_file_name = os.path.join(out_dir,prefix+'SiAirBoundary{:03d}.png'.format(step))
         self.savePotential(X,Y,Z,step,pot_file_name)
