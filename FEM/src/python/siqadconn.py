@@ -216,7 +216,7 @@ class SiQADConnector(_object):
 
     def export(self, *args, **kwargs):
       for key in kwargs:
-        if key == 'db_loc':
+        if key in ['db_loc', 'misc']:
             self.setExport(key, StringPairVector(self.tuplify(kwargs[key])))
         else:
             self.setExport(key, StringVector2D(self.tuplify(kwargs[key])))
@@ -540,6 +540,10 @@ class Electrode(_object):
     __swig_getmethods__["potential"] = _siqadconn.Electrode_potential_get
     if _newclass:
         potential = _swig_property(_siqadconn.Electrode_potential_get, _siqadconn.Electrode_potential_set)
+    __swig_setmethods__["pot_offset"] = _siqadconn.Electrode_pot_offset_set
+    __swig_getmethods__["pot_offset"] = _siqadconn.Electrode_pot_offset_get
+    if _newclass:
+        pot_offset = _swig_property(_siqadconn.Electrode_pot_offset_get, _siqadconn.Electrode_pot_offset_set)
     __swig_setmethods__["phase"] = _siqadconn.Electrode_phase_set
     __swig_getmethods__["phase"] = _siqadconn.Electrode_phase_get
     if _newclass:
@@ -561,8 +565,8 @@ class Electrode(_object):
     if _newclass:
         pixel_per_angstrom = _swig_property(_siqadconn.Electrode_pixel_per_angstrom_get, _siqadconn.Electrode_pixel_per_angstrom_set)
 
-    def __init__(self, in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net, in_angle):
-        this = _siqadconn.new_Electrode(in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net, in_angle)
+    def __init__(self, in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_pot_offset, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net, in_angle):
+        this = _siqadconn.new_Electrode(in_layer_id, in_x1, in_x2, in_y1, in_y2, in_potential, in_pot_offset, in_phase, in_electrode_type, in_pixel_per_angstrom, in_net, in_angle)
         try:
             self.this.append(this)
         except __builtin__.Exception:

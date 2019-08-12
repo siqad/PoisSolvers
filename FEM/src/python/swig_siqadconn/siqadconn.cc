@@ -165,12 +165,13 @@ void SiQADConnector::readItemTree(const bpt::ptree &subtree, const std::shared_p
 
 void SiQADConnector::readElectrode(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
 {
-  double x1, x2, y1, y2, pixel_per_angstrom, potential, phase, angle;
+  double x1, x2, y1, y2, pixel_per_angstrom, potential, phase, angle, pot_offset;
   int layer_id, electrode_type=0, net;
   // read values from XML stream
   layer_id = subtree.get<int>("layer_id");
   angle = subtree.get<double>("angle");
   potential = subtree.get<double>("property_map.potential.val");
+  pot_offset = subtree.get<double>("property_map.pot_offset.val");
   phase = subtree.get<double>("property_map.phase.val");
   std::string electrode_type_s = subtree.get<std::string>("property_map.type.val");
   if (!electrode_type_s.compare("fixed")){
@@ -184,11 +185,11 @@ void SiQADConnector::readElectrode(const bpt::ptree &subtree, const std::shared_
   x2 = subtree.get<double>("dim.<xmlattr>.x2");
   y1 = subtree.get<double>("dim.<xmlattr>.y1");
   y2 = subtree.get<double>("dim.<xmlattr>.y2");
-  agg_parent->elecs.push_back(std::make_shared<Electrode>(layer_id,x1,x2,y1,y2,potential,phase,electrode_type,pixel_per_angstrom,net,angle));
+  agg_parent->elecs.push_back(std::make_shared<Electrode>(layer_id,x1,x2,y1,y2,potential,pot_offset,phase,electrode_type,pixel_per_angstrom,net,angle));
 
   std::cout << "Electrode created with x1=" << agg_parent->elecs.back()->x1 << ", y1=" << agg_parent->elecs.back()->y1 <<
     ", x2=" << agg_parent->elecs.back()->x2 << ", y2=" << agg_parent->elecs.back()->y2 <<
-    ", potential=" << agg_parent->elecs.back()->potential << std::endl;
+    ", potential=" << agg_parent->elecs.back()->potential << ", offset=" << << agg_parent->elecs.back()->pot_offset << std::endl;
 }
 
 void SiQADConnector::readElectrodePoly(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)

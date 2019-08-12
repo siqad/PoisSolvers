@@ -320,11 +320,17 @@ class PoissonSolver():
 
         if (electrode.electrode_type == 1 and self.mode == "clock"):
             elec_str += "clocked, "
-            tot_phase = electrode.phase + step*360/steps
-            potential_to_set = electrode.potential*np.sin( np.deg2rad(tot_phase) )
+            tot_phase = -electrode.phase + step*360/steps
+            # potential_to_set = electrode.potential*np.sin( np.deg2rad(tot_phase))
+            phase_pot = electrode.potential*np.sin( np.deg2rad(tot_phase))
+            potential_to_set = electrode.pot_offset + phase_pot
         else:
             elec_str += "fixed, "
-            potential_to_set = electrode.potential
+            tot_phase = -electrode.phase
+            phase_pot = electrode.potential*np.sin( np.deg2rad(tot_phase))
+            potential_to_set = electrode.pot_offset + phase_pot
+            # potential_to_set = electrode.potential*np.sin( np.deg2rad(tot_phase))
+        # print(electrode.pot_offset)
 
         if self.metal_params[electrode.layer_id][0] > self.bounds['dielectric']:
             elec_str += "and above the dielectric interface."
