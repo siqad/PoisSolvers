@@ -27,8 +27,9 @@ class Mesher():
         self.setResolution()
         self.createOuterBounds(1.0)
         self.createSubstrateBox(1.0)
-        # self.createSubstrateBox(0.25)
-        self.createDopingBox(0.25)
+        #if we don't need the doping, then no need for extra resolution
+        if self.eqn != "laplace":
+            self.createDopingBox(0.25)
         surfaces = ['left', 'top', 'right', 'bottom', 'front', 'back', 'air']
         sd_list = list(self.setSubdomains())
         subdomains = dict(zip(surfaces, sd_list))
@@ -79,7 +80,7 @@ class Mesher():
         self.fields += [self.mw.addBoxField(resolution, 1.0, \
                   [self.bounds['xmin'], self.bounds['xmax']], \
                   [self.bounds['ymin'], self.bounds['ymax']], \
-                  [self.bounds['zmin']+0.35*z_size, self.bounds['dielectric']-0.35*z_size])]
+                  [self.bounds['zmin']+0.25*z_size, self.bounds['dielectric']-0.25*z_size])]
         self.fields = [self.mw.addMinField(self.fields)]
 
     def addElectrode(self, electrode, resolution):

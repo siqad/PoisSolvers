@@ -110,6 +110,7 @@ class PoissonSolver():
 #Functions that the user shouldn't have to call.
     def initParameters(self, params):
         self.bc_type = str(params["bcs"])
+        self.eqn = str(params["eqn"])
         self.depletion_depth = float(params["depletion_depth"])
         self.doping_conc = float(params["doping_conc"])
         self.eps_r = float(params["eps_r_dielectric"])
@@ -150,12 +151,14 @@ class PoissonSolver():
 
     def setChargeDensity(self):
         print("Setting charge density...")
-        self.f = dolfin.Constant("0.0")
-
-        self.dp.dopingCalc()
-        rho = self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
-        dolfin.plot(rho)
-        plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
+        if self.eqn == "laplace":
+            self.f = dolfin.Constant("0.0")
+        elif self.eqn == "poisson":
+            self.dp.dopingCalc()
+            rho = self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
+            self.f = rho
+        # dolfin.plot(rho)
+        # plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
 
     def initDoping(self):
         self.dp = Dopant(x_min=self.bounds['zmin'],
@@ -416,6 +419,7 @@ class PoissonSolver():
         self.mesh = dolfin.Mesh(os.path.join(self.exporter.abs_in_dir,'domain.xml'))
 
     def initMesher(self):
+        self.mesher.eqn = self.eqn
         self.mesher.resolution = self.sim_res
         self.mesher.dir = self.exporter.abs_in_dir
         self.mesher.bounds = self.bounds

@@ -62,6 +62,17 @@ These replacements are done on the following fields:
     <dep_path>requirements.txt</dep_path>
     <!-- Simulation parameters, read into SiQAD as a property map. -->
     <sim_params preserve_order="true">
+      <eqn>
+        <T>string</T>
+        <val>laplace</val>
+        <label>Equation</label>
+        <tip>The equation to solve.</tip>
+        <value_selection type="ComboBox">
+          <laplace>Laplace</laplace>
+          <poisson>Poisson</poisson>
+          <poisboltz>Poisson-Boltzmann</poisboltz>
+        </value_selection>
+      </eqn>
       <bcs>
         <T>string</T>
         <val>periodic</val>
