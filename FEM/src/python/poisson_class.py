@@ -58,6 +58,7 @@ class PoissonSolver():
         self.markBoundaries(self.mesh)
         self.setConstants()
         self.initDoping()
+        self.setFunctionSpaces()
         self.setChargeDensity()
         self.createNetlist()
         self.steps = self.getSteps()
@@ -65,7 +66,7 @@ class PoissonSolver():
 
     def setupDolfinSolver(self, step = None):
         print("Setting up Dolfin solver...")
-        self.setFunctionSpaces()
+        # self.setFunctionSpaces()
         self.setElectrodePotentials(step)
         self.defineVariationalForm()
         self.setInitGuess(step)
@@ -154,12 +155,15 @@ class PoissonSolver():
         if self.eqn == "laplace":
             self.f = dolfin.Constant("0.0")
         elif self.eqn == "poisson":
+            #use equilibrium charge density
             self.dp.dopingCalc()
             rho = self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
             self.f = rho
-        # dolfin.plot(rho)
-        # plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
-
+            # dolfin.plot(rho)
+            # plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
+        elif self.eqn == "poisboltz":
+            #use the poisson boltzmann definition for charge density.
+            self.f = q*ni*exp(q/k/T*(u))*v*dx - q*ni*exp(-q/k/T*u)*v*dx - q*n_ext_exp*v*dx
     def initDoping(self):
         self.dp = Dopant(x_min=self.bounds['zmin'],
                     x_max=0,
