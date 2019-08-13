@@ -68,8 +68,8 @@ class PoissonSolver():
         print("Setting up Dolfin solver...")
         # self.setFunctionSpaces()
         self.setElectrodePotentials(step)
-        self.defineVariationalForm()
         self.setInitGuess(step)
+        self.defineVariationalForm()
         self.setSolverParams()
 
     def solve(self):
@@ -81,11 +81,11 @@ class PoissonSolver():
 
     def export(self, step = None):
         print("Exporting...")
-        self.u.set_allow_extrapolation(True)
-        self.exporter.exportDBs(step, self.steps, self.db_list, self.u, self.bounds['dielectric'])
+        self.u_s.set_allow_extrapolation(True)
+        self.exporter.exportDBs(step, self.steps, self.db_list, self.u_s, self.bounds['dielectric'])
         print("Creating 2D data slice...")
-        data_2d = self.create2DSlice(self.u, self.slice_depth, self.img_res, self.bounds)
-        data_2d_xz = self.create2DSliceXZ(self.u, self.img_res, self.bounds)
+        data_2d = self.create2DSlice(self.u_s, self.slice_depth, self.img_res, self.bounds)
+        data_2d_xz = self.create2DSliceXZ(self.u_s, self.img_res, self.bounds)
         print("Plotting 2D data slice...")
         self.plotter.plotPotential(step, data_2d, self.exporter.abs_out_dir)
         self.plotter.plotPotential(step, data_2d_xz, self.exporter.abs_out_dir, prefix="xz")
@@ -102,8 +102,8 @@ class PoissonSolver():
             self.setupDolfinSolver(step)
             self.solve()
             self.export(step)
-            self.u_old = self.u # Set the potential to use as initial guess
-            self.cap.getCaps(step, self.steps, self.u)
+            self.u_old = self.u_s # Set the potential to use as initial guess
+            self.cap.getCaps(step, self.steps, self.u_s)
         self.res.getResistances(self.temp)
         self.ac.run(self.res.resistances, self.cap.cap_matrix)
 
@@ -161,9 +161,9 @@ class PoissonSolver():
             self.f = rho
             # dolfin.plot(rho)
             # plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
-        elif self.eqn == "poisboltz":
-            #use the poisson boltzmann definition for charge density.
-            self.f = q*ni*exp(q/k/T*(u))*v*dx - q*ni*exp(-q/k/T*u)*v*dx - q*n_ext_exp*v*dx
+        # elif self.eqn == "poisboltz":
+        #     #use the poisson boltzmann definition for charge density.
+        #     self.f = q*ni*exp(q/k/T*(u))*v*dx - q*ni*exp(-q/k/T*u)*v*dx - q*n_ext_exp*v*dx
     def initDoping(self):
         self.dp = Dopant(x_min=self.bounds['zmin'],
                     x_max=0,
@@ -171,33 +171,6 @@ class PoissonSolver():
                     depth=-self.depletion_depth,
                     conc=self.doping_conc,
                     temp=self.temp)
-
-
-    # def dopingCalc(self, x_min, x_max, nel):
-    #     dp = Dopant()
-    #     dp.setUnits("atomic")
-    #     dp.setBulkParameters(T=293, resolution=nel)
-    #     dp.setBoundaries(x_min, x_max)
-    #     dp.setEps(11.9, 3.9)
-    #     dp.ni_si = 1E10 # in cm^-3
-    #     dp.ni_si = dp.ni_si*1E-8*1E-8*1E-8 # conversion to ang^-3
-    #     dp.setIntrinsicDensity(dp.ni_si)
-    #     # Dopant desity and profile
-    #     dp.d_conc = 1E19 # in cm^-3
-    #     dp.d_conc = dp.d_conc*1E-8*1E-8*1E-8 #conversion to ang^-3
-    #     # Scaling and offset for sigmoid
-    #     x_offset = -50E-9
-    #     x_offset = -2.5E-9
-    #     x_offset = -600
-    #     x_scaling = 0.1
-    #     x_arg = x_scaling*(dp.getXSpace()-x_offset)
-    #     #Creating the doping profile
-    #     profile = 1 - 1/(1+np.exp(-x_arg))
-    #     n_ext = profile*dp.d_conc
-    #     dp.setDopantProfile(n_ext)
-    #     dp.setN()
-    #     dp.calculateRho()
-    #     return dp
 
     #Produces a 2D data slice, used for getting data in correct format for plotting
     def create2DSlice(self, u, depth, resolution, bounds):
@@ -219,7 +192,7 @@ class PoissonSolver():
 
 
     def setSolverParams(self, step = None):
-        self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u, self.bcs)
+        self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u_s, self.bcs)
         self.solver = dolfin.LinearVariationalSolver(self.problem)
         dolfin.parameters['form_compiler']['optimize'] = True
         self.solver.parameters['linear_solver'] = self.method
@@ -241,11 +214,11 @@ class PoissonSolver():
         print("Setting initial guess...")
         if self.init_guess == "prev":
             if step == 0:
-                self.u = dolfin.Function(self.V)
+                self.u_s = dolfin.Function(self.V)
             else:
-                self.u = dolfin.interpolate(self.u_old,self.V)
+                self.u_s = dolfin.interpolate(self.u_old,self.V)
         elif self.init_guess == "zero":
-            self.u = dolfin.Function(self.V)
+            self.u_s = dolfin.Function(self.V)
 
     def setGroundPlane(self):
         self.bcs.append(dolfin.DirichletBC(self.V, float(0), self.boundaries, 6))
@@ -257,7 +230,11 @@ class PoissonSolver():
         self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
             + dolfin.inner(self.EPS_DIELECTRIC*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
             - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
+        # self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
+        #     + dolfin.inner(self.EPS_DIELECTRIC*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
+        #     - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
         self.F += self.getBoundaryComponent(self.u, self.v, self.ds)
+
         print("Separating LHS and RHS...")
         # Separate left and right hand sides of equation
         self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
