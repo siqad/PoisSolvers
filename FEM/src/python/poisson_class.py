@@ -59,7 +59,7 @@ class PoissonSolver():
         self.setConstants()
         self.initDoping()
         self.setFunctionSpaces()
-        self.setChargeDensity()
+        # self.setChargeDensity()
         self.createNetlist()
         self.steps = self.getSteps()
         self.initRC()
@@ -150,15 +150,15 @@ class PoissonSolver():
         self.ac.dir = self.exporter.abs_in_dir
         self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
 
-    def setChargeDensity(self):
-        print("Setting charge density...")
-        if self.eqn == "laplace":
-            self.f = dolfin.Constant("0.0")
-        elif self.eqn == "poisson":
-            #use equilibrium charge density
-            self.dp.dopingCalc()
-            rho = self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
-            self.f = rho
+    # def setChargeDensity(self):
+    #     print("Setting charge density...")
+    #     if self.eqn == "laplace":
+    #         self.f = dolfin.Constant("0.0")
+    #     elif self.eqn == "poisson":
+    #         #use equilibrium charge density
+    #         self.dp.dopingCalc()
+    #         rho = self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
+    #         self.f = rho
             # dolfin.plot(rho)
             # plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
         # elif self.eqn == "poisboltz":
@@ -230,12 +230,36 @@ class PoissonSolver():
         self.domains.set_all(0)
         # self.subdomains['air'].mark(self.domains, 1)
 
+    def setChargeDensity(self):
+        print("Setting charge density...")
+        if self.eqn == "laplace":
+            return dolfin.Constant("0.0")*self.v*self.dx
+        elif self.eqn == "poisson":
+            #use equilibrium charge density
+            self.dp.dopingCalc()
+            return self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")*self.v*self.dx
+            # self.f = rho
+        elif self.eqn == "poisboltz":
+            #use the poisson boltzmann definition for charge density.        self.ni_si = 1E10 # in cm^-3
+            ni = 1E-14 #in ang^-3
+            q = self.q
+            k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
+            T = self.temp
+            self.f = q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+                     - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+                     - q*n_ext_exp*self.v*self.dx
+
     def defineVariationalForm(self):
         self.setGroundPlane()
         self.setMeasures()
         print("Defining variational form...")
-        self.F = dolfin.inner(self.eps_exp*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx \
-                 - self.f*self.v*self.dx
+        self.F = dolfin.inner(self.eps_exp*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx
+        rho = self.setChargeDensity()
+
+
+
+        # self.F -= self.f*self.v*self.dx
+        self.F -= rho
             # + dolfin.inner(self.eps_di*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
             # - self.f*self.v*self.dx
         # self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
