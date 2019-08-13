@@ -23,7 +23,7 @@ class CapacitanceEstimator():
 
     def calcCaps(self, u):
         x0, x1, x2 = dolfin.MeshCoordinates(self.mesh)
-        eps = dolfin.conditional(x2 <= 0.0, self.EPS_SI, self.EPS_DIELECTRIC)
+        eps = dolfin.conditional(x2 <= 0.0, self.eps_si, self.eps_di)
         cap_list = [0.0]*len(self.net_list)
         for electrode in self.elec_list:
             curr_net = electrode.net

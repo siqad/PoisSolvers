@@ -135,8 +135,8 @@ class PoissonSolver():
         print("Setting RC params..")
         self.cap.mode = self.mode
         self.cap.mesh = self.mesh
-        self.cap.EPS_SI = self.EPS_SI
-        self.cap.EPS_DIELECTRIC = self.EPS_DIELECTRIC
+        self.cap.eps_si = self.eps_si
+        self.cap.eps_di = self.eps_di
         self.cap.net_list = self.net_list
         self.cap.elec_list = self.elec_list
         self.cap.boundaries = self.boundaries
@@ -223,13 +223,21 @@ class PoissonSolver():
     def setGroundPlane(self):
         self.bcs.append(dolfin.DirichletBC(self.V, float(0), self.boundaries, 6))
 
+    def markDomains(self, mesh):
+        # Initialize mesh function for interior domains
+        print("Marking boundaries...")
+        self.domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
+        self.domains.set_all(0)
+        # self.subdomains['air'].mark(self.domains, 1)
+
     def defineVariationalForm(self):
         self.setGroundPlane()
         self.setMeasures()
         print("Defining variational form...")
-        self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
-            + dolfin.inner(self.EPS_DIELECTRIC*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
-            - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
+        self.F = dolfin.inner(self.eps_exp*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx \
+                 - self.f*self.v*self.dx
+            # + dolfin.inner(self.eps_di*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
+            # - self.f*self.v*self.dx
         # self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
         #     + dolfin.inner(self.EPS_DIELECTRIC*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
         #     - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
@@ -253,10 +261,15 @@ class PoissonSolver():
     def setConstants(self):
         print("Setting constants...")
         # Define input data
-        self.EPS_0 = 8.854E-22 #in angstroms
-        self.Q_E = 1.6E-19
-        self.EPS_SI = dolfin.Constant(11.6*self.EPS_0)
-        self.EPS_DIELECTRIC = dolfin.Constant(self.eps_r*self.EPS_0)
+        self.eps0 = 8.854E-22 #in angstroms
+        self.q = 1.6E-19
+        self.eps_si = dolfin.Constant(11.6*self.eps0)
+        self.eps_di = dolfin.Constant(self.eps_r*self.eps0)
+
+        eps_si = dolfin.Constant(11.6*self.eps0)
+        eps_ox = dolfin.Constant(self.eps_r*self.eps0)
+        self.eps_exp = dolfin.Expression('x[2] < 0 + DOLFIN_EPS ? p1 : p2',
+               p1=eps_si, p2=eps_ox, degree=1, domain=self.mesh)
 
 
     def createBoundaries(self):
@@ -271,13 +284,6 @@ class PoissonSolver():
         keys = ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax', 'dielectric']
         self.bounds = dict(zip(keys, bounds))
         print(self.bounds)
-
-    def markDomains(self, mesh):
-        # Initialize mesh function for interior domains
-        print("Marking boundaries...")
-        self.domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
-        self.domains.set_all(0)
-        self.subdomains['air'].mark(self.domains, 1)
 
     def markBoundaries(self, mesh):
         self.boundaries = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim()-1)
