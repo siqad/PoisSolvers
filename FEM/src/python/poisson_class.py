@@ -192,23 +192,30 @@ class PoissonSolver():
 
 
     def setSolverParams(self, step = None):
-        self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u_s, self.bcs)
-        self.solver = dolfin.LinearVariationalSolver(self.problem)
-        dolfin.parameters['form_compiler']['optimize'] = True
-        self.solver.parameters['linear_solver'] = self.method
-        self.solver.parameters['preconditioner'] = self.preconditioner
-        spec_param = self.solver.parameters['krylov_solver']
-        #These only accessible after spec_param available.
-        if self.init_guess == "prev":
-            if step == 0:
+        if self.eqn == "poisboltz":
+            print("PoisBoltz")
+        else:
+            print("Separating LHS and RHS...")
+            # Separate left and right hand sides of equation
+            self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
+
+            self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u_s, self.bcs)
+            self.solver = dolfin.LinearVariationalSolver(self.problem)
+            dolfin.parameters['form_compiler']['optimize'] = True
+            self.solver.parameters['linear_solver'] = self.method
+            self.solver.parameters['preconditioner'] = self.preconditioner
+            spec_param = self.solver.parameters['krylov_solver']
+            #These only accessible after spec_param available.
+            if self.init_guess == "prev":
+                if step == 0:
+                    spec_param['nonzero_initial_guess'] = False
+                else:
+                    spec_param['nonzero_initial_guess'] = True
+            elif self.init_guess == "zero":
                 spec_param['nonzero_initial_guess'] = False
-            else:
-                spec_param['nonzero_initial_guess'] = True
-        elif self.init_guess == "zero":
-            spec_param['nonzero_initial_guess'] = False
-        spec_param['absolute_tolerance'] = self.max_abs_error
-        spec_param['relative_tolerance'] = self.max_rel_error
-        spec_param['maximum_iterations'] = self.max_linear_iters
+            spec_param['absolute_tolerance'] = self.max_abs_error
+            spec_param['relative_tolerance'] = self.max_rel_error
+            spec_param['maximum_iterations'] = self.max_linear_iters
 
     def setInitGuess(self, step):
         print("Setting initial guess...")
@@ -245,9 +252,15 @@ class PoissonSolver():
             q = self.q
             k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
             T = self.temp
-            self.f = q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
-                     - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
-                     - q*n_ext_exp*self.v*self.dx
+
+            self.dp.dopingCalc()
+            nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
+               depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
+
+            # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+            #          - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+            #          - q*nd*self.v*self.dx
+            return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx - q*nd*self.v*self.dx
 
     def defineVariationalForm(self):
         self.setGroundPlane()
@@ -269,7 +282,7 @@ class PoissonSolver():
 
         print("Separating LHS and RHS...")
         # Separate left and right hand sides of equation
-        self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
+        # self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
 
     def setFunctionSpaces(self):
         print("Defining function, space, basis...")
