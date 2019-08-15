@@ -194,6 +194,42 @@ class PoissonSolver():
     def setSolverParams(self, step = None):
         if self.eqn == "poisboltz":
             print("PoisBoltz")
+
+            self.F = dolfin.action(self.F, self.u_s)
+            J = dolfin.derivative(self.F, self.u_s, self.u)
+            problem = dolfin.NonlinearVariationalProblem(self.F, self.u_s, self.bcs, J)
+            self.solver = dolfin.NonlinearVariationalSolver(problem)
+
+            # spec_param['absolute_tolerance'] = self.max_abs_error
+            # spec_param['relative_tolerance'] = self.max_rel_error
+
+            # abs_tol = 1E-8
+            # rel_tol = 1E-9
+            #
+            prm = self.solver.parameters
+            prm['newton_solver']['absolute_tolerance'] = self.max_abs_error
+            prm['newton_solver']['relative_tolerance'] = self.max_rel_error
+            prm['newton_solver']['maximum_iterations'] = 10000
+            # prm['newton_solver']['relaxation_parameter'] = gam
+            prm['newton_solver']['relaxation_parameter'] = 0.0001
+            # prm['newton_solver']['linear_solver'] = 'gmres'
+            # prm['newton_solver']['preconditioner'] = 'sor'
+            prm['newton_solver']['linear_solver'] = self.method
+            prm['newton_solver']['preconditioner'] = self.preconditioner
+            prm['newton_solver']['krylov_solver']['maximum_iterations'] = 1000000
+            prm['newton_solver']['krylov_solver']['absolute_tolerance'] = self.max_abs_error
+            prm['newton_solver']['krylov_solver']['relative_tolerance'] = self.max_rel_error
+            prm['newton_solver']['krylov_solver']['monitor_convergence'] = True
+            # solver.solve()
+            if self.init_guess == "prev":
+                if step == 0:
+                    prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
+                else:
+                    prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = True
+            elif self.init_guess == "zero":
+                prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
+
+
         else:
             print("Separating LHS and RHS...")
             # Separate left and right hand sides of equation
@@ -257,10 +293,10 @@ class PoissonSolver():
             nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
                depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
 
-            # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
-            #          - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
-            #          - q*nd*self.v*self.dx
-            return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx - q*nd*self.v*self.dx
+            return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+                     - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+                     - q*nd*self.v*self.dx
+            # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx - q*nd*self.v*self.dx
 
     def defineVariationalForm(self):
         self.setGroundPlane()
@@ -280,7 +316,7 @@ class PoissonSolver():
         #     - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
         self.F += self.getBoundaryComponent(self.u, self.v, self.ds)
 
-        print("Separating LHS and RHS...")
+        # print("Separating LHS and RHS...")
         # Separate left and right hand sides of equation
         # self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
 
