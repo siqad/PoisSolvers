@@ -150,20 +150,6 @@ class PoissonSolver():
         self.ac.dir = self.exporter.abs_in_dir
         self.ac.setArea(self.xs_unpadded, self.ys_unpadded)
 
-    # def setChargeDensity(self):
-    #     print("Setting charge density...")
-    #     if self.eqn == "laplace":
-    #         self.f = dolfin.Constant("0.0")
-    #     elif self.eqn == "poisson":
-    #         #use equilibrium charge density
-    #         self.dp.dopingCalc()
-    #         rho = self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
-    #         self.f = rho
-            # dolfin.plot(rho)
-            # plt.savefig(self.exporter.abs_in_dir+"/asdf.pdf")
-        # elif self.eqn == "poisboltz":
-        #     #use the poisson boltzmann definition for charge density.
-        #     self.f = q*ni*exp(q/k/T*(u))*v*dx - q*ni*exp(-q/k/T*u)*v*dx - q*n_ext_exp*v*dx
     def initDoping(self):
         self.dp = Dopant(x_min=self.bounds['zmin'],
                     x_max=0,
@@ -194,44 +180,26 @@ class PoissonSolver():
     def setSolverParams(self, step = None):
         if self.eqn == "poisboltz":
             print("PoisBoltz")
-
             self.F = dolfin.action(self.F, self.u_s)
             J = dolfin.derivative(self.F, self.u_s, self.u)
             problem = dolfin.NonlinearVariationalProblem(self.F, self.u_s, self.bcs, J)
             self.solver = dolfin.NonlinearVariationalSolver(problem)
-
             prm = self.solver.parameters
             prm['newton_solver']['absolute_tolerance'] = self.max_abs_error
             prm['newton_solver']['relative_tolerance'] = self.max_rel_error
             prm['newton_solver']['maximum_iterations'] = 10000
-            # prm['newton_solver']['relaxation_parameter'] = gam
             prm['newton_solver']['relaxation_parameter'] = 0.1
-            # prm['newton_solver']['linear_solver'] = 'gmres'
-            # prm['newton_solver']['preconditioner'] = 'sor'
             prm['newton_solver']['report'] = True
             prm['newton_solver']['linear_solver'] = self.method
-            # print(prm['newton_solver']['linear_solver']['preconditioner'])
-            # prm['newton_solver']['linear_solver']['preconditioner'] = self.preconditioner
             prm['newton_solver']['preconditioner'] = self.preconditioner
             prm['newton_solver']['krylov_solver']['maximum_iterations'] = 10000
             prm['newton_solver']['krylov_solver']['absolute_tolerance'] = self.max_abs_error
             prm['newton_solver']['krylov_solver']['relative_tolerance'] = self.max_rel_error
             prm['newton_solver']['krylov_solver']['monitor_convergence'] = True
-            # solver.solve()
-            # if self.init_guess == "prev":
-            #     if step == 0:
-            #         prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
-            #     else:
-            #         prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = True
-            # elif self.init_guess == "zero":
-            #     prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
-
-
         else:
             print("Separating LHS and RHS...")
             # Separate left and right hand sides of equation
             self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
-
             self.problem = dolfin.LinearVariationalProblem(self.a, self.L, self.u_s, self.bcs)
             self.solver = dolfin.LinearVariationalSolver(self.problem)
             dolfin.parameters['form_compiler']['optimize'] = True
@@ -268,7 +236,6 @@ class PoissonSolver():
         print("Marking boundaries...")
         self.domains = dolfin.MeshFunction("size_t", mesh, mesh.topology().dim())
         self.domains.set_all(0)
-        # self.subdomains['air'].mark(self.domains, 1)
 
     def setChargeDensity(self):
         print("Setting charge density...")
@@ -278,7 +245,6 @@ class PoissonSolver():
             #use equilibrium charge density
             self.dp.dopingCalc()
             return -self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")*self.v*self.dx
-            # self.f = rho
         else:
             #use the poisson boltzmann definition for charge density.
             ni = 1E-14 #in ang^-3
@@ -297,72 +263,18 @@ class PoissonSolver():
                        -q*nd*self.v*self.dx
 
             elif self.eqn == "poisboltz":
-                #use the poisson boltzmann definition for charge density.
-                # self.ni_si = 1E10 # in cm^-3
-                # ni = 1E-14 #in ang^-3
-                # ni_exp = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
-                #     depth=self.bounds["dielectric"], p1=dolfin.Constant(ni), \
-                #     p2=dolfin.Constant(0), degree=1, domain=self.mesh)
-                # q = self.q
-                # k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
-                # T = self.temp
-                #
-                # self.dp.dopingCalc()
-                # nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
-                #    depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
-
                 return q*ni_exp*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
                          - q*ni_exp*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
                          - q*nd*self.v*self.dx
-                # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
-                #          - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
-                #          - q*nd*self.v*self.dx
-                # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx - q*nd*self.v*self.dx
 
     def defineVariationalForm(self):
         self.setGroundPlane()
         self.setMeasures()
         print("Defining variational form...")
         self.F = dolfin.inner(self.eps_exp*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx
-
-
         rho = self.setChargeDensity()
-
-
-
-
-        # ni = 1E-14 #in ang^-3
-        # ni_exp = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
-        #     depth=self.bounds["dielectric"], p1=dolfin.Constant(ni), \
-        #     p2=dolfin.Constant(0), degree=1, domain=self.mesh)
-        # q = self.q
-        # k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
-        # T = self.temp
-        #
-        # self.dp.dopingCalc()
-        # nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
-        #    depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
-        #
-        # self.F += q*ni_exp*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
-        #          - q*ni_exp*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
-        #          - q*nd*self.v*self.dx
-
-
-
         self.F += rho
-
-
-        # self.F -= self.f*self.v*self.dx
-            # + dolfin.inner(self.eps_di*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
-            # - self.f*self.v*self.dx
-        # self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
-        #     + dolfin.inner(self.EPS_DIELECTRIC*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
-        #     - self.f*self.v*self.dx(0) - self.f*self.v*self.dx(1) )
         self.F += self.getBoundaryComponent(self.u, self.v, self.ds)
-
-        # print("Separating LHS and RHS...")
-        # Separate left and right hand sides of equation
-        # self.a, self.L = dolfin.lhs(self.F), dolfin.rhs(self.F)
 
     def setFunctionSpaces(self):
         print("Defining function, space, basis...")
@@ -372,7 +284,6 @@ class PoissonSolver():
 
     def setMeasures(self):
         print("Defining measures...")
-        # self.dx = dolfin.dx(subdomain_data=self.domains, metadata={'quadrature_degree': 3})
         self.dx = dolfin.dx(subdomain_data=self.domains)
         self.ds = dolfin.ds(subdomain_data=self.boundaries)
 
@@ -388,7 +299,6 @@ class PoissonSolver():
         eps_ox = dolfin.Constant(self.eps_r*self.eps0)
         self.eps_exp = dolfin.Expression('x[2] < 0 + DOLFIN_EPS ? p1 : p2',
                p1=eps_si, p2=eps_ox, degree=1, domain=self.mesh)
-
 
     def createBoundaries(self):
         xs, ys, self.xs_unpadded, self.ys_unpadded = helpers.getBB(self.sqconn, self.pad)
@@ -426,7 +336,6 @@ class PoissonSolver():
         if (electrode.electrode_type == 1 and self.mode == "clock"):
             elec_str += "clocked, "
             tot_phase = -electrode.phase + step*360/steps
-            # potential_to_set = electrode.potential*np.sin( np.deg2rad(tot_phase))
             phase_pot = electrode.potential*np.sin( np.deg2rad(tot_phase))
             potential_to_set = electrode.pot_offset + phase_pot
         else:
@@ -434,8 +343,6 @@ class PoissonSolver():
             tot_phase = -electrode.phase
             phase_pot = electrode.potential*np.sin( np.deg2rad(tot_phase))
             potential_to_set = electrode.pot_offset + phase_pot
-            # potential_to_set = electrode.potential*np.sin( np.deg2rad(tot_phase))
-        # print(electrode.pot_offset)
 
         if self.metal_params[electrode.layer_id][0] > self.bounds['dielectric']:
             elec_str += "and above the dielectric interface."
@@ -472,7 +379,6 @@ class PoissonSolver():
             h_F = dolfin.Constant("0.0")
             h_Ba = dolfin.Constant("0.0")
             component =  h_F*u*v*ds(5)
-            # component =  h_F*u*v*ds(5) + h_Ba*u*v*ds(6)
         return component
 
     def getFunctionSpace(self, mesh):
