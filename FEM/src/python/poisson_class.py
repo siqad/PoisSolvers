@@ -200,34 +200,31 @@ class PoissonSolver():
             problem = dolfin.NonlinearVariationalProblem(self.F, self.u_s, self.bcs, J)
             self.solver = dolfin.NonlinearVariationalSolver(problem)
 
-            # spec_param['absolute_tolerance'] = self.max_abs_error
-            # spec_param['relative_tolerance'] = self.max_rel_error
-
-            # abs_tol = 1E-8
-            # rel_tol = 1E-9
-            #
             prm = self.solver.parameters
             prm['newton_solver']['absolute_tolerance'] = self.max_abs_error
             prm['newton_solver']['relative_tolerance'] = self.max_rel_error
             prm['newton_solver']['maximum_iterations'] = 10000
             # prm['newton_solver']['relaxation_parameter'] = gam
-            prm['newton_solver']['relaxation_parameter'] = 0.0001
+            prm['newton_solver']['relaxation_parameter'] = 0.1
             # prm['newton_solver']['linear_solver'] = 'gmres'
             # prm['newton_solver']['preconditioner'] = 'sor'
+            prm['newton_solver']['report'] = True
             prm['newton_solver']['linear_solver'] = self.method
+            # print(prm['newton_solver']['linear_solver']['preconditioner'])
+            # prm['newton_solver']['linear_solver']['preconditioner'] = self.preconditioner
             prm['newton_solver']['preconditioner'] = self.preconditioner
-            prm['newton_solver']['krylov_solver']['maximum_iterations'] = 1000000
+            prm['newton_solver']['krylov_solver']['maximum_iterations'] = 10000
             prm['newton_solver']['krylov_solver']['absolute_tolerance'] = self.max_abs_error
             prm['newton_solver']['krylov_solver']['relative_tolerance'] = self.max_rel_error
             prm['newton_solver']['krylov_solver']['monitor_convergence'] = True
             # solver.solve()
-            if self.init_guess == "prev":
-                if step == 0:
-                    prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
-                else:
-                    prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = True
-            elif self.init_guess == "zero":
-                prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
+            # if self.init_guess == "prev":
+            #     if step == 0:
+            #         prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
+            #     else:
+            #         prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = True
+            # elif self.init_guess == "zero":
+            #     prm['newton_solver']['krylov_solver']['nonzero_initial_guess'] = False
 
 
         else:
@@ -280,11 +277,15 @@ class PoissonSolver():
         elif self.eqn == "poisson":
             #use equilibrium charge density
             self.dp.dopingCalc()
-            return self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")*self.v*self.dx
+            return -self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")*self.v*self.dx
             # self.f = rho
         elif self.eqn == "poisboltz":
-            #use the poisson boltzmann definition for charge density.        self.ni_si = 1E10 # in cm^-3
+            #use the poisson boltzmann definition for charge density.
+            # self.ni_si = 1E10 # in cm^-3
             ni = 1E-14 #in ang^-3
+            ni_exp = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
+                depth=self.bounds["dielectric"], p1=dolfin.Constant(ni), \
+                p2=dolfin.Constant(0), degree=1, domain=self.mesh)
             q = self.q
             k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
             T = self.temp
@@ -293,9 +294,12 @@ class PoissonSolver():
             nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
                depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
 
-            return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
-                     - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+            return q*ni_exp*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+                     - q*ni_exp*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
                      - q*nd*self.v*self.dx
+            # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+            #          - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+            #          - q*nd*self.v*self.dx
             # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx - q*nd*self.v*self.dx
 
     def defineVariationalForm(self):
@@ -308,7 +312,7 @@ class PoissonSolver():
 
 
         # self.F -= self.f*self.v*self.dx
-        self.F -= rho
+        self.F += rho
             # + dolfin.inner(self.eps_di*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
             # - self.f*self.v*self.dx
         # self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \
@@ -328,6 +332,7 @@ class PoissonSolver():
 
     def setMeasures(self):
         print("Defining measures...")
+        # self.dx = dolfin.dx(subdomain_data=self.domains, metadata={'quadrature_degree': 3})
         self.dx = dolfin.dx(subdomain_data=self.domains)
         self.ds = dolfin.ds(subdomain_data=self.boundaries)
 
