@@ -56,6 +56,7 @@ class Plotter():
         norm = clrs.Normalize(vmin=-maxval, vmax=maxval)
         # plt.pcolormesh(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         plt.pcolor(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
+        # plt.imshow(X,Y,Z,norm=norm,cmap=plt.cm.get_cmap('RdBu_r'))
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plt.savefig(file_name)
         plt.close(fig)

@@ -279,9 +279,8 @@ class PoissonSolver():
             self.dp.dopingCalc()
             return -self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")*self.v*self.dx
             # self.f = rho
-        elif self.eqn == "poisboltz":
+        else:
             #use the poisson boltzmann definition for charge density.
-            # self.ni_si = 1E10 # in cm^-3
             ni = 1E-14 #in ang^-3
             ni_exp = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
                 depth=self.bounds["dielectric"], p1=dolfin.Constant(ni), \
@@ -289,30 +288,71 @@ class PoissonSolver():
             q = self.q
             k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
             T = self.temp
-
             self.dp.dopingCalc()
             nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
                depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
 
-            return q*ni_exp*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
-                     - q*ni_exp*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
-                     - q*nd*self.v*self.dx
-            # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
-            #          - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
-            #          - q*nd*self.v*self.dx
-            # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx - q*nd*self.v*self.dx
+            if self.eqn == "linpoisboltz":
+                return -2*q*q*ni_exp/k/T*self.u*self.v*self.dx \
+                       -q*nd*self.v*self.dx
+
+            elif self.eqn == "poisboltz":
+                #use the poisson boltzmann definition for charge density.
+                # self.ni_si = 1E10 # in cm^-3
+                # ni = 1E-14 #in ang^-3
+                # ni_exp = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
+                #     depth=self.bounds["dielectric"], p1=dolfin.Constant(ni), \
+                #     p2=dolfin.Constant(0), degree=1, domain=self.mesh)
+                # q = self.q
+                # k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
+                # T = self.temp
+                #
+                # self.dp.dopingCalc()
+                # nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
+                #    depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
+
+                return q*ni_exp*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+                         - q*ni_exp*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+                         - q*nd*self.v*self.dx
+                # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+                #          - q*ni*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+                #          - q*nd*self.v*self.dx
+                # return q*ni*dolfin.exp(q/k/T*(self.u))*self.v*self.dx - q*nd*self.v*self.dx
 
     def defineVariationalForm(self):
         self.setGroundPlane()
         self.setMeasures()
         print("Defining variational form...")
         self.F = dolfin.inner(self.eps_exp*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx
+
+
         rho = self.setChargeDensity()
 
 
 
-        # self.F -= self.f*self.v*self.dx
+
+        # ni = 1E-14 #in ang^-3
+        # ni_exp = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
+        #     depth=self.bounds["dielectric"], p1=dolfin.Constant(ni), \
+        #     p2=dolfin.Constant(0), degree=1, domain=self.mesh)
+        # q = self.q
+        # k = 1.38064852E-23 # Boltzmann constant - metre^2 kilogram / second^2 Kelvin
+        # T = self.temp
+        #
+        # self.dp.dopingCalc()
+        # nd = dolfin.Expression('x[2] < depth + DOLFIN_EPS ? p1 : p2', \
+        #    depth=self.dp.depth, p1=dolfin.Constant(self.dp.d_conc), p2=dolfin.Constant(0), degree=1, domain=self.mesh)
+        #
+        # self.F += q*ni_exp*dolfin.exp(q/k/T*(self.u))*self.v*self.dx \
+        #          - q*ni_exp*dolfin.exp(-q/k/T*self.u)*self.v*self.dx \
+        #          - q*nd*self.v*self.dx
+
+
+
         self.F += rho
+
+
+        # self.F -= self.f*self.v*self.dx
             # + dolfin.inner(self.eps_di*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(1) \
             # - self.f*self.v*self.dx
         # self.F = ( dolfin.inner(self.EPS_SI*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx(0) \

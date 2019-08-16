@@ -71,6 +71,7 @@ These replacements are done on the following fields:
           <laplace>Laplace</laplace>
           <poisson>Poisson</poisson>
           <poisboltz>Poisson-Boltzmann</poisboltz>
+          <linpoisboltz>Linearized Poisson-Boltzmann</linpoisboltz>
         </value_selection>
       </eqn>
       <bcs>
