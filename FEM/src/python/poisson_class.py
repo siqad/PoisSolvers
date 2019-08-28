@@ -271,7 +271,7 @@ class PoissonSolver():
         self.setGroundPlane()
         self.setMeasures()
         print("Defining variational form...")
-        self.F = dolfin.inner(self.eps_exp*dolfin.grad(self.u), dolfin.grad(self.v))*self.dx
+        self.F = dolfin.inner(self.eps_exp*dolfin.nabla_grad(self.u), dolfin.nabla_grad(self.v))*self.dx
         rho = self.setChargeDensity()
         self.F += rho
         self.F += self.getBoundaryComponent(self.u, self.v, self.ds)
