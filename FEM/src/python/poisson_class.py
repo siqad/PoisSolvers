@@ -86,6 +86,7 @@ class PoissonSolver():
         print("Creating 2D data slice...")
         data_2d = self.create2DSlice(self.u_s, self.slice_depth, self.img_res, self.bounds)
         data_2d_xz = self.create2DSliceXZ(self.u_s, self.img_res, self.bounds)
+        self.saveData(data_2d, step)
         print("Plotting 2D data slice...")
         self.plotter.plotPotential(step, data_2d, self.exporter.abs_out_dir)
         self.plotter.plotPotential(step, data_2d_xz, self.exporter.abs_out_dir, prefix="xz")
@@ -107,6 +108,14 @@ class PoissonSolver():
         self.res.getResistances(self.temp)
         self.ac.run(self.res.resistances, self.cap.cap_matrix)
 
+    def saveData(self, data, step=0):
+        X, Y, Z, nx, ny = data
+        print(X, Y, Z, nx, ny)
+        np.save(os.path.join(self.exporter.abs_out_dir,'X'+str(step)+'.npy'), X)
+        np.save(os.path.join(self.exporter.abs_out_dir,'Y'+str(step)+'.npy'), Y)
+        np.save(os.path.join(self.exporter.abs_out_dir,'Z'+str(step)+'.npy'), Z)
+        np.save(os.path.join(self.exporter.abs_out_dir,'nx'+str(step)+'.npy'), nx)
+        np.save(os.path.join(self.exporter.abs_out_dir,'ny'+str(step)+'.npy'), ny)
 
 #Functions that the user shouldn't have to call.
     def initParameters(self, params):
@@ -244,6 +253,9 @@ class PoissonSolver():
         elif self.eqn == "poisson":
             #use equilibrium charge density
             self.dp.dopingCalc()
+            temp = -self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")
+            # dolfin.plot(temp)
+            # plt.savefig(os.path.join(self.exporter.abs_in_dir,"temp.pdf"))
             return -self.dp.getAsFunction(self.dp.rho, self.mesh, "x[2]")*self.v*self.dx
         else:
             #use the poisson boltzmann definition for charge density.

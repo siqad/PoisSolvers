@@ -150,8 +150,10 @@ if __name__ == "__main__":
     dp = Dopant()
 
     dp.dopingCalc()
-    plt.plot(dp.rho)
-    plt.show()
+
+
+    # plt.plot(dp.rho)
+    # plt.show()
 
 
     # dp.setUnits("atomic")
