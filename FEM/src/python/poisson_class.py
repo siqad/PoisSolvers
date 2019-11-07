@@ -22,6 +22,26 @@ from ac import PowerEstimator
 from dopant import Dopant
 import matplotlib.pyplot as plt
 
+
+class EpsExpression(dolfin.Expression):
+    def eval(self, value, x):
+        if x[2] <= 0:
+            value[0] = self.eps_si
+        else:
+            value[0] = self.eps_di
+            for elec in self.electrodes:
+                if elec.xs[0] <= x[0] <= elec.xs[1]:
+                    if elec.ys[0] <= x[1] <= elec.ys[1]:
+                        if elec.zs[0] <= x[2] <= elec.zs[1]:
+                            value[0] = self.eps_metal
+                            return
+
+    # def random(self):
+    #     for elec in self.electrodes:
+    #         print(elec.xs, elec.ys, elec.zs)
+        # print(self.electrodes)
+
+
 class PoissonSolver():
     #Constructor
     def __init__(self):
@@ -56,9 +76,9 @@ class PoissonSolver():
         self.markDomains(self.mesh)
         # Initialize mesh function for boundary domains
         self.markBoundaries(self.mesh)
+        self.setFunctionSpaces()
         self.setConstants()
         self.initDoping()
-        self.setFunctionSpaces()
         # self.setChargeDensity()
         self.createNetlist()
         self.steps = self.getSteps()
@@ -309,8 +329,14 @@ class PoissonSolver():
 
         eps_si = dolfin.Constant(11.6*self.eps0)
         eps_ox = dolfin.Constant(self.eps_r*self.eps0)
-        self.eps_exp = dolfin.Expression('x[2] < 0 + DOLFIN_EPS ? p1 : p2',
-               p1=eps_si, p2=eps_ox, degree=1, domain=self.mesh)
+        # self.eps_exp = dolfin.Expression('x[2] < 0 + DOLFIN_EPS ? p1 : p2',
+        #        p1=eps_si, p2=eps_ox, degree=1, domain=self.mesh)
+
+        self.eps_exp = EpsExpression(degree=1, domain=self.mesh)
+        self.eps_exp.electrodes = self.electrodes
+        self.eps_exp.eps_si = 11.6*self.eps0
+        self.eps_exp.eps_di = self.eps_r*self.eps0
+        self.eps_exp.eps_metal = 1000*self.eps0
 
     def createBoundaries(self):
         xs, ys, self.xs_unpadded, self.ys_unpadded = helpers.getBB(self.sqconn, self.pad)
