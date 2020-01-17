@@ -22,7 +22,8 @@ import time
 import os
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
-import siqadconn
+#import siqadconn
+from siqadtools import siqadconn
 import subdomains as sd
 from argparse import ArgumentParser
 from dolfin_utils.meshconvert import meshconvert
