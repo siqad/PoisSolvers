@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 # for release builds, add flag "-DCMAKE_BUILD_TYPE=Release" (without quotes) when running cmake.
 
-if(DEFINED SIQAD_INSTALL_ROOT)
-    set(POIS_INSTALL_DIR "${SIQAD_INSTALL_ROOT}/phys/poissolver")
+if(DEFINED SIQAD_PLUGINS_ROOT)
+    set(POIS_INSTALL_DIR "${SIQAD_PLUGINS_ROOT}/poissolver")
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
     set(POIS_INSTALL_DIR "release")
 else()
