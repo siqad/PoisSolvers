@@ -31,3 +31,7 @@ set(POIS_FILES
 )
 
 install(FILES ${POIS_FILES} DESTINATION ${POIS_INSTALL_DIR})
+
+if(COMMAND symlink_siqadtools AND NOT WIN32)
+    symlink_siqadtools(${POIS_INSTALL_DIR})
+endif()
