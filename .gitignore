@@ -52,3 +52,6 @@ dependencies/
 *.pos
 *.pyc
 *.d
+
+#other
+*.swp
