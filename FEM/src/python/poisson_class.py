@@ -21,9 +21,10 @@ from resistance import ResistanceEstimator
 from ac import PowerEstimator
 from dopant import Dopant
 import matplotlib.pyplot as plt
+import meshio
 
 
-class EpsExpression(dolfin.Expression):
+class EpsExpression(dolfin.UserExpression):
     def eval(self, value, x):
         if x[2] <= 0:
             value[0] = self.eps_si
@@ -36,6 +37,8 @@ class EpsExpression(dolfin.Expression):
                             value[0] = self.eps_metal
                             return
 
+    def value_shape(self):
+        return ()
     # def random(self):
     #     for elec in self.electrodes:
     #         print(elec.xs, elec.ys, elec.zs)
@@ -332,7 +335,7 @@ class PoissonSolver():
         # self.eps_exp = dolfin.Expression('x[2] < 0 + DOLFIN_EPS ? p1 : p2',
         #        p1=eps_si, p2=eps_ox, degree=1, domain=self.mesh)
 
-        self.eps_exp = EpsExpression(degree=1, domain=self.mesh)
+        self.eps_exp = EpsExpression(element=self.V.ufl_element(), degree=1, domain=self.mesh)
         self.eps_exp.electrodes = self.electrodes
         self.eps_exp.eps_si = 11.6*self.eps0
         self.eps_exp.eps_di = self.eps_r*self.eps0
@@ -469,9 +472,58 @@ class PoissonSolver():
         #convert mesh to xml suitable for dolfin
         print("Converting mesh from .msh to .xml...")
         meshconvert.convert2xml(os.path.join(self.exporter.abs_in_dir,"domain.msh"), os.path.join(self.exporter.abs_in_dir,"domain.xml"))
+
+        ##print("Converting mesh from .msh to .xdmf...")
+        ##f_gmsh = os.path.join(self.exporter.abs_in_dir,"domain.msh")
+        ##f_mesh_xdmf = os.path.join(self.exporter.abs_in_dir,"mesh.xdmf")
+        ##f_mf_xdmf = os.path.join(self.exporter.abs_in_dir,"mf.xdmf")
+        ##f_cf_xdmf = os.path.join(self.exporter.abs_in_dir,"cf.xdmf")
+        ##msh = meshio.read(f_gmsh)
+
+        ##for cell in msh.cells:
+        ##    if cell.type == "triangle":
+        ##        triangle_cells = cell.data
+        ##    elif cell.type == "tetra":
+        ##        tetra_cells = cell.data
+
+        ##for key in msh.cell_data_dict["gmsh:geometrical"].keys():
+        ##    if key == "triangle":
+        ##        triangle_data = msh.cell_data_dict["gmsh:geometrical"][key]
+        ##    elif key == "tetra":
+        ##        tetra_data = msh.cell_data_dict["gmsh:geometrical"][key]
+
+        ##tetra_mesh = meshio.Mesh(points=msh.points, cells={"tetra": tetra_cells})
+        ##triangle_mesh = meshio.Mesh(points=msh.points,
+        ##        cells=[("triangle", triangle_cells)],
+        ##        cell_data={"name_to_read":[triangle_data]})
+        ##cell_function = meshio.Mesh(points=msh.points,
+        ##        cells=[("tetra", tetra_cells)],
+        ##        cell_data={"name_to_read": [tetra_data]})
+
+        ##meshio.write(f_mesh_xdmf, tetra_mesh)
+        ##meshio.write(f_mf_xdmf, triangle_mesh)
+        ##meshio.write(f_cf_xdmf, cell_function)
+
         print("Importing mesh from .xml...")
         #set as mesh in model
         self.mesh = dolfin.Mesh(os.path.join(self.exporter.abs_in_dir,'domain.xml'))
+        
+        ##print("Importing mesh from .xdmf...")
+        ##self.mesh = dolfin.Mesh()
+        ##with dolfin.XDMFFile(f_mesh_xdmf) as infile:
+        ##    infile.read(self.mesh)
+        ##mvc = dolfin.MeshValueCollection("size_t", self.mesh, 2)
+        ##with dolfin.XDMFFile(f_mf_xdmf) as infile:
+        ##    infile.read(mvc, "name_to_read")
+        ##mf = dolfin.cpp.mesh.MeshFunctionSizet(self.mesh, mvc)
+
+        ##mvc = dolfin.MeshValueCollection("size_t", self.mesh, 3)
+        ##with dolfin.XDMFFile(f_cf_xdmf) as infile:
+        ##    infile.read(mvc, "name_to_read")
+        ##cf = dolfin.cpp.mesh.MeshFunctionSizet(self.mesh, mvc)
+
+        ##ds_custom = dolfin.Measure("ds", domain=self.mesh, subdomain_data=mf, subdomain_id=12)
+        ##print(dolfin.assemble(1*ds_custom))
 
     def initMesher(self):
         self.mesher.eqn = self.eqn
