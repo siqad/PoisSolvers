@@ -25,14 +25,14 @@ import matplotlib.colors as clrs
 #import siqadconn
 from siqadtools import siqadconn
 import subdomains as sd
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentTypeError
 from dolfin_utils.meshconvert import meshconvert
 
 ######################PREAMBLE
 def file_must_exist(fpath):
     '''Check if input file exists for argument parser'''
     if not os.path.exists(fpath):
-        raise argparse.ArgumentTypeError("{0} does not exist".format(fpath))
+        raise ArgumentTypeError("{0} does not exist".format(fpath))
     return fpath
 #Parse command arguments
 parser = ArgumentParser(description="PoisSolver is an electric potential "
