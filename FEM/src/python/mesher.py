@@ -42,7 +42,7 @@ class Mesher():
 
 
     def runGMSH(self, file_name="domain.geo"):
-        subprocess.call(["gmsh", "-3", os.path.join(self.dir,file_name)])
+        subprocess.call(["gmsh", "-format", "msh22", "-3", os.path.join(self.dir,file_name)])
 
     def setResolution(self):
         x_min = self.bounds['xmin']
