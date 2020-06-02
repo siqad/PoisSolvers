@@ -329,10 +329,11 @@ class PoissonSolver():
 
         eps_si = dolfin.Constant(11.6*self.eps0)
         eps_ox = dolfin.Constant(self.eps_r*self.eps0)
-        self.eps_exp = dolfin.Expression('x[2] < 0 + DOLFIN_EPS ? p1 : p2',
-                p1=eps_si, p2=eps_ox, degree=1, domain=self.mesh)
+        #self.eps_exp = dolfin.Expression('x[2] < 0 + DOLFIN_EPS ? p1 : p2',
+        #        p1=eps_si, p2=eps_ox, degree=1, domain=self.mesh)
 
         #self.eps_exp = EpsExpression(element=self.V.ufl_element(), degree=1, domain=self.mesh)
+        self.eps_exp = EpsExpression(element=self.mesh.ufl_coordinate_element()._sub_element, degree=1, domain=self.mesh)
         self.eps_exp.electrodes = self.electrodes
         self.eps_exp.eps_si = 11.6*self.eps0
         self.eps_exp.eps_di = self.eps_r*self.eps0
@@ -475,6 +476,7 @@ class PoissonSolver():
         f_mesh_xdmf = os.path.join(self.exporter.abs_in_dir,"mesh.xdmf")
         f_mf_xdmf = os.path.join(self.exporter.abs_in_dir,"mf.xdmf")
         f_cf_xdmf = os.path.join(self.exporter.abs_in_dir,"cf.xdmf")
+        gm_dict_type = 'gmsh:physical' # 'gmsh:geometrical'
         msh = meshio.read(f_gmsh)
 
         for cell in msh.cells:
@@ -483,11 +485,11 @@ class PoissonSolver():
             elif cell.type == "tetra":
                 tetra_cells = cell.data
 
-        for key in msh.cell_data_dict["gmsh:geometrical"].keys():
+        for key in msh.cell_data_dict[gm_dict_type].keys():
             if key == "triangle":
-                triangle_data = msh.cell_data_dict["gmsh:geometrical"][key]
+                triangle_data = msh.cell_data_dict[gm_dict_type][key]
             elif key == "tetra":
-                tetra_data = msh.cell_data_dict["gmsh:geometrical"][key]
+                tetra_data = msh.cell_data_dict[gm_dict_type][key]
 
         tetra_mesh = meshio.Mesh(points=msh.points, cells={"tetra": tetra_cells})
         triangle_mesh = meshio.Mesh(points=msh.points,
