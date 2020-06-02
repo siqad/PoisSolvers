@@ -467,59 +467,69 @@ class PoissonSolver():
         #face subdomains as values.
         #electrodes is a list of the electrode subdomains.
         self.subdomains, self.electrodes = self.mesher.createGeometry()
-        #convert mesh to xml suitable for dolfin
-        #print("Converting mesh from .msh to .xml...")
-        #meshconvert.convert2xml(os.path.join(self.exporter.abs_in_dir,"domain.msh"), os.path.join(self.exporter.abs_in_dir,"domain.xml"))
 
-        print("Converting mesh from .msh to .xdmf...")
-        f_gmsh = os.path.join(self.exporter.abs_in_dir,"domain.msh")
-        f_mesh_xdmf = os.path.join(self.exporter.abs_in_dir,"mesh.xdmf")
-        f_mf_xdmf = os.path.join(self.exporter.abs_in_dir,"mf.xdmf")
-        f_cf_xdmf = os.path.join(self.exporter.abs_in_dir,"cf.xdmf")
-        gm_dict_type = 'gmsh:physical' # 'gmsh:geometrical'
-        msh = meshio.read(f_gmsh)
+        # attempt to use meshio to import the mesh first, fallback to 
+        # dolfin-convert failing that
 
-        for cell in msh.cells:
-            if cell.type == "triangle":
-                triangle_cells = cell.data
-            elif cell.type == "tetra":
-                tetra_cells = cell.data
+        try:
+            print("Converting mesh from .msh to .xdmf using meshio...")
+            f_gmsh = os.path.join(self.exporter.abs_in_dir,"domain.msh")
+            f_mesh_xdmf = os.path.join(self.exporter.abs_in_dir,"mesh.xdmf")
+            f_mf_xdmf = os.path.join(self.exporter.abs_in_dir,"mf.xdmf")
+            f_cf_xdmf = os.path.join(self.exporter.abs_in_dir,"cf.xdmf")
+            gm_dict_type = 'gmsh:physical' # 'gmsh:geometrical'
+            msh = meshio.read(f_gmsh)
 
-        for key in msh.cell_data_dict[gm_dict_type].keys():
-            if key == "triangle":
-                triangle_data = msh.cell_data_dict[gm_dict_type][key]
-            elif key == "tetra":
-                tetra_data = msh.cell_data_dict[gm_dict_type][key]
+            for cell in msh.cells:
+                if cell.type == "triangle":
+                    triangle_cells = cell.data
+                elif cell.type == "tetra":
+                    tetra_cells = cell.data
 
-        tetra_mesh = meshio.Mesh(points=msh.points, cells={"tetra": tetra_cells})
-        triangle_mesh = meshio.Mesh(points=msh.points,
-                cells=[("triangle", triangle_cells)],
-                cell_data={"name_to_read":[triangle_data]})
-        cell_function = meshio.Mesh(points=msh.points,
-                cells=[("tetra", tetra_cells)],
-                cell_data={"name_to_read": [tetra_data]})
+            for key in msh.cell_data_dict[gm_dict_type].keys():
+                if key == "triangle":
+                    triangle_data = msh.cell_data_dict[gm_dict_type][key]
+                elif key == "tetra":
+                    tetra_data = msh.cell_data_dict[gm_dict_type][key]
 
-        meshio.write(f_mesh_xdmf, tetra_mesh)
-        meshio.write(f_mf_xdmf, triangle_mesh)
-        meshio.write(f_cf_xdmf, cell_function)
+            tetra_mesh = meshio.Mesh(points=msh.points, cells={"tetra": tetra_cells})
+            triangle_mesh = meshio.Mesh(points=msh.points,
+                    cells=[("triangle", triangle_cells)],
+                    cell_data={"name_to_read":[triangle_data]})
+            cell_function = meshio.Mesh(points=msh.points,
+                    cells=[("tetra", tetra_cells)],
+                    cell_data={"name_to_read": [tetra_data]})
 
-        #print("Importing mesh from .xml...")
-        ##set as mesh in model
-        #self.mesh = dolfin.Mesh(os.path.join(self.exporter.abs_in_dir,'domain.xml'))
+            meshio.write(f_mesh_xdmf, tetra_mesh)
+            meshio.write(f_mf_xdmf, triangle_mesh)
+            meshio.write(f_cf_xdmf, cell_function)
 
-        print("Importing mesh from .xdmf...")
-        self.mesh = dolfin.Mesh()
-        with dolfin.XDMFFile(f_mesh_xdmf) as infile:
-            infile.read(self.mesh)
-        mvc = dolfin.MeshValueCollection("size_t", self.mesh, 2)
-        with dolfin.XDMFFile(f_mf_xdmf) as infile:
-            infile.read(mvc, "name_to_read")
-        mf = dolfin.cpp.mesh.MeshFunctionSizet(self.mesh, mvc)
 
-        mvc = dolfin.MeshValueCollection("size_t", self.mesh, 3)
-        with dolfin.XDMFFile(f_cf_xdmf) as infile:
-            infile.read(mvc, "name_to_read")
-        cf = dolfin.cpp.mesh.MeshFunctionSizet(self.mesh, mvc)
+            print("Importing mesh from .xdmf...")
+            self.mesh = dolfin.Mesh()
+            with dolfin.XDMFFile(f_mesh_xdmf) as infile:
+                infile.read(self.mesh)
+            mvc = dolfin.MeshValueCollection("size_t", self.mesh, 2)
+            with dolfin.XDMFFile(f_mf_xdmf) as infile:
+                infile.read(mvc, "name_to_read")
+            mf = dolfin.cpp.mesh.MeshFunctionSizet(self.mesh, mvc)
+
+            mvc = dolfin.MeshValueCollection("size_t", self.mesh, 3)
+            with dolfin.XDMFFile(f_cf_xdmf) as infile:
+                infile.read(mvc, "name_to_read")
+            cf = dolfin.cpp.mesh.MeshFunctionSizet(self.mesh, mvc)
+
+        except:
+            print("meshio failed, reverting to legacy dolfin-convert conversion")
+
+            #convert mesh to xml suitable for dolfin
+            print("Converting mesh from .msh to .xml...")
+            meshconvert.convert2xml(os.path.join(self.exporter.abs_in_dir,"domain.msh"), os.path.join(self.exporter.abs_in_dir,"domain.xml"))
+
+            # legacy
+            print("Importing mesh from .xml...")
+            #set as mesh in model
+            self.mesh = dolfin.Mesh(os.path.join(self.exporter.abs_in_dir,'domain.xml'))
 
         ##ds_custom = dolfin.Measure("ds", domain=self.mesh, subdomain_data=mf, subdomain_id=12)
         ##print(dolfin.assemble(1*ds_custom))
