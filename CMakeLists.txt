@@ -10,6 +10,8 @@ else()
     set(POIS_INSTALL_DIR "debug")
 ENDIF()
 
+set(POIS_SYMLINK_DIR ${POIS_INSTALL_DIR})
+
 set(POIS_FILES
     LICENSE
     poissolver.physeng
@@ -28,10 +30,15 @@ set(POIS_FILES
     FEM/src/python/res_graph.py
     FEM/src/python/resistance.py
     FEM/src/python/subdomains.py
+    FEM/src/python/requirements.txt
 )
 
 install(FILES ${POIS_FILES} DESTINATION ${POIS_INSTALL_DIR})
 
-if(COMMAND symlink_siqadtools AND NOT WIN32)
-    symlink_siqadtools("../.." ${POIS_INSTALL_DIR})
-endif()
+#if(COMMAND symlink_siqadtools AND NOT WIN32)
+#    if(DEFINED SYMLINK_INSTALL_PREFIX)
+#        set(POIS_SYMLINK_DIR "${SYMLINK_INSTALL_PREFIX}/plugins/poissolver")
+#    endif()
+#    symlink_siqadtools("../.." ${POIS_SYMLINK_DIR})
+#    #symlink_siqadtools("../.." ${POIS_INSTALL_DIR})
+#endif()

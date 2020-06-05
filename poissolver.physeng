@@ -22,6 +22,10 @@ These replacements are done on the following fields:
     <!-- Path to the engine script or compiled binary. -->
     <!--<bin_path>@PHYSENGPATH@/poisson3D.py</bin_path> TODO switch to this form later-->
     <bin_path>poisson3D.py</bin_path>
+    <!-- Indicate whether a Python virtualenv should be created -->
+    <py_use_virtualenv>1</py_use_virtualenv>
+    <!-- Indicate whether to allow the use of host system Python packages -->
+    <venv_use_system_site_packages>1</venv_use_system_site_packages>
     <!-- Selection of invocation commands to call this engine. The first one is the one that is shown in SiQAD by default. TODO tie this to presets in some ways. -->
     <commands>
         <!-- Default command. -->
