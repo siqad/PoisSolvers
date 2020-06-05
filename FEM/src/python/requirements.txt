@@ -6,3 +6,4 @@ matplotlib
 numpy
 shapely
 meshio
+scipy
