@@ -143,7 +143,7 @@ These replacements are done on the following fields:
       </eps_r_dielectric>
       <sim_resolution>
         <T>double</T>
-        <val>5</val>
+        <val>10</val>
         <label>Resolution</label>
         <tip>Resolution scaling factor. Warning: higher resolution calculations will take longer to complete.</tip>
       </sim_resolution>
