@@ -12,30 +12,17 @@
 #                                                                              #
 ################################################################################
 
-# Base off the official Fenics image
-FROM quay.io/fenicsproject/stable:latest
+# Use a supported distribution with classic DOLFIN packages.
+FROM ubuntu:22.04
 
-# NOTE when basing off the Ubuntu 18.04 image there are MPI related errors that 
-# prevent simulation from working
-
-# Install dependencies
-# TODO get pip packages from a requirements.txt instead
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get install -y \
-    make \
-    gcc \
-    g++ \
-    python3-pip \
-    python3-dolfin \
-    python3-tk \
-    gmsh \
-    swig
-RUN pip3 install \
-    pillow \
-    networkx \
-    matplotlib \
-    numpy \
-    shapely
+# Keep classic DOLFIN. DOLFINx is a different API.
+# Use signed distribution packages, so no Python package downloader runs here.
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates make gcc g++ libboost-dev python3-dev python3-dolfin python3-tk python3-distutils \
+    gmsh swig python3-pil python3-networkx python3-matplotlib python3-numpy python3-shapely \
+    python3-scipy python3-h5py python3-meshio \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory to /poissolver
 WORKDIR /poissolver
@@ -44,6 +31,13 @@ WORKDIR /poissolver
 COPY . /poissolver
 
 # Compile SWIG
-RUN cd /poissolver/swig_siqadconn && ./swig_generate_and_compile
+RUN cd /poissolver/swig_siqadconn \
+    && swig -python -c++ siqadconn.i \
+    && python3 setup.py build_ext --inplace \
+    && mkdir -p ../siqadtools \
+    && mv siqadconn.py _siqadconn.*.so ../siqadtools/ \
+    && touch ../siqadtools/__init__.py
+RUN python3 /poissolver/poisson3D.py --help
+RUN python3 /poissolver/docker_smoke_test.py
 
 ENTRYPOINT ["python3", "/poissolver/poisson3D.py"]

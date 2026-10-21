@@ -189,7 +189,7 @@ void SiQADConnector::readElectrode(const bpt::ptree &subtree, const std::shared_
 
   std::cout << "Electrode created with x1=" << agg_parent->elecs.back()->x1 << ", y1=" << agg_parent->elecs.back()->y1 <<
     ", x2=" << agg_parent->elecs.back()->x2 << ", y2=" << agg_parent->elecs.back()->y2 <<
-    ", potential=" << agg_parent->elecs.back()->potential << ", offset=" << << agg_parent->elecs.back()->pot_offset << std::endl;
+    ", potential=" << agg_parent->elecs.back()->potential << ", offset=" << agg_parent->elecs.back()->pot_offset << std::endl;
 }
 
 void SiQADConnector::readElectrodePoly(const bpt::ptree &subtree, const std::shared_ptr<Aggregate> &agg_parent)
