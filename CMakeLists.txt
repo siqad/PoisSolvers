@@ -31,9 +31,13 @@ set(POIS_FILES
     FEM/src/python/resistance.py
     FEM/src/python/subdomains.py
     FEM/src/python/requirements.txt
+    FEM/src/docker/Dockerfile
+    FEM/src/python/docker_smoke_test.py
 )
 
 install(FILES ${POIS_FILES} DESTINATION ${POIS_INSTALL_DIR})
+install(DIRECTORY FEM/src/python/swig_siqadconn DESTINATION ${POIS_INSTALL_DIR}
+    FILES_MATCHING PATTERN "*.py" PATTERN "*.cc" PATTERN "*.h" PATTERN "*.i")
 
 #if(COMMAND symlink_siqadtools AND NOT WIN32)
 #    if(DEFINED SYMLINK_INSTALL_PREFIX)

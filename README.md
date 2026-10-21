@@ -64,3 +64,22 @@ The solver is meant to be called from another tool, with the appropriate input a
 ## Author
 
 **Nathan Chiu**
+
+
+## Maintained Docker build
+
+The container uses Ubuntu 22.04 and classic DOLFIN from signed distribution
+packages. It does not run pip or download Python packages from PyPI. The local
+connector is compiled and installed under the namespace used by the solver.
+
+From this repository, build and check the command-line entry point:
+
+```sh
+docker build -f FEM/src/docker/Dockerfile -t poissolver FEM/src/python
+docker run --rm poissolver --help
+```
+
+CMake installation also includes the Dockerfile and connector sources, so the
+installed plugin directory can serve as the Docker build context. This replaces
+the retired FEniCS image. Solver qualification must use the new container, because
+the DOLFIN and MPI package versions differ from that old image.

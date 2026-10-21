@@ -27,7 +27,9 @@
 #include <chrono>
 
 namespace phys{
+#ifndef SWIG
   namespace bpt = boost::property_tree;
+#endif
 
   // forward declaration
   struct Layer;

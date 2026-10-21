@@ -1,0 +1,17 @@
+name: PoisSolver container
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+permissions:
+  contents: read
+jobs:
+  container:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test classic DOLFIN container
+        run: docker build -f FEM/src/docker/Dockerfile -t poissolver-test FEM/src/python
+      - name: Check CLI
+        run: docker run --rm poissolver-test --help
